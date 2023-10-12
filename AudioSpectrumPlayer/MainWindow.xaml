@@ -4,8 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AudioSpectrumPlayer"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        mc:Ignorable="d" FontSize="18" FontFamily="Segoe UI"
+        Title="AudioSpectrum Player" Height="450" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
@@ -25,6 +25,10 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="20" />
         </Grid.RowDefinitions>
-        <TextBlock Grid.Column="1" Grid.Row="1" FontSize="36" Text="Hello World" />
+        <TextBlock Grid.Column="1" Grid.Row="1" FontSize="36" Text="AudioSpectrum Player" Grid.ColumnSpan="3" Margin="0,0,0,10"/>
+        <TextBlock Grid.Column="1" Grid.Row="2"  Text="Enter a thing" />
+        <TextBox Grid.Column="2" Grid.Row="2" x:Name="inputText1" Width="150" />
+
+        <Button Grid.Column="1" Grid.Row="3" x:Name="SubmitButton" Content="Click Here" Grid.ColumnSpan="2" Margin="10" Click="SubmitButton_Click" />
     </Grid>
 </Window>
