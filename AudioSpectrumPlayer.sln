@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer", "AudioSpectrumPlayer\AudioSpectrumPlayer.csproj", "{33DDE2D9-4D40-4DBB-B3B0-F3B6E41B4F96}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{33DDE2D9-4D40-4DBB-B3B0-F3B6E41B4F96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33DDE2D9-4D40-4DBB-B3B0-F3B6E41B4F96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33DDE2D9-4D40-4DBB-B3B0-F3B6E41B4F96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33DDE2D9-4D40-4DBB-B3B0-F3B6E41B4F96}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DAFE8520-6F38-4D24-91C2-1EC8AC757D83}
+	EndGlobalSection
+EndGlobal
