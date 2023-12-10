@@ -11,9 +11,10 @@ namespace AudioSpectrumPlayer
             Initialize();
         }
 
-        protected override void OnStartup(object sender, StartupEventArgs e)
+        protected override async void OnStartup(object sender, StartupEventArgs e)
         {
-            DisplayRootViewForAsync<ShellViewModel>();
+            //DisplayRootViewForAsync<ShellViewModel>();
+            await DisplayRootViewForAsync(typeof(ShellViewModel));
             //base.OnStartup(sender, e);
         }
     }
