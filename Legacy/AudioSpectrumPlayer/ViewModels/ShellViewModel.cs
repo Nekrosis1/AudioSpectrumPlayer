@@ -5,6 +5,9 @@ namespace AudioSpectrumPlayer.ViewModels
 {
     public class ShellViewModel : Screen
     {
+
+        // Tutorial 1 at 1:09:00
+
         private string _firstName = "DING DONG";
         private string _lastName = "";
         private BindableCollection<PersonModel> _people = new();
@@ -69,6 +72,7 @@ namespace AudioSpectrumPlayer.ViewModels
             }
         }
 
+        // CanX() automagically binds to enable/disable of button that calls X()
         public static bool CanClearText(string firstName, string lastName) => !string.IsNullOrWhiteSpace(firstName) || !string.IsNullOrWhiteSpace(lastName);
 
         public void ClearText(string firstName, string lastName)
