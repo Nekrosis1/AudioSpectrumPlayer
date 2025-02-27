@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "AudioSpectrumPlayer (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "AudioSpectrumPlayer (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
