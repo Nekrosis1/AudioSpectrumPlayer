@@ -55,7 +55,7 @@ namespace AudioSpectrumPlayer
                     await mainWindow.LoadAudioFileFromPathAsync(file);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Handle exception
             }
