@@ -9,7 +9,44 @@
     mc:Ignorable="d"
     Title="AudioSpectrumPlayer">
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="myButton" Click="myButton_Click">Click Me</Button>
-    </StackPanel>
+    <Grid Padding="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- This will be where we show audio visualization later -->
+        <Border Grid.Row="0" 
+                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
+                BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1"
+                Margin="0,0,0,12">
+            <TextBlock HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       Text="Audio Visualization Area" />
+        </Border>
+
+        <!-- Audio Controls -->
+        <StackPanel Grid.Row="1" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Center"
+                    Spacing="8">
+            <Button x:Name="PlayButton" 
+                    Content="&#xE768;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Click="PlayButton_Click"/>
+            <Button x:Name="PauseButton" 
+                    Content="&#xE769;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Click="PauseButton_Click"/>
+            <Button x:Name="StopButton" 
+                    Content="&#xE71A;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Click="StopButton_Click"/>
+            <Button x:Name="OpenFileButton" 
+                    Content="&#xE8E5;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Click="OpenFileButton_Click"/>
+        </StackPanel>
+    </Grid>
 </Window>

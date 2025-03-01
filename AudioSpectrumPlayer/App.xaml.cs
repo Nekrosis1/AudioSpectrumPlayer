@@ -1,20 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
+﻿using Microsoft.UI.Xaml;
+using System;
+using Windows.Storage;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,6 +12,7 @@ namespace AudioSpectrumPlayer
     /// </summary>
     public partial class App : Application
     {
+        private Window m_window;
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -43,8 +30,35 @@ namespace AudioSpectrumPlayer
         {
             m_window = new MainWindow();
             m_window.Activate();
+
+            // Process file arguments if any were passed
+            string[] launchArgs = Environment.GetCommandLineArgs();
+            if (launchArgs.Length > 1)
+            {
+                string filePath = launchArgs[1];
+                if (System.IO.File.Exists(filePath))
+                {
+                    // We need to get the StorageFile from the path
+                    LoadAudioFileAsync(filePath);
+                }
+            }
         }
 
-        private Window? m_window;
+        private async void LoadAudioFileAsync(string filePath)
+        {
+            try
+            {
+                StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
+                if (m_window is MainWindow mainWindow)
+                {
+                    // You'll need to add this method to MainWindow
+                    await mainWindow.LoadAudioFileFromPathAsync(file);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exception
+            }
+        }
     }
 }
