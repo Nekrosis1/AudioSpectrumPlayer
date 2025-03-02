@@ -20,7 +20,8 @@ namespace AudioSpectrumPlayer
         public MainWindow()
         {
             this.InitializeComponent();
-            mediaPlayer = new MediaPlayer();
+            InitializeMediaPlayer();
+            MonitorWindowLifetime();
             Title = "Audio Player";
 
             LogViewer.Log("Application started");
@@ -32,6 +33,133 @@ namespace AudioSpectrumPlayer
             for (int i = 0; i < args.Length; i++)
             {
                 LogViewer.Log($"Arg[{i}]: {args[i]}");
+            }
+        }
+
+        private void InitializeMediaPlayer()
+        {
+            try
+            {
+                FileLogger.Log("Initializing MediaPlayer");
+
+                mediaPlayer = new MediaPlayer();
+                mediaPlayer.MediaOpened += (sender, args) =>
+                {
+                    try
+                    {
+                        FileLogger.Log("Media opened successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        FileLogger.LogException(ex, "MediaOpened event");
+                    }
+                };
+
+                mediaPlayer.MediaFailed += (sender, args) =>
+                {
+                    try
+                    {
+                        FileLogger.Log($"Media failed to load: {args.Error}");
+                    }
+                    catch (Exception ex)
+                    {
+                        FileLogger.LogException(ex, "MediaFailed event");
+                    }
+                };
+
+                mediaPlayer.PlaybackSession.PlaybackStateChanged += (sender, args) =>
+                {
+                    try
+                    {
+                        FileLogger.Log($"Playback state changed to: {sender.PlaybackState}");
+                    }
+                    catch (Exception ex)
+                    {
+                        FileLogger.LogException(ex, "PlaybackStateChanged event");
+                    }
+                };
+
+                FileLogger.Log("MediaPlayer initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogException(ex, "InitializeMediaPlayer");
+            }
+        }
+
+        public async Task LoadAudioFileFromPathDirectlyAsync(string filePath)
+        {
+            try
+            {
+                FileLogger.Log($"LoadAudioFileFromPathDirectlyAsync called with: {filePath}");
+
+                // Use MediaSource.CreateFromUri instead of StorageFile
+                var uri = new Uri(filePath);
+                var mediaSource = MediaSource.CreateFromUri(uri);
+
+                // Update UI on the dispatcher thread
+                DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+                {
+                    try
+                    {
+                        FileLogger.Log("Setting media source via Uri");
+                        mediaPlayer.Source = mediaSource;
+
+                        // Update title and log
+                        Title = $"Audio Player - {System.IO.Path.GetFileName(filePath)}";
+                        LogViewer?.Log($"Audio file loaded: {System.IO.Path.GetFileName(filePath)}");
+
+                        FileLogger.Log("Media source set successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        FileLogger.LogException(ex, "Setting media source on dispatcher");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogException(ex, "LoadAudioFileFromPathDirectlyAsync");
+            }
+        }
+
+        private void MonitorWindowLifetime()
+        {
+            try
+            {
+                // Get the window handle
+                var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+
+                // Log it
+                FileLogger.Log($"Window handle: {windowHandle}");
+
+                // Register for window messages using Win32 interop
+                // This requires adding a reference to a Win32 message hook library or using PInvoke
+
+                // For now, we can add some simple tracking
+                AppWindow.Changed += (sender, args) =>
+                {
+                    try
+                    {
+                        if (sender != null)
+                        {
+                            FileLogger.Log($"Window state changed: {args}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        FileLogger.LogException(ex, "Window state change event");
+                    }
+                };
+
+                // You can also try this if Closed event is available
+                // this.Closed += (s, e) => FileLogger.Log("Window explicitly closed");
+
+                FileLogger.Log("Window lifetime monitoring initialized");
+            }
+            catch (Exception ex)
+            {
+                FileLogger.LogException(ex, "MonitorWindowLifetime");
             }
         }
 
@@ -115,18 +243,22 @@ namespace AudioSpectrumPlayer
 
         public async Task LoadAudioFileFromPathAsync(StorageFile file)
         {
+            FileLogger.Log("Trying to Dispatch");
             DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            FileLogger.Log("Dispatched");
             bool success = dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
             {
                 LoadAudioFile(file);
-                Debug.WriteLine("File Loaded, yay");
+                FileLogger.Log("File Loaded");
+                Debug.WriteLine("File Loaded");
             });
             if (!success)
             {
                 // Fallback handling if the dispatch fails
                 await Task.Run(() =>
                 {
-                    Debug.WriteLine("File Load failed, i am in fail");
+                    FileLogger.Log("File Load failed");
+                    Debug.WriteLine("File Load failed");
                     dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
                     {
                         LoadAudioFile(file);
