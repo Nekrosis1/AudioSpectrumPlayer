@@ -5,7 +5,7 @@
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap rescap">
+  IgnorableNamespaces="uap rescap com desktop">
 
   <Identity
     Name="60068fdf-5944-44e9-a5fa-859320b4c550"
@@ -42,6 +42,26 @@
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+		<Extensions>
+			<uap:Extension Category="windows.fileTypeAssociation">
+				<uap:FileTypeAssociation Name="audiofiles">
+					<uap:DisplayName>Audio Spectrum Player</uap:DisplayName>
+					<uap:InfoTip>Open with Audio Spectrum Player</uap:InfoTip>
+					<uap:EditFlags OpenIsSafe="true" />
+					<uap:SupportedFileTypes>
+						<uap:FileType ContentType="audio/mpeg">.mp3</uap:FileType>
+						<uap:FileType ContentType="audio/wav">.wav</uap:FileType>
+						<uap:FileType ContentType="audio/x-m4a">.m4a</uap:FileType>
+						<uap:FileType ContentType="audio/x-ms-wma">.wma</uap:FileType>
+						<uap:FileType ContentType="audio/aac">.aac</uap:FileType>
+						<uap:FileType ContentType="audio/flac">.flac</uap:FileType>
+						<uap:FileType ContentType="audio/ogg">.ogg</uap:FileType>
+						<uap:FileType ContentType="audio/aiff">.aiff</uap:FileType>
+					</uap:SupportedFileTypes>
+					<uap:Logo>Assets\StoreLogo.png</uap:Logo>
+				</uap:FileTypeAssociation>
+			</uap:Extension>
+		</Extensions>
     </Application>
   </Applications>
 

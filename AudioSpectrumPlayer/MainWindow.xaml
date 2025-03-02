@@ -13,6 +13,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="150" />
         </Grid.RowDefinitions>
 
         <!-- This will be where we show audio visualization later -->
@@ -47,6 +48,16 @@
                     Content="&#xE8E5;"
                     FontFamily="Segoe MDL2 Assets"
                     Click="OpenFileButton_Click"/>
+            <Button x:Name="ClearLogButton"
+                    Content="Clear Log"
+                    Click="ClearLogButton_Click"/>
         </StackPanel>
+
+        <Border Grid.Row="2"
+                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1">
+            <local:LogDisplay x:Name="LogViewer" />
+        </Border>
     </Grid>
 </Window>

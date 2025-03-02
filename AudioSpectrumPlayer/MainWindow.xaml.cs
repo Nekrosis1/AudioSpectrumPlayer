@@ -1,13 +1,12 @@
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace AudioSpectrumPlayer
 {
@@ -23,6 +22,17 @@ namespace AudioSpectrumPlayer
             this.InitializeComponent();
             mediaPlayer = new MediaPlayer();
             Title = "Audio Player";
+
+            LogViewer.Log("Application started");
+            LogViewer.Log($"Current time: {DateTime.Now}");
+
+            // Log command line arguments
+            string[] args = Environment.GetCommandLineArgs();
+            LogViewer.Log($"Command line args count: {args.Length}");
+            for (int i = 0; i < args.Length; i++)
+            {
+                LogViewer.Log($"Arg[{i}]: {args[i]}");
+            }
         }
 
         private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
@@ -45,22 +55,34 @@ namespace AudioSpectrumPlayer
             StorageFile file = await picker.PickSingleFileAsync();
             if (file != null)
             {
+                LogViewer.Log($"File selected: {file.Path}");
                 LoadAudioFile(file);
+            }
+            else
+            {
+                LogViewer.Log("File selection canceled or failed");
             }
         }
 
         private void LoadAudioFile(StorageFile file)
         {
+            LogViewer.Log($"Loading audio file: {file.Path}");
             currentFilePath = file.Path;
             mediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
             Title = $"Audio Player - {file.Name}";
+            LogViewer.Log($"Audio file loaded: {file.Name}");
         }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             if (mediaPlayer.Source != null)
             {
+                LogViewer.Log("Playing audio");
                 mediaPlayer.Play();
+            }
+            else
+            {
+                LogViewer.Log("Cannot play: No audio file loaded");
             }
         }
 
@@ -68,7 +90,12 @@ namespace AudioSpectrumPlayer
         {
             if (mediaPlayer.Source != null)
             {
+                LogViewer.Log("Pausing audio");
                 mediaPlayer.Pause();
+            }
+            else
+            {
+                LogViewer.Log("Cannot pause: No audio file loaded");
             }
         }
 
@@ -76,18 +103,41 @@ namespace AudioSpectrumPlayer
         {
             if (mediaPlayer.Source != null)
             {
+                LogViewer.Log("Stopping audio");
                 mediaPlayer.Position = TimeSpan.Zero;
                 mediaPlayer.Pause();
+            }
+            else
+            {
+                LogViewer.Log("Cannot stop: No audio file loaded");
             }
         }
 
         public async Task LoadAudioFileFromPathAsync(StorageFile file)
         {
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            bool success = dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+            {
+                LoadAudioFile(file);
+                Debug.WriteLine("File Loaded, yay");
+            });
+            if (!success)
+            {
+                // Fallback handling if the dispatch fails
+                await Task.Run(() =>
                 {
-                    LoadAudioFile(file);
+                    Debug.WriteLine("File Load failed, i am in fail");
+                    dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+                    {
+                        LoadAudioFile(file);
+                    });
                 });
+            }
+        }
+        private void ClearLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            LogViewer.Clear();
+            LogViewer.Log("Log cleared");
         }
     }
 }
