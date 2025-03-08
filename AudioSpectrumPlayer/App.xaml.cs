@@ -4,142 +4,112 @@ using System.Diagnostics;
 
 namespace AudioSpectrumPlayer
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
-    public partial class App : Application
-    {
-        private Window m_window;
-        public App()
-        {
-            FileLogger.Initialize();
-            FileLogger.Log("Application starting");
+	/// <summary>
+	/// Provides application-specific behavior to supplement the default Application class.
+	/// </summary>
+	public partial class App : Application
+	{
+		private Window m_window;
+		public App()
+		{
+			FileLogger.Initialize();
+			FileLogger.Log("Application starting");
 
-            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
-            {
-                var ex = args.ExceptionObject as Exception;
-                FileLogger.Log("CRITICAL: Unhandled AppDomain exception");
-                if (ex != null)
-                {
-                    FileLogger.LogException(ex, "AppDomain.UnhandledException");
-                }
-                else
-                {
-                    FileLogger.Log($"Unknown exception type: {args.ExceptionObject?.GetType().ToString() ?? "null"}");
-                }
-            };
+			AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+			{
+				var ex = args.ExceptionObject as Exception;
+				FileLogger.Log("CRITICAL: Unhandled AppDomain exception");
+				if (ex != null)
+				{
+					FileLogger.LogException(ex, "AppDomain.UnhandledException");
+				}
+				else
+				{
+					FileLogger.Log($"Unknown exception type: {args.ExceptionObject?.GetType().ToString() ?? "null"}");
+				}
+			};
 
-            // For UI thread exceptions in WinUI apps
-            Current.UnhandledException += (sender, args) =>
-            {
-                FileLogger.Log($"CRITICAL: Unhandled UI exception: {args.Message}");
-                FileLogger.LogException(args.Exception, "Application.UnhandledException");
+			// For UI thread exceptions in WinUI apps
+			Current.UnhandledException += (sender, args) =>
+			{
+				FileLogger.Log($"CRITICAL: Unhandled UI exception: {args.Message}");
+				FileLogger.LogException(args.Exception, "Application.UnhandledException");
 
-                // Prevent the app from terminating if we can handle the exception
-                // args.Handled = true; // Uncomment if you want to try to recover
-            };
+				// Prevent the app from terminating if we can handle the exception
+				// args.Handled = true; // Uncomment if you want to try to recover
+			};
 
 
-            this.InitializeComponent();
-            FileLogger.Log("Application components initialized");
-        }
+			this.InitializeComponent();
+			FileLogger.Log("Application components initialized");
+		}
 
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
-        {
-            m_window = new MainWindow();
-            m_window.Activate();
+		protected override void OnLaunched(LaunchActivatedEventArgs args)
+		{
+			m_window = new MainWindow();
+			m_window.Activate();
 
-            ProcessCommandLineArgs();
-        }
+			ProcessCommandLineArgs();
+		}
 
-        private void ProcessCommandLineArgs()
-        {
-            try
-            {
-                FileLogger.Log("Trying to get args");
-                string[] launchArgs = Environment.GetCommandLineArgs();
-                FileLogger.Log("got args, args:");
+		private void ProcessCommandLineArgs()
+		{
+			try
+			{
+				FileLogger.Log("Trying to get args");
+				string[] launchArgs = Environment.GetCommandLineArgs();
 
-                Debug.WriteLine($"Total args: {launchArgs.Length}");
-                for (int i = 0; i < launchArgs.Length; i++)
-                {
-                    FileLogger.Log($"Arg[{i}]: {launchArgs[i]}");
-                    Debug.WriteLine($"Arg[{i}]: {launchArgs[i]}");
-                }
+				Debug.WriteLine($"Total args: {launchArgs.Length}");
+				for (int i = 0; i < launchArgs.Length; i++)
+				{
+					FileLogger.Log($"Arg[{i}]: {launchArgs[i]}");
+					Debug.WriteLine($"Arg[{i}]: {launchArgs[i]}");
+				}
 
-                if (launchArgs.Length > 1)
-                {
-                    string filePath = launchArgs[1];
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        FileLogger.Log($"Found file to open: {filePath}");
-                        Debug.WriteLine($"Found file to open: {filePath}");
-                        LoadAudioFileAsync(filePath);
-                    }
-                    else
-                    {
-                        FileLogger.Log($"File does not exist: {filePath}");
-                        Debug.WriteLine($"File does not exist: {filePath}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log any errors that occur during command line processing
-                Debug.WriteLine($"Error processing command line arguments: {ex.Message}");
-            }
-        }
+				if (launchArgs.Length > 1)
+				{
+					string filePath = launchArgs[1];
+					if (System.IO.File.Exists(filePath))
+					{
+						FileLogger.Log($"Found file to open: {filePath}");
+						Debug.WriteLine($"Found file to open: {filePath}");
+						LoadAudioFileAsync(filePath);
+					}
+					else
+					{
+						FileLogger.Log($"File does not exist: {filePath}");
+						Debug.WriteLine($"File does not exist: {filePath}");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				// Log any errors that occur during command line processing
+				Debug.WriteLine($"Error processing command line arguments: {ex.Message}");
+			}
+		}
 
-        //private async void LoadAudioFileAsync(string filePath)
-        //{
-        //    try
-        //    {
-        //        FileLogger.Log($"Attempting to load file: {filePath}");
-        //        Debug.WriteLine($"Attempting to load file: {filePath}");
-        //        StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
+		private async void LoadAudioFileAsync(string filePath)
+		{
+			try
+			{
+				FileLogger.Log($"Attempting to load file: {filePath}");
 
-        //        if (m_window is MainWindow mainWindow)
-        //        {
-        //            FileLogger.Log("Loading file into main window");
-        //            Debug.WriteLine("Loading file into main window");
-        //            await mainWindow.LoadAudioFileFromPathAsync(file);
-        //        }
-        //        else
-        //        {
-        //            FileLogger.Log("Main window is not available");
-        //            Debug.WriteLine("Main window is not available");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        FileLogger.Log($"Error loading audio file: {ex.Message}");
-        //        FileLogger.Log($"Exception details: {ex}");
-        //        Debug.WriteLine($"Error loading audio file: {ex.Message}");
-        //        Debug.WriteLine($"Exception details: {ex}");
-        //    }
-        //}
-
-        private async void LoadAudioFileAsync(string filePath)
-        {
-            try
-            {
-                FileLogger.Log($"Attempting to load file: {filePath}");
-
-                // Instead of using StorageFile directly, pass the file path to the MainWindow
-                if (m_window is MainWindow mainWindow)
-                {
-                    FileLogger.Log("Main window available, passing file path to it");
-                    await mainWindow.LoadAudioFileFromPathDirectlyAsync(filePath);
-                }
-                else
-                {
-                    FileLogger.Log("ERROR: Main window is not available or not a MainWindow instance");
-                }
-            }
-            catch (Exception ex)
-            {
-                FileLogger.LogException(ex, "LoadAudioFileAsync");
-            }
-        }
-    }
+				// Instead of using StorageFile directly, pass the file path to the MainWindow
+				if (m_window is MainWindow mainWindow)
+				{
+					FileLogger.Log("Main window available, passing file path to it");
+					await mainWindow.LoadAudioFileFromPathAsync(filePath);
+				}
+				else
+				{
+					FileLogger.Log("ERROR: Main window is not available or not a MainWindow instance");
+				}
+			}
+			catch (Exception ex)
+			{
+				FileLogger.LogException(ex, "LoadAudioFileAsync");
+			}
+		}
+	}
 }
