@@ -1,7 +1,6 @@
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -16,6 +15,7 @@ namespace AudioSpectrumPlayer
 	public sealed partial class MainWindow : Window
 	{
 		private MediaPlayer mediaPlayer;
+		private DispatcherTimer playbackTimer;
 		private string currentFilePath;
 		public MainWindow()
 		{
@@ -48,6 +48,8 @@ namespace AudioSpectrumPlayer
 					try
 					{
 						FileLogger.Log("Media opened successfully");
+						SetPlaybackTimer();
+						LogViewer?.Log($"Progress Bar Initialized");
 					}
 					catch (Exception ex)
 					{
@@ -79,6 +81,10 @@ namespace AudioSpectrumPlayer
 					}
 				};
 
+				playbackTimer = new DispatcherTimer();
+				playbackTimer.Interval = TimeSpan.FromMilliseconds(500); // Update twice per second
+				playbackTimer.Tick += PlaybackTimer_Tick;
+
 				FileLogger.Log("MediaPlayer initialized successfully");
 			}
 			catch (Exception ex)
@@ -87,56 +93,19 @@ namespace AudioSpectrumPlayer
 			}
 		}
 
-		public async Task LoadAudioFileFromPathAsync(string filePath)
-		{
-			try
-			{
-				FileLogger.Log($"LoadAudioFileFromPathDirectlyAsync called with: {filePath}");
 
-				// Use MediaSource.CreateFromUri instead of StorageFile
-				Uri uri = new(filePath);
-				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
-
-				// Update UI on the dispatcher thread
-				DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
-				{
-					try
-					{
-						FileLogger.Log("Setting media source via Uri");
-						mediaPlayer.Source = mediaSource;
-
-						// Update title and log
-						Title = $"Audio Player - {System.IO.Path.GetFileName(filePath)}";
-						LogViewer?.Log($"Audio file loaded: {System.IO.Path.GetFileName(filePath)}");
-
-						FileLogger.Log("Media source set successfully");
-					}
-					catch (Exception ex)
-					{
-						FileLogger.LogException(ex, "Setting media source on dispatcher");
-					}
-				});
-			}
-			catch (Exception ex)
-			{
-				FileLogger.LogException(ex, "LoadAudioFileFromPathDirectlyAsync");
-			}
-		}
 
 		private void MonitorWindowLifetime()
 		{
 			try
 			{
-				// Get the window handle
 				var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-				// Log it
 				FileLogger.Log($"Window handle: {windowHandle}");
 
 				// Register for window messages using Win32 interop
 				// This requires adding a reference to a Win32 message hook library or using PInvoke
 
-				// For now, we can add some simple tracking
 				AppWindow.Changed += (sender, args) =>
 				{
 					try
@@ -152,8 +121,7 @@ namespace AudioSpectrumPlayer
 					}
 				};
 
-				// You can also try this if Closed event is available
-				// this.Closed += (s, e) => FileLogger.Log("Window explicitly closed");
+				this.Closed += (s, e) => FileLogger.Log("Window explicitly closed");
 
 				FileLogger.Log("Window lifetime monitoring initialized");
 			}
@@ -163,6 +131,7 @@ namespace AudioSpectrumPlayer
 			}
 		}
 
+		#region UI Buttons
 		private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
 		{
 			var picker = new FileOpenPicker();
@@ -184,21 +153,12 @@ namespace AudioSpectrumPlayer
 			if (file != null)
 			{
 				LogViewer.Log($"File selected: {file.Path}");
-				LoadAudioFile(file);
+				LoadAudioFileFromStorage(file);
 			}
 			else
 			{
 				LogViewer.Log("File selection canceled or failed");
 			}
-		}
-
-		private void LoadAudioFile(StorageFile file)
-		{
-			LogViewer.Log($"Loading audio file: {file.Path}");
-			currentFilePath = file.Path;
-			mediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
-			Title = $"Audio Player - {file.Name}";
-			LogViewer.Log($"Audio file loaded: {file.Name}");
 		}
 
 		private void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -207,6 +167,7 @@ namespace AudioSpectrumPlayer
 			{
 				LogViewer.Log("Playing audio");
 				mediaPlayer.Play();
+				playbackTimer.Start();
 			}
 			else
 			{
@@ -220,6 +181,7 @@ namespace AudioSpectrumPlayer
 			{
 				LogViewer.Log("Pausing audio");
 				mediaPlayer.Pause();
+				playbackTimer.Stop();
 			}
 			else
 			{
@@ -234,6 +196,10 @@ namespace AudioSpectrumPlayer
 				LogViewer.Log("Stopping audio");
 				mediaPlayer.Position = TimeSpan.Zero;
 				mediaPlayer.Pause();
+				playbackTimer.Stop();
+
+				PlaybackProgressBar.Value = 0;
+				TimeDisplay.Text = $"00:00 / {FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration)}";
 			}
 			else
 			{
@@ -241,35 +207,101 @@ namespace AudioSpectrumPlayer
 			}
 		}
 
-		public async Task LoadAudioFileFromPathAsync(StorageFile file)
-		{
-			FileLogger.Log("Trying to Dispatch");
-			DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-			FileLogger.Log("Dispatched");
-			bool success = dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
-			{
-				LoadAudioFile(file);
-				FileLogger.Log("File Loaded");
-				Debug.WriteLine("File Loaded");
-			});
-			if (!success)
-			{
-				// Fallback handling if the dispatch fails
-				await Task.Run(() =>
-				{
-					FileLogger.Log("File Load failed");
-					Debug.WriteLine("File Load failed");
-					dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
-					{
-						LoadAudioFile(file);
-					});
-				});
-			}
-		}
 		private void ClearLogButton_Click(object sender, RoutedEventArgs e)
 		{
 			LogViewer.Clear();
 			LogViewer.Log("Log cleared");
 		}
+		#endregion
+
+		public async Task LoadAudioFile(string filePath)
+		{
+			try
+			{
+				FileLogger.Log($"LoadAudioFileFromPathDirectlyAsync called with: {filePath}");
+				Uri uri = new(filePath);
+				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
+
+				DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+				{
+					try
+					{
+						FileLogger.Log("Setting media source via Uri");
+						LogViewer.Log($"Loading audio file: {filePath}");
+						mediaPlayer.Source = mediaSource;
+
+						Title = $"Audio Spectrum Player - {System.IO.Path.GetFileName(filePath)}";
+						LogViewer?.Log($"Audio file loaded: {System.IO.Path.GetFileName(filePath)}");
+
+
+						FileLogger.Log("Media source set successfully");
+					}
+					catch (Exception ex)
+					{
+						FileLogger.LogException(ex, "Setting media source on dispatcher");
+					}
+				});
+			}
+			catch (Exception ex)
+			{
+				FileLogger.LogException(ex, "LoadAudioFileFromPathDirectlyAsync");
+			}
+		}
+
+		private async Task LoadAudioFileFromStorage(StorageFile file)
+		{
+			try
+			{
+				LogViewer.Log($"Loading audio file: {file.Path}");
+				currentFilePath = file.Path;
+				await LoadAudioFile(currentFilePath);
+
+			}
+			catch (Exception ex)
+			{
+				FileLogger.LogException(ex, "LoadAudioFileFromStorage");
+			}
+		}
+
+		#region Progress Bar
+
+		private void SetPlaybackTimer()
+		{
+			if (mediaPlayer.Source != null)
+			{
+				PlaybackProgressBar.Value = 0;
+				TimeDisplay.Text = $"00:00 / {FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration)}";
+			}
+		}
+
+
+		private void PlaybackTimer_Tick(object sender, object e)
+		{
+			try
+			{
+				if (mediaPlayer?.PlaybackSession != null &&
+					mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
+				{
+					double progress = (mediaPlayer.PlaybackSession.Position.TotalMilliseconds /
+									   mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds) * 100;
+					PlaybackProgressBar.Value = progress;
+
+					string currentTime = FormatTimeSpan(mediaPlayer.PlaybackSession.Position);
+					string totalTime = FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration);
+					TimeDisplay.Text = $"{currentTime} / {totalTime}";
+				}
+			}
+			catch (Exception ex)
+			{
+				FileLogger.LogException(ex, "PlaybackTimer_Tick");
+			}
+		}
+		private static string FormatTimeSpan(TimeSpan timeSpan)
+		{
+			return timeSpan.Hours > 0
+				? $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}"
+				: $"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
+		}
+		#endregion
 	}
 }

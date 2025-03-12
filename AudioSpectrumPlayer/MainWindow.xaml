@@ -13,7 +13,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="150" />
+            
         </Grid.RowDefinitions>
 
         <!-- This will be where we show audio visualization later -->
@@ -26,9 +28,28 @@
                        VerticalAlignment="Center" 
                        Text="Audio Visualization Area" />
         </Border>
+         <!--Progress Bar--> 
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
+            <ProgressBar x:Name="PlaybackProgressBar" 
+                 Grid.Row="0"
+                 Height="8" 
+                 Margin="0,0,0,8"
+                 Value="0"
+                 Maximum="100"/>
+
+            <TextBlock x:Name="TimeDisplay"
+               Grid.Row="1"
+               HorizontalAlignment="Right"
+               Text="00:00 / 00:00"
+               Margin="0,0,0,8"/>
+        </Grid>
         <!-- Audio Controls -->
-        <StackPanel Grid.Row="1" 
+        <StackPanel Grid.Row="2" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
                     Spacing="8">
@@ -53,7 +74,7 @@
                     Click="ClearLogButton_Click"/>
         </StackPanel>
 
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                 BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                 BorderThickness="1">

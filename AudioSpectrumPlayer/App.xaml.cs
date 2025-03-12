@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace AudioSpectrumPlayer
 {
@@ -9,7 +10,7 @@ namespace AudioSpectrumPlayer
 	/// </summary>
 	public partial class App : Application
 	{
-		private Window m_window;
+		private Window m_window = default!;
 		public App()
 		{
 			FileLogger.Initialize();
@@ -89,7 +90,7 @@ namespace AudioSpectrumPlayer
 			}
 		}
 
-		private async void LoadAudioFileAsync(string filePath)
+		private async Task LoadAudioFileAsync(string filePath)
 		{
 			try
 			{
@@ -99,7 +100,7 @@ namespace AudioSpectrumPlayer
 				if (m_window is MainWindow mainWindow)
 				{
 					FileLogger.Log("Main window available, passing file path to it");
-					await mainWindow.LoadAudioFileFromPathAsync(filePath);
+					await mainWindow.LoadAudioFile(filePath);
 				}
 				else
 				{
