@@ -1,7 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
 using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace AudioSpectrumPlayer
 {
@@ -59,11 +57,9 @@ namespace AudioSpectrumPlayer
 				FileLogger.Log("Trying to get args");
 				string[] launchArgs = Environment.GetCommandLineArgs();
 
-				Debug.WriteLine($"Total args: {launchArgs.Length}");
 				for (int i = 0; i < launchArgs.Length; i++)
 				{
 					FileLogger.Log($"Arg[{i}]: {launchArgs[i]}");
-					Debug.WriteLine($"Arg[{i}]: {launchArgs[i]}");
 				}
 
 				if (launchArgs.Length > 1)
@@ -72,43 +68,24 @@ namespace AudioSpectrumPlayer
 					if (System.IO.File.Exists(filePath))
 					{
 						FileLogger.Log($"Found file to open: {filePath}");
-						Debug.WriteLine($"Found file to open: {filePath}");
-						LoadAudioFileAsync(filePath);
+						if (m_window is MainWindow mainWindow)
+						{
+							mainWindow.LoadAudioFileAsync(filePath);
+						}
+						else
+						{
+							FileLogger.Log("ERROR: Main window is not available or not a MainWindow instance");
+						}
 					}
 					else
 					{
 						FileLogger.Log($"File does not exist: {filePath}");
-						Debug.WriteLine($"File does not exist: {filePath}");
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				// Log any errors that occur during command line processing
-				Debug.WriteLine($"Error processing command line arguments: {ex.Message}");
-			}
-		}
-
-		private async Task LoadAudioFileAsync(string filePath)
-		{
-			try
-			{
-				FileLogger.Log($"Attempting to load file: {filePath}");
-
-				// Instead of using StorageFile directly, pass the file path to the MainWindow
-				if (m_window is MainWindow mainWindow)
-				{
-					FileLogger.Log("Main window available, passing file path to it");
-					await mainWindow.LoadAudioFile(filePath);
-				}
-				else
-				{
-					FileLogger.Log("ERROR: Main window is not available or not a MainWindow instance");
-				}
-			}
-			catch (Exception ex)
-			{
-				FileLogger.LogException(ex, "LoadAudioFileAsync");
+				FileLogger.Log($"Error processing command line arguments: {ex.Message}");
 			}
 		}
 	}

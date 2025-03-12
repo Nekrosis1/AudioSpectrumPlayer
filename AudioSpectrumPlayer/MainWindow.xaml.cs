@@ -95,8 +95,6 @@ namespace AudioSpectrumPlayer
 			}
 		}
 
-
-
 		private void MonitorWindowLifetime()
 		{
 			try
@@ -155,7 +153,7 @@ namespace AudioSpectrumPlayer
 			if (file != null)
 			{
 				LogViewer.Log($"File selected: {file.Path}");
-				await LoadAudioFileFromStorage(file);
+				await LoadAudioFileAsync(file.Path);
 			}
 			else
 			{
@@ -216,11 +214,19 @@ namespace AudioSpectrumPlayer
 		}
 		#endregion
 
-		public async Task LoadAudioFile(string filePath)
+		public async Task LoadAudioFileAsync(string filePath)
 		{
 			try
 			{
-				FileLogger.Log($"LoadAudioFileFromPathDirectlyAsync called with: {filePath}");
+				FileLogger.Log($"Loading audio file: {filePath}");
+
+				if (!System.IO.File.Exists(filePath))
+				{
+					FileLogger.Log($"Error: File does not exist: {filePath}");
+					LogViewer?.Log($"Error: File not found: {filePath}");
+					return;
+				}
+				currentFilePath = filePath;
 				Uri uri = new(filePath);
 				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
 
@@ -228,14 +234,10 @@ namespace AudioSpectrumPlayer
 				{
 					try
 					{
-						FileLogger.Log("Setting media source via Uri");
-						LogViewer.Log($"Loading audio file: {filePath}");
 						mediaPlayer.Source = mediaSource;
 
 						Title = $"Audio Spectrum Player - {System.IO.Path.GetFileName(filePath)}";
 						LogViewer?.Log($"Audio file loaded: {System.IO.Path.GetFileName(filePath)}");
-
-
 						FileLogger.Log("Media source set successfully");
 					}
 					catch (Exception ex)
@@ -252,23 +254,7 @@ namespace AudioSpectrumPlayer
 			await Task.CompletedTask; // only for the IDE to be happy
 		}
 
-		private async Task LoadAudioFileFromStorage(StorageFile file)
-		{
-			try
-			{
-				LogViewer.Log($"Loading audio file: {file.Path}");
-				currentFilePath = file.Path;
-				await LoadAudioFile(currentFilePath);
-
-			}
-			catch (Exception ex)
-			{
-				FileLogger.LogException(ex, "LoadAudioFileFromStorage");
-			}
-		}
-
 		#region Progress Bar
-
 		private void SetPlaybackTimer()
 		{
 			if (mediaPlayer.Source != null)
@@ -277,7 +263,6 @@ namespace AudioSpectrumPlayer
 				TimeDisplay.Text = $"00:00 / {FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration)}";
 			}
 		}
-
 
 		private void PlaybackTimer_Tick(object? sender, object e)
 		{
