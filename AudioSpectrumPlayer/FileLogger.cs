@@ -11,7 +11,7 @@ namespace AudioSpectrumPlayer
 			"logs",
 			$"app_log_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
 
-		private static readonly object LockObject = new object();
+		private static readonly object LockObject = new();
 		private static bool _initialized = false;
 
 		public static void Initialize()
@@ -20,8 +20,12 @@ namespace AudioSpectrumPlayer
 
 			try
 			{
-				// Create directory if it doesn't exist
-				string directory = Path.GetDirectoryName(LogFilePath);
+				string? directory = Path.GetDirectoryName(LogFilePath);
+				if (string.IsNullOrEmpty(directory))
+				{
+					directory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+					// TODO: need some way of notifying that I am not in the normal log folder, figure out later
+				}
 				if (!Directory.Exists(directory))
 				{
 					Directory.CreateDirectory(directory);
@@ -34,9 +38,10 @@ namespace AudioSpectrumPlayer
 
 				_initialized = true;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				// Can't really log this error anywhere...
+				// TODO: Maybe add a UI notification bubble thing
 			}
 		}
 

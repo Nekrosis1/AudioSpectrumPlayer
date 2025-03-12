@@ -18,9 +18,8 @@ namespace AudioSpectrumPlayer
 
 			AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
 			{
-				var ex = args.ExceptionObject as Exception;
 				FileLogger.Log("CRITICAL: Unhandled AppDomain exception");
-				if (ex != null)
+				if (args.ExceptionObject is Exception ex)
 				{
 					FileLogger.LogException(ex, "AppDomain.UnhandledException");
 				}

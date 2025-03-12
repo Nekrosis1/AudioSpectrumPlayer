@@ -14,9 +14,9 @@ namespace AudioSpectrumPlayer
 	/// </summary>
 	public sealed partial class MainWindow : Window
 	{
-		private MediaPlayer mediaPlayer;
-		private DispatcherTimer playbackTimer;
-		private string currentFilePath;
+		private MediaPlayer mediaPlayer = null!;
+		private DispatcherTimer playbackTimer = null!;
+		private string? currentFilePath;
 		public MainWindow()
 		{
 			this.InitializeComponent();
@@ -81,8 +81,10 @@ namespace AudioSpectrumPlayer
 					}
 				};
 
-				playbackTimer = new DispatcherTimer();
-				playbackTimer.Interval = TimeSpan.FromMilliseconds(500); // Update twice per second
+				playbackTimer = new DispatcherTimer
+				{
+					Interval = TimeSpan.FromMilliseconds(500)
+				};
 				playbackTimer.Tick += PlaybackTimer_Tick;
 
 				FileLogger.Log("MediaPlayer initialized successfully");
@@ -153,7 +155,7 @@ namespace AudioSpectrumPlayer
 			if (file != null)
 			{
 				LogViewer.Log($"File selected: {file.Path}");
-				LoadAudioFileFromStorage(file);
+				await LoadAudioFileFromStorage(file);
 			}
 			else
 			{
@@ -222,7 +224,7 @@ namespace AudioSpectrumPlayer
 				Uri uri = new(filePath);
 				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
 
-				DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+				DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, async () =>
 				{
 					try
 					{
@@ -240,12 +242,14 @@ namespace AudioSpectrumPlayer
 					{
 						FileLogger.LogException(ex, "Setting media source on dispatcher");
 					}
+					await Task.CompletedTask; // only for the IDE to be happy
 				});
 			}
 			catch (Exception ex)
 			{
 				FileLogger.LogException(ex, "LoadAudioFileFromPathDirectlyAsync");
 			}
+			await Task.CompletedTask; // only for the IDE to be happy
 		}
 
 		private async Task LoadAudioFileFromStorage(StorageFile file)
@@ -275,7 +279,7 @@ namespace AudioSpectrumPlayer
 		}
 
 
-		private void PlaybackTimer_Tick(object sender, object e)
+		private void PlaybackTimer_Tick(object? sender, object e)
 		{
 			try
 			{
