@@ -21,6 +21,7 @@ namespace AudioSpectrumPlayer
 		{
 			this.InitializeComponent();
 			InitializeMediaPlayer();
+			PlaybackProgress.PositionChanged += PlaybackProgress_PositionChanged;
 			MonitorWindowLifetime();
 			Title = "Audio Player";
 
@@ -198,8 +199,7 @@ namespace AudioSpectrumPlayer
 				mediaPlayer.Pause();
 				playbackTimer.Stop();
 
-				PlaybackProgressBar.Value = 0;
-				TimeDisplay.Text = $"00:00 / {FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration)}";
+				PlaybackProgress.Reset();
 			}
 			else
 			{
@@ -255,12 +255,37 @@ namespace AudioSpectrumPlayer
 		}
 
 		#region Progress Bar
+
+		private void PlaybackProgress_PositionChanged(object? sender, double e)
+		{
+			try
+			{
+				if (mediaPlayer?.PlaybackSession != null &&
+					mediaPlayer.PlaybackSession.CanSeek &&
+					mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
+				{
+					TimeSpan newPosition = TimeSpan.FromMilliseconds(
+						e * mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds);
+
+					mediaPlayer.PlaybackSession.Position = newPosition;
+					LogViewer.Log($"Seeked to position: {FormatTimeSpan(newPosition)}");
+
+					// Update the UI immediately for responsive feel
+					PlaybackProgress.CurrentPosition = newPosition;
+				}
+			}
+			catch (Exception ex)
+			{
+				FileLogger.LogException(ex, "PlaybackProgress_PositionChanged");
+			}
+		}
+
 		private void SetPlaybackTimer()
 		{
 			if (mediaPlayer.Source != null)
 			{
-				PlaybackProgressBar.Value = 0;
-				TimeDisplay.Text = $"00:00 / {FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration)}";
+				PlaybackProgress.CurrentPosition = TimeSpan.Zero;
+				PlaybackProgress.TotalDuration = mediaPlayer.PlaybackSession.NaturalDuration;
 			}
 		}
 
@@ -271,13 +296,8 @@ namespace AudioSpectrumPlayer
 				if (mediaPlayer?.PlaybackSession != null &&
 					mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
 				{
-					double progress = (mediaPlayer.PlaybackSession.Position.TotalMilliseconds /
-									   mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds) * 100;
-					PlaybackProgressBar.Value = progress;
-
-					string currentTime = FormatTimeSpan(mediaPlayer.PlaybackSession.Position);
-					string totalTime = FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration);
-					TimeDisplay.Text = $"{currentTime} / {totalTime}";
+					PlaybackProgress.CurrentPosition = mediaPlayer.PlaybackSession.Position;
+					PlaybackProgress.TotalDuration = mediaPlayer.PlaybackSession.NaturalDuration;
 				}
 			}
 			catch (Exception ex)
@@ -285,12 +305,46 @@ namespace AudioSpectrumPlayer
 				FileLogger.LogException(ex, "PlaybackTimer_Tick");
 			}
 		}
+
 		private static string FormatTimeSpan(TimeSpan timeSpan)
 		{
 			return timeSpan.Hours > 0
 				? $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}"
 				: $"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
 		}
+
+
+		//private void SetPlaybackTimer()
+		//{
+		//	if (mediaPlayer.Source != null)
+		//	{
+		//		PlaybackProgressBar.Value = 0;
+		//		TimeDisplay.Text = $"00:00 / {FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration)}";
+		//	}
+		//}
+
+		//private void PlaybackTimer_Tick(object? sender, object e)
+		//{
+		//	try
+		//	{
+		//		if (mediaPlayer?.PlaybackSession != null &&
+		//			mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
+		//		{
+		//			double progress = (mediaPlayer.PlaybackSession.Position.TotalMilliseconds /
+		//							   mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds) * 100;
+		//			PlaybackProgressBar.Value = progress;
+
+		//			string currentTime = FormatTimeSpan(mediaPlayer.PlaybackSession.Position);
+		//			string totalTime = FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration);
+		//			TimeDisplay.Text = $"{currentTime} / {totalTime}";
+		//		}
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		FileLogger.LogException(ex, "PlaybackTimer_Tick");
+		//	}
+		//}
+
 		#endregion
 	}
 }
