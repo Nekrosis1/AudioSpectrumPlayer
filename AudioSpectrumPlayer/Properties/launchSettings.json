@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "AudioSpectrumPlayer (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "AudioSpectrumPlayer (Unpackaged)": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\Musik\\Dark Synth\\Novilunio.mp3\""
+    }
+  }
+}
