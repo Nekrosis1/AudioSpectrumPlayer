@@ -45,6 +45,7 @@ namespace AudioSpectrumPlayer
 			}
 		}
 
+		// Made noop as it is currently not needed and there is no auto file cleanup yet
 		public static void Log(string message)
 		{
 			//try
@@ -61,6 +62,7 @@ namespace AudioSpectrumPlayer
 			//}
 		}
 
+		// Made noop as it is currently not needed and there is no auto file cleanup yet
 		public static void LogException(Exception ex, string context = "")
 		{
 			//try

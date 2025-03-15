@@ -6,45 +6,25 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="mainGrid">
+    <Grid x:Name="mainGrid"
+		  Padding="8,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0">
-            <Grid x:Name="progressContainer" Height="20" Background="Transparent" PointerPressed="ProgressContainer_PointerPressed">
-                <ProgressBar x:Name="progressBar" Height="8" Margin="0,0,0,8" Value="0" Maximum="100">
-                    <ProgressBar.Background>
-                        <SolidColorBrush Color="#32808080"/>
-                    </ProgressBar.Background>
-                    <ProgressBar.Foreground>
-                        <SolidColorBrush Color="#FF0078D7"/>
-                    </ProgressBar.Foreground>
-					<ProgressBar.Transitions>
-						<TransitionCollection/>
-					</ProgressBar.Transitions>
-                </ProgressBar>
-            </Grid>
+		<Slider x:Name="progressSlider"
+                Grid.Row="0"
+                Minimum="0"
+                Maximum="100"
+                Value="0"
+                ValueChanged="ProgressSlider_ValueChanged"
+                Height="32" />
 
-            <Canvas x:Name="canvas" Height="20">
-                <Thumb x:Name="seekThumb" 
-                       Width="16" Height="16" 
-                       Background="White" 
-                       CornerRadius="8" 
-                       Margin="-8,0,0,0" 
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Left"
-                       DragStarted="SeekThumb_DragStarted"
-                       DragDelta="SeekThumb_DragDelta"
-                       DragCompleted="SeekThumb_DragCompleted"/>
-            </Canvas>
-        </Grid>
-
-        <TextBlock x:Name="timeDisplay" 
-                   Grid.Row="1" 
-                   HorizontalAlignment="Right" 
-                   Text="00:00 / 00:00" 
-                   Margin="0,0,0,8"/>
+		<TextBlock x:Name="timeDisplay"
+				  Grid.Row="1"
+				  HorizontalAlignment="Right"
+				  Text="00:00 / 00:00"
+				  Margin="0,4,0,0"/>
     </Grid>
 </UserControl>

@@ -268,9 +268,9 @@ namespace AudioSpectrumPlayer
 						e * mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds);
 
 					mediaPlayer.PlaybackSession.Position = newPosition;
-					LogViewer.Log($"Seeked to position: {FormatTimeSpan(newPosition)}");
+					// This log is called a lot, only enable when needed
+					//LogViewer.Log($"Seeked to position: {FormatTimeSpan(newPosition)}");
 
-					// Update the UI immediately for responsive feel
 					PlaybackProgress.CurrentPosition = newPosition;
 				}
 			}
