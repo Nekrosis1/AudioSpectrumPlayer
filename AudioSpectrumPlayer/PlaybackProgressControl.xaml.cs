@@ -2,18 +2,12 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Animation;
 using System;
 
 namespace AudioSpectrumPlayer
 {
-	class PlaybackProgressControl : UserControl
+	public partial class PlaybackProgressControl : UserControl
 	{
-		private Grid mainGrid;
-		private ProgressBar progressBar;
-		private Thumb seekThumb;
-		private TextBlock timeDisplay;
 		private bool isDragging = false;
 		private double dragValue = 0;
 
@@ -63,81 +57,7 @@ namespace AudioSpectrumPlayer
 
 		public PlaybackProgressControl()
 		{
-			this.DefaultStyleKey = typeof(PlaybackProgressControl);
-			this.InitializeControl();
-		}
-
-		private void InitializeControl()
-		{
-			mainGrid = new Grid();
-			mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-			mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-			progressBar = new ProgressBar
-			{
-				Height = 8,
-				Margin = new Thickness(0, 0, 0, 8),
-				Value = 0,
-				Maximum = 100,
-				Background = new SolidColorBrush(Windows.UI.Color.FromArgb(50, 128, 128, 128)),
-				Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 120, 215)),
-			};
-			// remove animations
-			//var styleResourceDictionary = new ResourceDictionary();
-			var progressBarStyle = new Style(typeof(ProgressBar));
-			progressBarStyle.Setters.Add(new Setter(TransitionsProperty, new TransitionCollection()));
-			progressBar.Style = progressBarStyle;
-
-			seekThumb = new Thumb
-			{
-				Width = 16,
-				Height = 16,
-				Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 255, 255)),
-				CornerRadius = new CornerRadius(8),
-				Margin = new Thickness(-8, 0, 0, 0),
-				VerticalAlignment = VerticalAlignment.Center,
-				HorizontalAlignment = HorizontalAlignment.Left,
-			};
-
-			// Add pointer events to the grid for clicking anywhere on the progress bar
-			var progressContainer = new Grid
-			{
-				Height = 20,
-				Background = new SolidColorBrush(Windows.UI.Color.FromArgb(1, 0, 0, 0))
-			};
-			progressContainer.PointerPressed += ProgressContainer_PointerPressed;
-			progressContainer.Children.Add(progressBar);
-
-			// Position the thumb in a Canvas above the progress bar
-			var canvas = new Canvas
-			{
-				Height = 20
-			};
-			canvas.Children.Add(seekThumb);
-
-			timeDisplay = new TextBlock
-			{
-				HorizontalAlignment = HorizontalAlignment.Right,
-				Text = "00:00 / 00:00",
-				Margin = new Thickness(0, 0, 0, 8)
-			};
-
-			// Arrange all elements
-			var overlayGrid = new Grid();
-			overlayGrid.Children.Add(progressContainer);
-			overlayGrid.Children.Add(canvas);
-
-			Grid.SetRow(overlayGrid, 0);
-			Grid.SetRow(timeDisplay, 1);
-
-			mainGrid.Children.Add(overlayGrid);
-			mainGrid.Children.Add(timeDisplay);
-
-			Content = mainGrid;
-
-			seekThumb.DragStarted += SeekThumb_DragStarted;
-			seekThumb.DragDelta += SeekThumb_DragDelta;
-			seekThumb.DragCompleted += SeekThumb_DragCompleted;
+			this.InitializeComponent();
 		}
 
 		private void ProgressContainer_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -165,11 +85,9 @@ namespace AudioSpectrumPlayer
 		{
 			if (isDragging)
 			{
-				// Calculate the relative horizontal movement
 				double horizontalChange = e.HorizontalChange;
 				double progressBarWidth = progressBar.ActualWidth;
 
-				// Calculate the new value as a percentage of the progress bar width
 				double changePercentage = (horizontalChange / progressBarWidth) * 100.0;
 				double newValue = dragValue + changePercentage;
 
@@ -177,7 +95,6 @@ namespace AudioSpectrumPlayer
 				newValue = Math.Max(0, Math.Min(100, newValue));
 				dragValue = newValue;
 
-				// Update UI
 				UpdateThumbPosition(newValue);
 			}
 		}
@@ -186,7 +103,6 @@ namespace AudioSpectrumPlayer
 		{
 			if (isDragging)
 			{
-				// Notify about position change
 				PositionChanged?.Invoke(this, dragValue / 100.0);
 				isDragging = false;
 			}
