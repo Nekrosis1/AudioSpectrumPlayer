@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="AudioSpectrumPlayer.VolumeControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="mainGrid" Padding="8,4">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Volume Icon -->
+        <FontIcon Grid.Column="0" 
+                 Glyph="&#xE767;" 
+                 FontFamily="Segoe MDL2 Assets"
+                 VerticalAlignment="Center"
+                 Margin="0,0,8,0"/>
+
+        <!-- Custom Volume Slider -->
+        <Canvas Grid.Column="1" 
+        x:Name="volumeCanvas" 
+        Height="32" 
+        Background="Transparent"
+        PointerPressed="VolumeCanvas_PointerPressed"
+        PointerMoved="VolumeCanvas_PointerMoved"
+        PointerReleased="VolumeCanvas_PointerReleased"
+        PointerExited="VolumeCanvas_PointerExited">
+
+            <!-- Triangle background shape -->
+            <Path x:Name="volumeBackground"
+                  Fill="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                  Opacity="0.3">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathFigure StartPoint="0,30" IsClosed="True">
+                            <LineSegment Point="180,0"/>
+                            <LineSegment Point="180,30"/>
+                        </PathFigure>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+
+            <!-- Current volume level indicator -->
+            <Path x:Name="volumeIndicator"
+                  Fill="{ThemeResource SystemControlHighlightAccentBrush}">
+                <Path.Data>
+                    <PathGeometry>
+                        <PathFigure x:Name="volumeFigure" StartPoint="0,30" IsClosed="True">
+                            <LineSegment x:Name="volumePoint" Point="90,15"/>
+                            <LineSegment Point="0,30"/>
+                        </PathFigure>
+                    </PathGeometry>
+                </Path.Data>
+            </Path>
+
+            <!-- Invisible hit area to improve interaction -->
+            <Rectangle x:Name="hitArea" 
+                       Fill="Transparent" 
+                       Height="32" 
+                       Width="180"/>
+        </Canvas>
+
+        <!-- Volume Percentage -->
+        <TextBlock Grid.Column="2"
+                   x:Name="volumePercentage"
+                   Text="100%"
+                   VerticalAlignment="Center"
+                   Margin="8,0,0,0"
+                   MinWidth="40"/>
+    </Grid>
+</UserControl>

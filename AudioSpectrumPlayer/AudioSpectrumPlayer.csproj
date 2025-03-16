@@ -26,9 +26,6 @@
 		<!-- <TrimMode>partial</TrimMode> -->
 		<!-- <BuiltInComInteropSupport>true</BuiltInComInteropSupport> -->
 	</PropertyGroup>
-	<ItemGroup>
-	  <None Remove="PlaybackProgressControl.xaml" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
@@ -47,6 +44,18 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="PlaybackProgressControl.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="VolumeControl.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<!-- Publish Properties -->

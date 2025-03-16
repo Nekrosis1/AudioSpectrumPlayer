@@ -32,7 +32,14 @@
         <Grid Grid.Row="1" Margin="0,0,0,12">
             <local:PlaybackProgressControl x:Name="PlaybackProgress" />
         </Grid>
-        <!-- Audio Controls -->
+
+
+            <!-- Audio Controls -->
+        <Grid Grid.Row="2" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
         <StackPanel Grid.Row="2" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
@@ -57,6 +64,11 @@
                     Content="Clear Log"
                     Click="ClearLogButton_Click"/>
         </StackPanel>
+            <local:VolumeControl Grid.Column="1"
+                         x:Name="VolumeControl"
+                         HorizontalAlignment="Right"
+                         Width="240" />
+        </Grid>
 
         <Border Grid.Row="3"
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"

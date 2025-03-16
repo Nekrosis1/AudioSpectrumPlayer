@@ -1,7 +1,8 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using System;
+using System.Diagnostics;
 
 namespace AudioSpectrumPlayer
 {
@@ -78,6 +79,7 @@ namespace AudioSpectrumPlayer
 				string currentTime = FormatTimeSpan(CurrentPosition);
 				string totalTime = FormatTimeSpan(TotalDuration);
 				timeDisplay.Text = $"{currentTime} / {totalTime}";
+				Debug.WriteLine($"Time Updated to: {currentTime} / {totalTime}");
 			}
 			else
 			{

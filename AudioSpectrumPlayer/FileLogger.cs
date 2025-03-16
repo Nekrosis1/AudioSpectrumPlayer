@@ -5,6 +5,8 @@ namespace AudioSpectrumPlayer
 {
 	public static class FileLogger
 	{
+		public static bool IsLoggingEnabled { get; set; } = false;
+
 		private static readonly string LogFilePath = Path.Combine(
 			Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
 			"AudioSpectrumPlayer",
@@ -45,48 +47,48 @@ namespace AudioSpectrumPlayer
 			}
 		}
 
-		// Made noop as it is currently not needed and there is no auto file cleanup yet
 		public static void Log(string message)
 		{
-			//try
-			//{
-			//    lock (LockObject)
-			//    {
-			//        string entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}";
-			//        File.AppendAllText(LogFilePath, entry + Environment.NewLine);
-			//    }
-			//}
-			//catch
-			//{
-			//    // Silently ignore errors in logging
-			//}
+			if (!IsLoggingEnabled) return;
+			try
+			{
+				lock (LockObject)
+				{
+					string entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}";
+					File.AppendAllText(LogFilePath, entry + Environment.NewLine);
+				}
+			}
+			catch
+			{
+				// Silently ignore errors in logging
+			}
 		}
 
-		// Made noop as it is currently not needed and there is no auto file cleanup yet
 		public static void LogException(Exception ex, string context = "")
 		{
-			//try
-			//{
-			//    string message = string.IsNullOrEmpty(context)
-			//        ? $"EXCEPTION: {ex.Message}"
-			//        : $"EXCEPTION in {context}: {ex.Message}";
+			if (!IsLoggingEnabled) return;
+			try
+			{
+				string message = string.IsNullOrEmpty(context)
+					? $"EXCEPTION: {ex.Message}"
+					: $"EXCEPTION in {context}: {ex.Message}";
 
-			//    Log(message);
-			//    Log($"Exception Type: {ex.GetType().FullName}");
-			//    Log($"Stack Trace: {ex.StackTrace}");
+				Log(message);
+				Log($"Exception Type: {ex.GetType().FullName}");
+				Log($"Stack Trace: {ex.StackTrace}");
 
-			//    if (ex.InnerException != null)
-			//    {
-			//        Log($"Inner Exception: {ex.InnerException.Message}");
-			//        Log($"Inner Stack Trace: {ex.InnerException.StackTrace}");
-			//    }
+				if (ex.InnerException != null)
+				{
+					Log($"Inner Exception: {ex.InnerException.Message}");
+					Log($"Inner Stack Trace: {ex.InnerException.StackTrace}");
+				}
 
-			//    Log("=== Exception End ===");
-			//}
-			//catch
-			//{
-			//    // Silently ignore errors in logging
-			//}
+				Log("=== Exception End ===");
+			}
+			catch
+			{
+				// Silently ignore errors in logging
+			}
 		}
 	}
 }

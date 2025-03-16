@@ -87,6 +87,7 @@ namespace AudioSpectrumPlayer
 					Interval = TimeSpan.FromMilliseconds(500)
 				};
 				playbackTimer.Tick += PlaybackTimer_Tick;
+				VolumeControl.VolumeChanged += VolumeControl_VolumeChanged;
 
 				FileLogger.Log("MediaPlayer initialized successfully");
 			}
@@ -214,6 +215,23 @@ namespace AudioSpectrumPlayer
 		}
 		#endregion
 
+		private void VolumeControl_VolumeChanged(object? sender, double volume)
+		{
+			try
+			{
+				if (mediaPlayer != null)
+				{
+					mediaPlayer.Volume = volume;
+					// This log is called a lot, only enable when needed
+					//LogViewer?.Log($"Volume changed to {(int)(volume * 100)}%");
+				}
+			}
+			catch (Exception ex)
+			{
+				FileLogger.LogException(ex, "VolumeControl_VolumeChanged");
+			}
+		}
+
 		public async Task LoadAudioFileAsync(string filePath)
 		{
 			try
@@ -255,7 +273,6 @@ namespace AudioSpectrumPlayer
 		}
 
 		#region Progress Bar
-
 		private void PlaybackProgress_PositionChanged(object? sender, double e)
 		{
 			try
@@ -312,39 +329,6 @@ namespace AudioSpectrumPlayer
 				? $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}"
 				: $"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
 		}
-
-
-		//private void SetPlaybackTimer()
-		//{
-		//	if (mediaPlayer.Source != null)
-		//	{
-		//		PlaybackProgressBar.Value = 0;
-		//		TimeDisplay.Text = $"00:00 / {FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration)}";
-		//	}
-		//}
-
-		//private void PlaybackTimer_Tick(object? sender, object e)
-		//{
-		//	try
-		//	{
-		//		if (mediaPlayer?.PlaybackSession != null &&
-		//			mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
-		//		{
-		//			double progress = (mediaPlayer.PlaybackSession.Position.TotalMilliseconds /
-		//							   mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds) * 100;
-		//			PlaybackProgressBar.Value = progress;
-
-		//			string currentTime = FormatTimeSpan(mediaPlayer.PlaybackSession.Position);
-		//			string totalTime = FormatTimeSpan(mediaPlayer.PlaybackSession.NaturalDuration);
-		//			TimeDisplay.Text = $"{currentTime} / {totalTime}";
-		//		}
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		FileLogger.LogException(ex, "PlaybackTimer_Tick");
-		//	}
-		//}
-
 		#endregion
 	}
 }

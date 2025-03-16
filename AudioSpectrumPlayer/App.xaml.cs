@@ -1,5 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using System;
+using System.IO;
+using Windows.Storage;
 
 namespace AudioSpectrumPlayer
 {
@@ -50,7 +52,7 @@ namespace AudioSpectrumPlayer
 			ProcessCommandLineArgs();
 		}
 
-		private void ProcessCommandLineArgs()
+		private async void ProcessCommandLineArgs()
 		{
 			try
 			{
@@ -65,19 +67,26 @@ namespace AudioSpectrumPlayer
 				if (launchArgs.Length > 1)
 				{
 					string filePath = launchArgs[1];
-					if (System.IO.File.Exists(filePath))
+
+					try
 					{
+						// Try to get the file using WinRT APIs
+						StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
 						FileLogger.Log($"Found file to open: {filePath}");
 						if (m_window is MainWindow mainWindow)
 						{
-							mainWindow.LoadAudioFileAsync(filePath);
+							await mainWindow.LoadAudioFileAsync(filePath);
 						}
 						else
 						{
 							FileLogger.Log("ERROR: Main window is not available or not a MainWindow instance");
 						}
 					}
-					else
+					catch (UnauthorizedAccessException)
+					{
+						FileLogger.Log($"Access denied to file: {filePath}");
+					}
+					catch (FileNotFoundException)
 					{
 						FileLogger.Log($"File does not exist: {filePath}");
 					}
