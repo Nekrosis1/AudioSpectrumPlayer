@@ -130,55 +130,55 @@ namespace AudioSpectrumPlayer
 
 		private void VolumeCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
 		{
-			//if (_isDragging)
-			//{
-			//	{
-			//		Point position = e.GetCurrentPoint(volumeCanvas).Position;
+			if (_isDragging)
+			{
+				{
+					Point position = e.GetCurrentPoint(volumeCanvas).Position;
 
-			//		//Check if pointer is outside the control bounds
-			//		if (position.X < 0 || position.X > volumeCanvas.ActualWidth ||
-			//			position.Y < 0 || position.Y > volumeCanvas.ActualHeight)
-			//		{
-			//			// Clamp the value to valid range
-			//			double clampedX = Math.Clamp(position.X, 0, volumeCanvas.ActualWidth);
-			//			double newVolume = clampedX / volumeCanvas.ActualWidth;
+					//Check if pointer is outside the control bounds
+					if (position.X < 0 || position.X > volumeCanvas.ActualWidth ||
+						position.Y < 0 || position.Y > volumeCanvas.ActualHeight)
+					{
+						// Clamp the value to valid range
+						double clampedX = Math.Clamp(position.X, 0, volumeCanvas.ActualWidth);
+						double newVolume = clampedX / volumeCanvas.ActualWidth;
 
-			//			// Update volume with clamped value
-			//			_currentVolume = Math.Clamp(newVolume, 0, 1);
-			//			Volume = _currentVolume;
-			//			UpdateVolumeUI();
-			//			VolumeChanged?.Invoke(this, _currentVolume);
+						// Update volume with clamped value
+						_currentVolume = Math.Clamp(newVolume, 0, 1);
+						Volume = _currentVolume;
+						UpdateVolumeUI();
+						VolumeChanged?.Invoke(this, _currentVolume);
 
-			//			// End the dragging operation
-			//			_isDragging = false;
-			//			volumeCanvas.ReleasePointerCapture(e.Pointer);
-			//		}
-			//		else
-			//		{
-			//			// Normal update within bounds
-			//			UpdateVolumeFromPointerPosition(position);
-			//		}
-			//	}
-			//}
+						// End the dragging operation
+						_isDragging = false;
+						volumeCanvas.ReleasePointerCapture(e.Pointer);
+					}
+					else
+					{
+						// Normal update within bounds
+						UpdateVolumeFromPointerPosition(position);
+					}
+				}
+			}
 		}
 
 		private void VolumeCanvas_PointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			//if (_isDragging)
-			//{
-			//	_isDragging = false;
-			//	volumeCanvas.ReleasePointerCapture(e.Pointer);
+			if (_isDragging)
+			{
+				_isDragging = false;
+				volumeCanvas.ReleasePointerCapture(e.Pointer);
 
-			//	// Get final position and update volume
-			//	Point position = e.GetCurrentPoint(volumeCanvas).Position;
-			//	double clampedX = Math.Clamp(position.X, 0, volumeCanvas.ActualWidth);
-			//	double newVolume = clampedX / volumeCanvas.ActualWidth;
+				// Get final position and update volume
+				Point position = e.GetCurrentPoint(volumeCanvas).Position;
+				double clampedX = Math.Clamp(position.X, 0, volumeCanvas.ActualWidth);
+				double newVolume = clampedX / volumeCanvas.ActualWidth;
 
-			//	_currentVolume = Math.Clamp(newVolume, 0, 1);
-			//	Volume = _currentVolume;
-			//	UpdateVolumeUI();
-			//	VolumeChanged?.Invoke(this, _currentVolume);
-			//}
+				_currentVolume = Math.Clamp(newVolume, 0, 1);
+				Volume = _currentVolume;
+				UpdateVolumeUI();
+				VolumeChanged?.Invoke(this, _currentVolume);
+			}
 		}
 
 		private void VolumeCanvas_PointerExited(object sender, PointerRoutedEventArgs e)

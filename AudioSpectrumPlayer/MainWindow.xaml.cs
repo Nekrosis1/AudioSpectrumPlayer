@@ -84,7 +84,7 @@ namespace AudioSpectrumPlayer
 
 				playbackTimer = new DispatcherTimer
 				{
-					Interval = TimeSpan.FromMilliseconds(500)
+					Interval = TimeSpan.FromMilliseconds(1000)
 				};
 				playbackTimer.Tick += PlaybackTimer_Tick;
 				VolumeControl.VolumeChanged += VolumeControl_VolumeChanged;
@@ -169,7 +169,7 @@ namespace AudioSpectrumPlayer
 			{
 				LogViewer.Log("Playing audio");
 				mediaPlayer.Play();
-				playbackTimer.Start();
+
 			}
 			else
 			{
@@ -253,7 +253,7 @@ namespace AudioSpectrumPlayer
 					try
 					{
 						mediaPlayer.Source = mediaSource;
-
+						playbackTimer.Start();
 						Title = $"Audio Spectrum Player - {System.IO.Path.GetFileName(filePath)}";
 						LogViewer?.Log($"Audio file loaded: {System.IO.Path.GetFileName(filePath)}");
 						FileLogger.Log("Media source set successfully");
@@ -286,7 +286,7 @@ namespace AudioSpectrumPlayer
 
 					mediaPlayer.PlaybackSession.Position = newPosition;
 					// This log is called a lot, only enable when needed
-					//LogViewer.Log($"Seeked to position: {FormatTimeSpan(newPosition)}");
+					//LogViewer.Log($"Playback Position changed: {FormatTimeSpan(newPosition)}");
 
 					PlaybackProgress.CurrentPosition = newPosition;
 				}
@@ -303,6 +303,10 @@ namespace AudioSpectrumPlayer
 			{
 				PlaybackProgress.CurrentPosition = TimeSpan.Zero;
 				PlaybackProgress.TotalDuration = mediaPlayer.PlaybackSession.NaturalDuration;
+				if (mediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+				{
+					playbackTimer.Start();
+				}
 			}
 		}
 

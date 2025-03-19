@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using System;
 using System.Diagnostics;
 
@@ -59,33 +60,54 @@ namespace AudioSpectrumPlayer
 			this.InitializeComponent();
 		}
 
+		private void ProgressSlider_PointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			Debug.WriteLine($"PointerPressed");
+			_isDragging = true;
+		}
+
+		private void ProgressSlider_PointerReleased(object sender, PointerRoutedEventArgs e)
+		{
+			double newPosition = progressSlider.Value / 100.0;
+			Debug.WriteLine($"PointerReleased");
+			_isDragging = false;
+			PositionChanged?.Invoke(this, newPosition);
+		}
+
+		private void ProgressSlider_DragStarting(UIElement sender, DragStartingEventArgs args)
+		{
+			Debug.WriteLine($"DragStarting");
+		}
+
+		private void ProgressSlider_DragEnter(object sender, DragEventArgs e)
+		{
+			Debug.WriteLine($"DragEnter");
+		}
+
+
 		private void ProgressSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
-			if (_isDragging)
-			{
-				PositionChanged?.Invoke(this, e.NewValue / 100.0);
-			}
+			//Debug.WriteLine($"Is Dragging: {_isDragging}");
+			PositionChanged?.Invoke(this, e.NewValue / 100.0);
+			//if (_isDragging)
+			//{
+			//}
 		}
 
 		public void UpdateProgressUI()
 		{
 			if (TotalDuration.TotalMilliseconds > 0)
 			{
-				_isDragging = false;
 				double progress = (CurrentPosition.TotalMilliseconds / TotalDuration.TotalMilliseconds) * 100;
 				progressSlider.Value = progress;
-				_isDragging = true;
 
 				string currentTime = FormatTimeSpan(CurrentPosition);
 				string totalTime = FormatTimeSpan(TotalDuration);
 				timeDisplay.Text = $"{currentTime} / {totalTime}";
-				Debug.WriteLine($"Time Updated to: {currentTime} / {totalTime}");
 			}
 			else
 			{
-				_isDragging = false;
 				progressSlider.Value = 0;
-				_isDragging = true;
 				timeDisplay.Text = "00:00 / 00:00";
 			}
 		}
@@ -102,6 +124,8 @@ namespace AudioSpectrumPlayer
 			CurrentPosition = TimeSpan.Zero;
 			UpdateProgressUI();
 		}
+
+
 	}
 }
 
