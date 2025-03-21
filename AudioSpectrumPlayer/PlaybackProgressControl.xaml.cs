@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using System;
-using System.Diagnostics;
 
 namespace AudioSpectrumPlayer
 {
@@ -41,6 +40,7 @@ namespace AudioSpectrumPlayer
 
 		private static void OnCurrentPositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
+			//Logger.Log("OnCurrentPositionChanged");
 			if (d is PlaybackProgressControl control && !control._isDragging)
 			{
 				control.UpdateProgressUI();
@@ -58,32 +58,48 @@ namespace AudioSpectrumPlayer
 		public PlaybackProgressControl()
 		{
 			this.InitializeComponent();
+			Logger.Log("PlaybackProgressControl INIT");
+			//this.DragStarting += ProgressSlider_DragStarting;
+			//this.Holding += ProgressSlider_Holding;
+			//this.ManipulationStarting += ProgressSlider_ManipulationStarting;
+			//this.PointerPressed += ProgressSlider_PointerPressed;
+			//this.PointerReleased += ProgressSlider_PointerReleased;
+
 		}
 
-		private void ProgressSlider_PointerPressed(object sender, PointerRoutedEventArgs e)
+		public void ProgressSlider_PointerPressed(object sender, PointerRoutedEventArgs e)
 		{
-			Debug.WriteLine($"PointerPressed");
-			_isDragging = true;
+			Logger.Log($"PointerPressed");
+			//_isDragging = true;
 		}
 
-		private void ProgressSlider_PointerReleased(object sender, PointerRoutedEventArgs e)
+		public void ProgressSlider_PointerReleased(object sender, PointerRoutedEventArgs e)
 		{
-			double newPosition = progressSlider.Value / 100.0;
-			Debug.WriteLine($"PointerReleased");
-			_isDragging = false;
-			PositionChanged?.Invoke(this, newPosition);
+			//double newPosition = progressSlider.Value / 100.0;
+			Logger.Log($"PointerReleased");
+			//_isDragging = false;
+			//PositionChanged?.Invoke(this, newPosition);
 		}
 
-		private void ProgressSlider_DragStarting(UIElement sender, DragStartingEventArgs args)
+		public void ProgressSlider_DragStarting(UIElement sender, DragStartingEventArgs args)
 		{
-			Debug.WriteLine($"DragStarting");
+			Logger.Log($"DragStarting");
 		}
 
-		private void ProgressSlider_DragEnter(object sender, DragEventArgs e)
+		public void ProgressSlider_DragEnter(object sender, DragEventArgs e)
 		{
-			Debug.WriteLine($"DragEnter");
+			Logger.Log($"DragEnter");
 		}
 
+		private void ProgressSlider_ManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
+		{
+			Logger.Log($"ManipulationStarting");
+		}
+
+		private void ProgressSlider_Holding(object sender, dynamic e)
+		{
+			Logger.Log($"Holding");
+		}
 
 		private void ProgressSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{

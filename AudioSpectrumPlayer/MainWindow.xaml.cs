@@ -21,6 +21,7 @@ namespace AudioSpectrumPlayer
 		{
 			this.InitializeComponent();
 			InitializeMediaPlayer();
+			Logger.Initialize(LogViewer);
 			PlaybackProgress.PositionChanged += PlaybackProgress_PositionChanged;
 			MonitorWindowLifetime();
 			Title = "Audio Player";

@@ -5,7 +5,7 @@ namespace AudioSpectrumPlayer
 {
 	public static class FileLogger
 	{
-		public static bool IsLoggingEnabled { get; set; } = false;
+		//public static bool IsLoggingEnabled { get; set; } = false;
 
 		private static readonly string LogFilePath = Path.Combine(
 			Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -49,7 +49,7 @@ namespace AudioSpectrumPlayer
 
 		public static void Log(string message)
 		{
-			if (!IsLoggingEnabled) return;
+			//if (!IsLoggingEnabled) return;
 			try
 			{
 				lock (LockObject)
@@ -66,7 +66,7 @@ namespace AudioSpectrumPlayer
 
 		public static void LogException(Exception ex, string context = "")
 		{
-			if (!IsLoggingEnabled) return;
+			//if (!IsLoggingEnabled) return;
 			try
 			{
 				string message = string.IsNullOrEmpty(context)

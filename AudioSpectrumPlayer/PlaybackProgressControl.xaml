@@ -24,6 +24,7 @@
                 PointerReleased="ProgressSlider_PointerReleased"
                 DragStarting="ProgressSlider_DragStarting"
                 DragEnter="ProgressSlider_DragEnter"
+                ManipulationStarting="ProgressSlider_ManipulationStarting"
                 Height="32" />
 
         <TextBlock x:Name="timeDisplay"
