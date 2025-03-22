@@ -1,4 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.IO;
 using Windows.Storage;
@@ -11,37 +13,49 @@ namespace AudioSpectrumPlayer
 	public partial class App : Application
 	{
 		private Window m_window = default!;
+		private static LogDisplay? _logDisplay = new LogDisplay();
 		public App()
 		{
-			FileLogger.Initialize();
-			FileLogger.Log("Application starting");
+			var loggerConfig = new LoggerConfiguration()
+					.MinimumLevel.Debug()
+					.Enrich.WithThreadId()
+					.WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Warning,
+					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
+					.WriteTo.File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt"),
+						rollingInterval: RollingInterval.Day,
+						outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}");
+
+			Log.Logger = loggerConfig.CreateLogger();
+			Log.Information("Application starting");
+			Log.Warning($"Logs Written to {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt")}");
 
 			AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
 			{
-				FileLogger.Log("CRITICAL: Unhandled AppDomain exception");
+				Log.Fatal("Unhandled AppDomain exception");
 				if (args.ExceptionObject is Exception ex)
 				{
-					FileLogger.LogException(ex, "AppDomain.UnhandledException");
+					Log.Error(ex, "AppDomain.UnhandledException");
 				}
 				else
 				{
-					FileLogger.Log($"Unknown exception type: {args.ExceptionObject?.GetType().ToString() ?? "null"}");
+					Log.Error($"Unknown exception type: {args.ExceptionObject?.GetType().ToString() ?? "null"}");
 				}
 			};
 
 			// For UI thread exceptions in WinUI apps
 			Current.UnhandledException += (sender, args) =>
 			{
-				FileLogger.Log($"CRITICAL: Unhandled UI exception: {args.Message}");
-				FileLogger.LogException(args.Exception, "Application.UnhandledException");
+				Log.Fatal($"Unhandled UI exception: {args.Message}");
+				Log.Fatal(args.Exception, "Application.UnhandledException");
 
 				// Prevent the app from terminating if we can handle the exception
 				// args.Handled = true; // Uncomment if you want to try to recover
+				Log.CloseAndFlush();
 			};
 
 
 			this.InitializeComponent();
-			FileLogger.Log("Application components initialized");
+			Log.Debug("Application components initialized");
 		}
 
 		protected override void OnLaunched(LaunchActivatedEventArgs args)
@@ -56,12 +70,12 @@ namespace AudioSpectrumPlayer
 		{
 			try
 			{
-				FileLogger.Log("Trying to get args");
+				Log.Debug("Trying to get args");
 				string[] launchArgs = Environment.GetCommandLineArgs();
 
 				for (int i = 0; i < launchArgs.Length; i++)
 				{
-					FileLogger.Log($"Arg[{i}]: {launchArgs[i]}");
+					Log.Debug($"Arg[{i}]: {launchArgs[i]}");
 				}
 
 				if (launchArgs.Length > 1)
@@ -72,29 +86,29 @@ namespace AudioSpectrumPlayer
 					{
 						// Try to get the file using WinRT APIs
 						StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
-						FileLogger.Log($"Found file to open: {filePath}");
+						Log.Debug($"Found file to open: {filePath}");
 						if (m_window is MainWindow mainWindow)
 						{
 							await mainWindow.LoadAudioFileAsync(filePath);
 						}
 						else
 						{
-							FileLogger.Log("ERROR: Main window is not available or not a MainWindow instance");
+							Log.Fatal("Main window is not available or not a MainWindow instance");
 						}
 					}
 					catch (UnauthorizedAccessException)
 					{
-						FileLogger.Log($"Access denied to file: {filePath}");
+						Log.Error($"Access denied to file: {filePath}");
 					}
 					catch (FileNotFoundException)
 					{
-						FileLogger.Log($"File does not exist: {filePath}");
+						Log.Error($"File does not exist: {filePath}");
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				FileLogger.Log($"Error processing command line arguments: {ex.Message}");
+				Log.Error($"Error processing command line arguments: {ex.Message}");
 			}
 		}
 	}

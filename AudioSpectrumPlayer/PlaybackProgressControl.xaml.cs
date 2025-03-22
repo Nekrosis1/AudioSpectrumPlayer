@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Serilog;
 using System;
 
 namespace AudioSpectrumPlayer
@@ -58,7 +59,7 @@ namespace AudioSpectrumPlayer
 		public PlaybackProgressControl()
 		{
 			this.InitializeComponent();
-			Logger.Log("PlaybackProgressControl INIT");
+			Log.Debug("PlaybackProgressControl INIT");
 			//this.DragStarting += ProgressSlider_DragStarting;
 			//this.Holding += ProgressSlider_Holding;
 			//this.ManipulationStarting += ProgressSlider_ManipulationStarting;
@@ -69,36 +70,36 @@ namespace AudioSpectrumPlayer
 
 		public void ProgressSlider_PointerPressed(object sender, PointerRoutedEventArgs e)
 		{
-			Logger.Log($"PointerPressed");
+			Log.Debug($"PointerPressed");
 			//_isDragging = true;
 		}
 
 		public void ProgressSlider_PointerReleased(object sender, PointerRoutedEventArgs e)
 		{
 			//double newPosition = progressSlider.Value / 100.0;
-			Logger.Log($"PointerReleased");
+			Log.Debug($"PointerReleased");
 			//_isDragging = false;
 			//PositionChanged?.Invoke(this, newPosition);
 		}
 
 		public void ProgressSlider_DragStarting(UIElement sender, DragStartingEventArgs args)
 		{
-			Logger.Log($"DragStarting");
+			Log.Debug($"DragStarting");
 		}
 
 		public void ProgressSlider_DragEnter(object sender, DragEventArgs e)
 		{
-			Logger.Log($"DragEnter");
+			Log.Debug($"DragEnter");
 		}
 
 		private void ProgressSlider_ManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
 		{
-			Logger.Log($"ManipulationStarting");
+			Log.Debug($"ManipulationStarting");
 		}
 
 		private void ProgressSlider_Holding(object sender, dynamic e)
 		{
-			Logger.Log($"Holding");
+			Log.Debug($"Holding");
 		}
 
 		private void ProgressSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)

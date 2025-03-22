@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Serilog;
 using System;
 using Windows.Foundation;
 
@@ -40,7 +41,6 @@ namespace AudioSpectrumPlayer
 		{
 			this.InitializeComponent();
 
-			// Set initial volume and update UI
 			_currentVolume = 1.0;
 			UpdateVolumeUI();
 
@@ -61,12 +61,10 @@ namespace AudioSpectrumPlayer
 
 			if (width <= 0 || height <= 0)
 			{
-				// Default values if not yet rendered
 				width = 180;
 				height = 32;
 			}
 
-			// Update the background triangle
 			volumeBackground.Data = new PathGeometry()
 			{
 				Figures =
@@ -84,7 +82,6 @@ namespace AudioSpectrumPlayer
 				}
 			};
 
-			// Update the hit area
 			hitArea.Width = width;
 			hitArea.Height = height;
 		}
@@ -116,7 +113,6 @@ namespace AudioSpectrumPlayer
 			pathGeometry.Figures.Add(figure);
 			volumeIndicator.Data = pathGeometry;
 
-			// Update percentage text
 			int percentage = (int)(_currentVolume * 100);
 			volumePercentage.Text = $"{percentage}%";
 		}
@@ -152,11 +148,13 @@ namespace AudioSpectrumPlayer
 						// End the dragging operation
 						_isDragging = false;
 						volumeCanvas.ReleasePointerCapture(e.Pointer);
+						Log.Warning("Volume update Clamped PointerMoved");
 					}
 					else
 					{
 						// Normal update within bounds
 						UpdateVolumeFromPointerPosition(position);
+						Log.Warning("Volume update PointerMoved");
 					}
 				}
 			}
@@ -178,6 +176,7 @@ namespace AudioSpectrumPlayer
 				Volume = _currentVolume;
 				UpdateVolumeUI();
 				VolumeChanged?.Invoke(this, _currentVolume);
+				Log.Warning("Volume update Clamped PointerReleased");
 			}
 		}
 
@@ -187,6 +186,7 @@ namespace AudioSpectrumPlayer
 			{
 				_isDragging = false;
 				volumeCanvas.ReleasePointerCapture(e.Pointer);
+				Log.Warning("Volume update PointerExited");
 			}
 		}
 

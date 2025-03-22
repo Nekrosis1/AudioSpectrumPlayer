@@ -1,6 +1,9 @@
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Serilog;
+using Serilog.Events;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -21,41 +24,48 @@ namespace AudioSpectrumPlayer
 		{
 			this.InitializeComponent();
 			InitializeMediaPlayer();
-			Logger.Initialize(LogViewer);
 			PlaybackProgress.PositionChanged += PlaybackProgress_PositionChanged;
 			MonitorWindowLifetime();
 			Title = "Audio Player";
 
-			LogViewer.Log("Application started");
-			LogViewer.Log($"Current time: {DateTime.Now}");
 
-			// Log command line arguments
-			string[] args = Environment.GetCommandLineArgs();
-			LogViewer.Log($"Command line args count: {args.Length}");
-			for (int i = 0; i < args.Length; i++)
-			{
-				LogViewer.Log($"Arg[{i}]: {args[i]}");
-			}
+			var loggerConfig = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.Enrich.WithThreadId()
+				.WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Warning,
+					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
+				.WriteTo.LogDisplay(LogDisplay, restrictedToMinimumLevel: LogEventLevel.Warning,
+					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
+				.WriteTo.File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt"),
+					rollingInterval: RollingInterval.Day,
+					outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}");
+
+			Log.Logger = loggerConfig.CreateLogger();
+
+
+
+
+			Log.Debug("Application started");
 		}
 
 		private void InitializeMediaPlayer()
 		{
 			try
 			{
-				FileLogger.Log("Initializing MediaPlayer");
+				Log.Debug("Initializing MediaPlayer");
 
 				mediaPlayer = new MediaPlayer();
 				mediaPlayer.MediaOpened += (sender, args) =>
 				{
 					try
 					{
-						FileLogger.Log("Media opened successfully");
+						Log.Debug("Media opened successfully");
 						SetPlaybackTimer();
-						LogViewer?.Log($"Progress Bar Initialized");
+
 					}
 					catch (Exception ex)
 					{
-						FileLogger.LogException(ex, "MediaOpened event");
+						Log.Error(ex, "MediaOpened event");
 					}
 				};
 
@@ -63,11 +73,11 @@ namespace AudioSpectrumPlayer
 				{
 					try
 					{
-						FileLogger.Log($"Media failed to load: {args.Error}");
+						Log.Error($"Media failed to load: {args.Error}");
 					}
 					catch (Exception ex)
 					{
-						FileLogger.LogException(ex, "MediaFailed event");
+						Log.Error(ex, "MediaFailed event");
 					}
 				};
 
@@ -75,11 +85,11 @@ namespace AudioSpectrumPlayer
 				{
 					try
 					{
-						FileLogger.Log($"Playback state changed to: {sender.PlaybackState}");
+						Log.Debug($"Playback state changed to: {sender.PlaybackState}");
 					}
 					catch (Exception ex)
 					{
-						FileLogger.LogException(ex, "PlaybackStateChanged event");
+						Log.Error(ex, "PlaybackStateChanged event");
 					}
 				};
 
@@ -90,11 +100,11 @@ namespace AudioSpectrumPlayer
 				playbackTimer.Tick += PlaybackTimer_Tick;
 				VolumeControl.VolumeChanged += VolumeControl_VolumeChanged;
 
-				FileLogger.Log("MediaPlayer initialized successfully");
+				Log.Debug("MediaPlayer initialized successfully");
 			}
 			catch (Exception ex)
 			{
-				FileLogger.LogException(ex, "InitializeMediaPlayer");
+				Log.Error(ex, "InitializeMediaPlayer");
 			}
 		}
 
@@ -104,7 +114,7 @@ namespace AudioSpectrumPlayer
 			{
 				var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-				FileLogger.Log($"Window handle: {windowHandle}");
+				Log.Debug($"Window handle: {windowHandle}");
 
 				// Register for window messages using Win32 interop
 				// This requires adding a reference to a Win32 message hook library or using PInvoke
@@ -115,22 +125,22 @@ namespace AudioSpectrumPlayer
 					{
 						if (sender != null)
 						{
-							FileLogger.Log($"Window state changed: {args}");
+							Log.Debug($"Window state changed: {args}");
 						}
 					}
 					catch (Exception ex)
 					{
-						FileLogger.LogException(ex, "Window state change event");
+						Log.Error(ex, "Window state change event");
 					}
 				};
 
-				this.Closed += (s, e) => FileLogger.Log("Window explicitly closed");
+				this.Closed += (s, e) => Log.Debug("Window explicitly closed");
 
-				FileLogger.Log("Window lifetime monitoring initialized");
+				Log.Debug("Window lifetime monitoring initialized");
 			}
 			catch (Exception ex)
 			{
-				FileLogger.LogException(ex, "MonitorWindowLifetime");
+				Log.Error(ex, "MonitorWindowLifetime");
 			}
 		}
 
@@ -155,12 +165,12 @@ namespace AudioSpectrumPlayer
 			StorageFile file = await picker.PickSingleFileAsync();
 			if (file != null)
 			{
-				LogViewer.Log($"File selected: {file.Path}");
+				Log.Information($"File selected: {file.Path}");
 				await LoadAudioFileAsync(file.Path);
 			}
 			else
 			{
-				LogViewer.Log("File selection canceled or failed");
+				Log.Warning("File selection canceled or failed");
 			}
 		}
 
@@ -168,13 +178,13 @@ namespace AudioSpectrumPlayer
 		{
 			if (mediaPlayer.Source != null)
 			{
-				LogViewer.Log("Playing audio");
+				Log.Information("Playing audio");
 				mediaPlayer.Play();
 
 			}
 			else
 			{
-				LogViewer.Log("Cannot play: No audio file loaded");
+				Log.Debug("Cannot play: No audio file loaded");
 			}
 		}
 
@@ -182,13 +192,13 @@ namespace AudioSpectrumPlayer
 		{
 			if (mediaPlayer.Source != null)
 			{
-				LogViewer.Log("Pausing audio");
+				Log.Information("Pausing audio");
 				mediaPlayer.Pause();
 				playbackTimer.Stop();
 			}
 			else
 			{
-				LogViewer.Log("Cannot pause: No audio file loaded");
+				Log.Debug("Cannot pause: No audio file loaded");
 			}
 		}
 
@@ -196,7 +206,7 @@ namespace AudioSpectrumPlayer
 		{
 			if (mediaPlayer.Source != null)
 			{
-				LogViewer.Log("Stopping audio");
+				Log.Information("Stopping audio");
 				mediaPlayer.Position = TimeSpan.Zero;
 				mediaPlayer.Pause();
 				playbackTimer.Stop();
@@ -205,14 +215,14 @@ namespace AudioSpectrumPlayer
 			}
 			else
 			{
-				LogViewer.Log("Cannot stop: No audio file loaded");
+				Log.Debug("Cannot stop: No audio file loaded");
 			}
 		}
 
 		private void ClearLogButton_Click(object sender, RoutedEventArgs e)
 		{
-			LogViewer.Clear();
-			LogViewer.Log("Log cleared");
+			LogDisplay.Clear();
+			LogDisplay.Log("Log cleared");
 		}
 		#endregion
 
@@ -224,12 +234,12 @@ namespace AudioSpectrumPlayer
 				{
 					mediaPlayer.Volume = volume;
 					// This log is called a lot, only enable when needed
-					//LogViewer?.Log($"Volume changed to {(int)(volume * 100)}%");
+					//Log.Information($"Volume changed to {(int)(volume * 100)}%");
 				}
 			}
 			catch (Exception ex)
 			{
-				FileLogger.LogException(ex, "VolumeControl_VolumeChanged");
+				Log.Error(ex, "VolumeControl_VolumeChanged");
 			}
 		}
 
@@ -241,8 +251,7 @@ namespace AudioSpectrumPlayer
 
 				if (!System.IO.File.Exists(filePath))
 				{
-					FileLogger.Log($"Error: File does not exist: {filePath}");
-					LogViewer?.Log($"Error: File not found: {filePath}");
+					Log.Error($"Error: File not found: {filePath}");
 					return;
 				}
 				currentFilePath = filePath;
@@ -256,19 +265,18 @@ namespace AudioSpectrumPlayer
 						mediaPlayer.Source = mediaSource;
 						playbackTimer.Start();
 						Title = $"Audio Spectrum Player - {System.IO.Path.GetFileName(filePath)}";
-						LogViewer?.Log($"Audio file loaded: {System.IO.Path.GetFileName(filePath)}");
-						FileLogger.Log("Media source set successfully");
+						Log.Information("Media source set successfully");
 					}
 					catch (Exception ex)
 					{
-						FileLogger.LogException(ex, "Setting media source on dispatcher");
+						Log.Error(ex, "Setting media source on dispatcher");
 					}
 					await Task.CompletedTask; // only for the IDE to be happy
 				});
 			}
 			catch (Exception ex)
 			{
-				FileLogger.LogException(ex, "LoadAudioFileFromPathDirectlyAsync");
+				Log.Error(ex, "Load Audio File failed");
 			}
 			await Task.CompletedTask; // only for the IDE to be happy
 		}
@@ -287,14 +295,14 @@ namespace AudioSpectrumPlayer
 
 					mediaPlayer.PlaybackSession.Position = newPosition;
 					// This log is called a lot, only enable when needed
-					//LogViewer.Log($"Playback Position changed: {FormatTimeSpan(newPosition)}");
+					//Log.Information($"Playback Position changed: {FormatTimeSpan(newPosition)}");
 
 					PlaybackProgress.CurrentPosition = newPosition;
 				}
 			}
 			catch (Exception ex)
 			{
-				FileLogger.LogException(ex, "PlaybackProgress_PositionChanged");
+				Log.Error(ex, "PlaybackProgress_PositionChanged");
 			}
 		}
 
@@ -308,6 +316,7 @@ namespace AudioSpectrumPlayer
 				{
 					playbackTimer.Start();
 				}
+				Log.Debug($"Progress Bar Initialized");
 			}
 		}
 
@@ -324,7 +333,7 @@ namespace AudioSpectrumPlayer
 			}
 			catch (Exception ex)
 			{
-				FileLogger.LogException(ex, "PlaybackTimer_Tick");
+				Log.Error(ex, "PlaybackTimer_Tick");
 			}
 		}
 

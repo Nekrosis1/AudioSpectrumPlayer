@@ -46,7 +46,7 @@ namespace AudioSpectrumPlayer
 			string timeStamp = DateTime.Now.ToString("HH:mm:ss.fff");
 			string logMessage = $"[{timeStamp}] {message}{Environment.NewLine}";
 
-			logBuilder.Append(logMessage);
+			logBuilder.Append(message);
 
 			// Update UI on UI thread
 			DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
