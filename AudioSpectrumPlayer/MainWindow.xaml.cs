@@ -247,7 +247,7 @@ namespace AudioSpectrumPlayer
 		{
 			try
 			{
-				FileLogger.Log($"Loading audio file: {filePath}");
+				Log.Information($"Loading audio file: {filePath}");
 
 				if (!System.IO.File.Exists(filePath))
 				{

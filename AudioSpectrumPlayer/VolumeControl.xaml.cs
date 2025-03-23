@@ -148,13 +148,13 @@ namespace AudioSpectrumPlayer
 						// End the dragging operation
 						_isDragging = false;
 						volumeCanvas.ReleasePointerCapture(e.Pointer);
-						Log.Warning("Volume update Clamped PointerMoved");
+						Log.Debug("Volume update Clamped PointerMoved");
 					}
 					else
 					{
 						// Normal update within bounds
 						UpdateVolumeFromPointerPosition(position);
-						Log.Warning("Volume update PointerMoved");
+						Log.Debug("Volume update PointerMoved");
 					}
 				}
 			}
@@ -176,7 +176,7 @@ namespace AudioSpectrumPlayer
 				Volume = _currentVolume;
 				UpdateVolumeUI();
 				VolumeChanged?.Invoke(this, _currentVolume);
-				Log.Warning("Volume update Clamped PointerReleased");
+				Log.Debug("Volume update Clamped PointerReleased");
 			}
 		}
 
@@ -186,7 +186,7 @@ namespace AudioSpectrumPlayer
 			{
 				_isDragging = false;
 				volumeCanvas.ReleasePointerCapture(e.Pointer);
-				Log.Warning("Volume update PointerExited");
+				Log.Debug("Volume update PointerExited");
 			}
 		}
 

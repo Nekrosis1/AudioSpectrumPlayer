@@ -9,40 +9,18 @@ using System.IO;
 
 namespace AudioSpectrumPlayer
 {
-	public class LogDisplaySink : ILogEventSink
+	public class LogDisplaySink(LogDisplay logDisplay, ITextFormatter formatter) : ILogEventSink
 	{
-		private readonly LogDisplay _logDisplay;
-		private readonly ITextFormatter _formatter;
-
-		public LogDisplaySink(LogDisplay logDisplay, ITextFormatter formatter)
-		{
-			_logDisplay = logDisplay ?? throw new ArgumentNullException(nameof(logDisplay));
-			_formatter = formatter;
-		}
+		private readonly LogDisplay _logDisplay = logDisplay ?? throw new ArgumentNullException(nameof(logDisplay));
 
 		public void Emit(LogEvent logEvent)
 		{
 			using StringWriter stringWriter = new StringWriter();
-			_formatter.Format(logEvent, stringWriter);
-
-
-			//string message = logEvent.RenderMessage(_formatProvider);
-			//string logLevel = logEvent.Level.ToString();
-
-			//// Format similar to your other log formats
-			//var logMessage = $"[{logLevel.Substring(0, 3)}] {message}";
-
-			//// Include exception if present
-			//if (logEvent.Exception != null)
-			//{
-			//	logMessage += $"{Environment.NewLine}{logEvent.Exception}";
-			//}
-
+			formatter.Format(logEvent, stringWriter);
 			_logDisplay.Log(stringWriter.ToString());
 		}
 	}
 
-	// Extension method to easily add this sink
 	public static class LogDisplaySinkExtensions
 	{
 		public static LoggerConfiguration LogDisplay(
