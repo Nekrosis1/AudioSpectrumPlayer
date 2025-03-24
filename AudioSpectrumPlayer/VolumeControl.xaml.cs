@@ -154,7 +154,7 @@ namespace AudioSpectrumPlayer
 					{
 						// Normal update within bounds
 						UpdateVolumeFromPointerPosition(position);
-						Log.Debug("Volume update PointerMoved");
+						Log.Warning("Volume update PointerMoved");
 					}
 				}
 			}

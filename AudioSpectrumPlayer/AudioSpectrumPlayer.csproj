@@ -26,6 +26,9 @@
 		<!-- <TrimMode>partial</TrimMode> -->
 		<!-- <BuiltInComInteropSupport>true</BuiltInComInteropSupport> -->
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="LogDisplay.xaml" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="Assets\SplashScreen.scale-200.png" />
@@ -48,6 +51,12 @@
 		<PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
 		<PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="LogDisplay.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<ItemGroup>
