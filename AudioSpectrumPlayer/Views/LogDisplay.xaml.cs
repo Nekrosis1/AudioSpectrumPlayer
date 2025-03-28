@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Text;
 
-namespace AudioSpectrumPlayer
+namespace AudioSpectrumPlayer.Views
 {
 	public sealed partial class LogDisplay : UserControl
 	{

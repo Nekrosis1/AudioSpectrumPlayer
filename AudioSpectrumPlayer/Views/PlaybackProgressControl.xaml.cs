@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Input;
 using Serilog;
 using System;
 
-namespace AudioSpectrumPlayer
+namespace AudioSpectrumPlayer.Views
 {
 	public partial class PlaybackProgressControl : UserControl
 	{

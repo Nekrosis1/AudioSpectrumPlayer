@@ -10,7 +10,7 @@ using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
-namespace AudioSpectrumPlayer
+namespace AudioSpectrumPlayer.Views
 {
 	/// <summary>
 	/// An empty window that can be used on its own or navigated to within a Frame.
@@ -28,7 +28,6 @@ namespace AudioSpectrumPlayer
 			MonitorWindowLifetime();
 			Title = "Audio Player";
 
-
 			var loggerConfig = new LoggerConfiguration()
 				.MinimumLevel.Debug()
 				.Enrich.WithThreadId()
@@ -41,10 +40,6 @@ namespace AudioSpectrumPlayer
 					outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}");
 
 			Log.Logger = loggerConfig.CreateLogger();
-
-
-
-
 			Log.Debug("Application started");
 		}
 
@@ -258,20 +253,20 @@ namespace AudioSpectrumPlayer
 				Uri uri = new(filePath);
 				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
 
-				DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, async () =>
+				DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
 				{
 					try
 					{
 						mediaPlayer.Source = mediaSource;
 						playbackTimer.Start();
-						Title = $"Audio Spectrum Player - {System.IO.Path.GetFileName(filePath)}";
+						Title = $"Audio Spectrum Player - {Path.GetFileName(filePath)}";
 						Log.Information("Media source set successfully");
 					}
 					catch (Exception ex)
 					{
 						Log.Error(ex, "Setting media source on dispatcher");
 					}
-					await Task.CompletedTask; // only for the IDE to be happy
+					//await Task.CompletedTask; // only for the IDE to be happy
 				});
 			}
 			catch (Exception ex)
@@ -335,13 +330,6 @@ namespace AudioSpectrumPlayer
 			{
 				Log.Error(ex, "PlaybackTimer_Tick");
 			}
-		}
-
-		private static string FormatTimeSpan(TimeSpan timeSpan)
-		{
-			return timeSpan.Hours > 0
-				? $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}"
-				: $"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
 		}
 		#endregion
 	}

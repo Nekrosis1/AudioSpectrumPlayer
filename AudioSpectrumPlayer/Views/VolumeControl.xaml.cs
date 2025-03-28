@@ -6,7 +6,7 @@ using Serilog;
 using System;
 using Windows.Foundation;
 
-namespace AudioSpectrumPlayer
+namespace AudioSpectrumPlayer.Views
 {
 	public sealed partial class VolumeControl : UserControl
 	{

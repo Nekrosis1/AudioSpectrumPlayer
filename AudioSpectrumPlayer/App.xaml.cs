@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using AudioSpectrumPlayer.Views;
+using Microsoft.UI.Xaml;
 using Serilog;
 using Serilog.Events;
 using System;

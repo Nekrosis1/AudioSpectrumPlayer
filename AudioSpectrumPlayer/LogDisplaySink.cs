@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using AudioSpectrumPlayer.Views;
+using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
