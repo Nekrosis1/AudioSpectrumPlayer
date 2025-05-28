@@ -1,4 +1,5 @@
 using AudioSpectrumPlayer.ViewModels;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -66,23 +67,26 @@ namespace AudioSpectrumPlayer.Views
 			var currentPosition = _currentViewModel.CurrentPosition;
 			var totalDuration = _currentViewModel.TotalDuration;
 
-			if (totalDuration.TotalMilliseconds > 0)
+			DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
 			{
-				double progress = (currentPosition.TotalMilliseconds / totalDuration.TotalMilliseconds) * 100;
+				if (totalDuration.TotalMilliseconds > 0)
+				{
+					double progress = (currentPosition.TotalMilliseconds / totalDuration.TotalMilliseconds) * 100;
 
 
-				progressSlider.Value = progress;
+					progressSlider.Value = progress;
 
 
-				string currentTime = FormatTimeSpan(currentPosition);
-				string totalTime = FormatTimeSpan(totalDuration);
-				timeDisplay.Text = $"{currentTime} / {totalTime}";
-			}
-			else
-			{
-				progressSlider.Value = 0;
-				timeDisplay.Text = "00:00 / 00:00";
-			}
+					string currentTime = FormatTimeSpan(currentPosition);
+					string totalTime = FormatTimeSpan(totalDuration);
+					timeDisplay.Text = $"{currentTime} / {totalTime}";
+				}
+				else
+				{
+					progressSlider.Value = 0;
+					timeDisplay.Text = "00:00 / 00:00";
+				}
+			});
 		}
 
 		private static string FormatTimeSpan(TimeSpan timeSpan)

@@ -5,7 +5,6 @@ using Serilog;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 
@@ -26,11 +25,6 @@ namespace AudioSpectrumPlayer.ViewModels
 		private string _windowTitle = "Audio Player";
 		[ObservableProperty]
 		private double _volume = 1.0;
-
-		public ICommand PlayCommand { get; }
-		public ICommand PauseCommand { get; }
-		public ICommand StopCommand { get; }
-		public ICommand OpenFileCommand { get; }
 
 		public AudioPlayerViewModel()
 		{
