@@ -1,11 +1,9 @@
-using Microsoft.UI.Dispatching;
+using AudioSpectrumPlayer.ViewModels;
 using Microsoft.UI.Xaml;
 using Serilog;
 using Serilog.Events;
 using System;
 using System.IO;
-using System.Threading.Tasks;
-using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -19,10 +17,12 @@ namespace AudioSpectrumPlayer.Views
 	{
 		private MediaPlayer mediaPlayer = null!;
 		private DispatcherTimer playbackTimer = null!;
+		public AudioPlayerViewModel ViewModel { get; }
 		private string? currentFilePath;
 		public MainWindow()
 		{
 			this.InitializeComponent();
+			ViewModel = new AudioPlayerViewModel();
 			InitializeMediaPlayer();
 			PlaybackProgress.PositionChanged += PlaybackProgress_PositionChanged;
 			MonitorWindowLifetime();
@@ -93,7 +93,6 @@ namespace AudioSpectrumPlayer.Views
 					Interval = TimeSpan.FromMilliseconds(1000)
 				};
 				playbackTimer.Tick += PlaybackTimer_Tick;
-				VolumeControl.VolumeChanged += VolumeControl_VolumeChanged;
 
 				Log.Debug("MediaPlayer initialized successfully");
 			}
@@ -140,6 +139,22 @@ namespace AudioSpectrumPlayer.Views
 		}
 
 		#region UI Buttons
+
+		private void PlayButton_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel.Play();
+		}
+
+		private void PauseButton_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel.Pause();
+		}
+
+		private void StopButton_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel.Stop();
+		}
+
 		private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
 		{
 			var picker = new FileOpenPicker();
@@ -161,56 +176,11 @@ namespace AudioSpectrumPlayer.Views
 			if (file != null)
 			{
 				Log.Information($"File selected: {file.Path}");
-				await LoadAudioFileAsync(file.Path);
+				await ViewModel.LoadAudioFileAsync(file.Path);
 			}
 			else
 			{
 				Log.Warning("File selection canceled or failed");
-			}
-		}
-
-		private void PlayButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (mediaPlayer.Source != null)
-			{
-				Log.Information("Playing audio");
-				mediaPlayer.Play();
-
-			}
-			else
-			{
-				Log.Debug("Cannot play: No audio file loaded");
-			}
-		}
-
-		private void PauseButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (mediaPlayer.Source != null)
-			{
-				Log.Information("Pausing audio");
-				mediaPlayer.Pause();
-				playbackTimer.Stop();
-			}
-			else
-			{
-				Log.Debug("Cannot pause: No audio file loaded");
-			}
-		}
-
-		private void StopButton_Click(object sender, RoutedEventArgs e)
-		{
-			if (mediaPlayer.Source != null)
-			{
-				Log.Information("Stopping audio");
-				mediaPlayer.Position = TimeSpan.Zero;
-				mediaPlayer.Pause();
-				playbackTimer.Stop();
-
-				PlaybackProgress.Reset();
-			}
-			else
-			{
-				Log.Debug("Cannot stop: No audio file loaded");
 			}
 		}
 
@@ -220,61 +190,6 @@ namespace AudioSpectrumPlayer.Views
 			LogDisplay.Log("Log cleared");
 		}
 		#endregion
-
-		private void VolumeControl_VolumeChanged(object? sender, double volume)
-		{
-			try
-			{
-				if (mediaPlayer != null)
-				{
-					mediaPlayer.Volume = volume;
-					// This log is called a lot, only enable when needed
-					//Log.Information($"Volume changed to {(int)(volume * 100)}%");
-				}
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "VolumeControl_VolumeChanged");
-			}
-		}
-
-		public async Task LoadAudioFileAsync(string filePath)
-		{
-			try
-			{
-				Log.Information($"Loading audio file: {filePath}");
-
-				if (!System.IO.File.Exists(filePath))
-				{
-					Log.Error($"Error: File not found: {filePath}");
-					return;
-				}
-				currentFilePath = filePath;
-				Uri uri = new(filePath);
-				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
-
-				DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
-				{
-					try
-					{
-						mediaPlayer.Source = mediaSource;
-						playbackTimer.Start();
-						Title = $"Audio Spectrum Player - {Path.GetFileName(filePath)}";
-						Log.Information("Media source set successfully");
-					}
-					catch (Exception ex)
-					{
-						Log.Error(ex, "Setting media source on dispatcher");
-					}
-					//await Task.CompletedTask; // only for the IDE to be happy
-				});
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "Load Audio File failed");
-			}
-			await Task.CompletedTask; // only for the IDE to be happy
-		}
 
 		#region Progress Bar
 		private void PlaybackProgress_PositionChanged(object? sender, double e)

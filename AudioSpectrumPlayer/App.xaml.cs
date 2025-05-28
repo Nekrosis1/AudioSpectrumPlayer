@@ -90,7 +90,7 @@ namespace AudioSpectrumPlayer
 						Log.Debug($"Found file to open: {filePath}");
 						if (m_window is MainWindow mainWindow)
 						{
-							await mainWindow.LoadAudioFileAsync(filePath);
+							await mainWindow.ViewModel.LoadAudioFileAsync(filePath);
 						}
 						else
 						{

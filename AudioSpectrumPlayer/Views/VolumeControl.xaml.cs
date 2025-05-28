@@ -1,9 +1,11 @@
+using AudioSpectrumPlayer.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Serilog;
 using System;
+using System.ComponentModel;
 using Windows.Foundation;
 
 namespace AudioSpectrumPlayer.Views
@@ -11,41 +13,13 @@ namespace AudioSpectrumPlayer.Views
 	public sealed partial class VolumeControl : UserControl
 	{
 		private bool _isDragging = false;
-		private double _currentVolume = 1.0;
-
-		public event EventHandler<double>? VolumeChanged;
-
-		public static readonly DependencyProperty VolumeProperty =
-			DependencyProperty.Register(
-				nameof(Volume),
-				typeof(double),
-				typeof(VolumeControl),
-				new PropertyMetadata(1.0, OnVolumeChanged));
-
-		public double Volume
-		{
-			get => (double)GetValue(VolumeProperty);
-			set => SetValue(VolumeProperty, value);
-		}
-
-		private static void OnVolumeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (d is VolumeControl control)
-			{
-				control._currentVolume = (double)e.NewValue;
-				control.UpdateVolumeUI();
-			}
-		}
+		private AudioPlayerViewModel? _currentViewModel; // Track current ViewModel
 
 		public VolumeControl()
 		{
 			this.InitializeComponent();
-
-			_currentVolume = 1.0;
-			UpdateVolumeUI();
-
-			// Make sure the canvas and paths resize properly
 			SizeChanged += VolumeControl_SizeChanged;
+			DataContextChanged += VolumeControl_DataContextChanged;
 		}
 
 		private void VolumeControl_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -86,8 +60,40 @@ namespace AudioSpectrumPlayer.Views
 			hitArea.Height = height;
 		}
 
+		private void VolumeControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+		{
+			// Unsubscribe from the previous ViewModel if it exists
+			if (_currentViewModel != null)
+			{
+				_currentViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+			}
+
+			// Subscribe to the new ViewModel
+			if (args.NewValue is AudioPlayerViewModel viewModel)
+			{
+				_currentViewModel = viewModel;
+				viewModel.PropertyChanged += ViewModel_PropertyChanged;
+				UpdateVolumeUI(); // Initial update
+			}
+			else
+			{
+				_currentViewModel = null;
+			}
+		}
+
+		private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(AudioPlayerViewModel.Volume))
+			{
+				UpdateVolumeUI();
+			}
+		}
+
+
 		private void UpdateVolumeUI()
 		{
+			double currentVolume = GetCurrentVolume();
+
 			double width = volumeCanvas.ActualWidth;
 			double height = volumeCanvas.ActualHeight;
 
@@ -97,8 +103,8 @@ namespace AudioSpectrumPlayer.Views
 				height = 32;
 			}
 
-			double volumeX = width * _currentVolume;
-			double volumeY = height - (height * _currentVolume);
+			double volumeX = width * currentVolume;
+			double volumeY = height - (height * currentVolume);
 
 			PathGeometry pathGeometry = new PathGeometry();
 			PathFigure figure = new PathFigure
@@ -113,14 +119,14 @@ namespace AudioSpectrumPlayer.Views
 			pathGeometry.Figures.Add(figure);
 			volumeIndicator.Data = pathGeometry;
 
-			int percentage = (int)(_currentVolume * 100);
+			int percentage = (int)(currentVolume * 100);
 			volumePercentage.Text = $"{percentage}%";
 		}
 
 		private void VolumeCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)
 		{
 			_isDragging = true;
-			//volumeCanvas.CapturePointer(e.Pointer);
+			volumeCanvas.CapturePointer(e.Pointer);
 			UpdateVolumeFromPointerPosition(e.GetCurrentPoint(volumeCanvas).Position);
 		}
 
@@ -139,11 +145,7 @@ namespace AudioSpectrumPlayer.Views
 						double clampedX = Math.Clamp(position.X, 0, volumeCanvas.ActualWidth);
 						double newVolume = clampedX / volumeCanvas.ActualWidth;
 
-						// Update volume with clamped value
-						_currentVolume = Math.Clamp(newVolume, 0, 1);
-						Volume = _currentVolume;
-						UpdateVolumeUI();
-						VolumeChanged?.Invoke(this, _currentVolume);
+						SetVolumeInViewModel(Math.Clamp(newVolume, 0, 1));
 
 						// End the dragging operation
 						_isDragging = false;
@@ -154,7 +156,6 @@ namespace AudioSpectrumPlayer.Views
 					{
 						// Normal update within bounds
 						UpdateVolumeFromPointerPosition(position);
-						Log.Warning("Volume update PointerMoved");
 					}
 				}
 			}
@@ -172,10 +173,7 @@ namespace AudioSpectrumPlayer.Views
 				double clampedX = Math.Clamp(position.X, 0, volumeCanvas.ActualWidth);
 				double newVolume = clampedX / volumeCanvas.ActualWidth;
 
-				_currentVolume = Math.Clamp(newVolume, 0, 1);
-				Volume = _currentVolume;
-				UpdateVolumeUI();
-				VolumeChanged?.Invoke(this, _currentVolume);
+				SetVolumeInViewModel(Math.Clamp(newVolume, 0, 1));
 				Log.Debug("Volume update Clamped PointerReleased");
 			}
 		}
@@ -197,14 +195,27 @@ namespace AudioSpectrumPlayer.Views
 
 			// Constrain to valid range
 			double newVolume = Math.Clamp(position.X / width, 0, 1);
-
-			// Only update if volume has changed
-			if (Math.Abs(_currentVolume - newVolume) > 0.001)
+			double currentVolume = GetCurrentVolume();
+			if (Math.Abs(currentVolume - newVolume) > 0.001)
 			{
-				_currentVolume = newVolume;
-				Volume = newVolume;
-				UpdateVolumeUI();
-				VolumeChanged?.Invoke(this, newVolume);
+				SetVolumeInViewModel(newVolume);
+			}
+		}
+
+		private double GetCurrentVolume()
+		{
+			if (DataContext is AudioPlayerViewModel viewModel)
+			{
+				return viewModel.Volume;
+			}
+			return 1.0; // Default value
+		}
+
+		private void SetVolumeInViewModel(double volume)
+		{
+			if (DataContext is AudioPlayerViewModel viewModel)
+			{
+				viewModel.Volume = volume;
 			}
 		}
 	}

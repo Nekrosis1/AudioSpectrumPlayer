@@ -30,7 +30,9 @@
         </Border>
          <!--Progress Bar-->
         <Grid Grid.Row="1" Margin="0,0,0,12">
-            <local:PlaybackProgressControl x:Name="PlaybackProgress" />
+            <local:PlaybackProgressControl x:Name="PlaybackProgress"
+                CurrentPosition="{x:Bind ViewModel.CurrentPosition, Mode=OneWay}"
+                TotalDuration="{x:Bind ViewModel.TotalDuration, Mode=OneWay}"/>
         </Grid>
 
 
@@ -64,8 +66,10 @@
                     Content="Clear Log"
                     Click="ClearLogButton_Click"/>
         </StackPanel>
+            <!-- Volume Controls -->
             <local:VolumeControl Grid.Column="1"
                          x:Name="VolumeControl"
+                         DataContext="{x:Bind ViewModel}"
                          HorizontalAlignment="Right"
                          Width="240" />
         </Grid>

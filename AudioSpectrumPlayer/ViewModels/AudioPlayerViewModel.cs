@@ -1,10 +1,12 @@
-﻿using AudioSpectrumPlayer.Views;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Serilog;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Windows.Media.Core;
 using Windows.Media.Playback;
 
 namespace AudioSpectrumPlayer.ViewModels
@@ -13,13 +15,17 @@ namespace AudioSpectrumPlayer.ViewModels
 	{
 		private MediaPlayer _mediaPlayer;
 		private DispatcherTimer _playbackTimer;
+
+		[ObservableProperty]
 		private string _currentFilePath;
 		[ObservableProperty]
 		private TimeSpan _currentPosition;
-
 		[ObservableProperty]
 		private TimeSpan _totalDuration;
-		private double _volume;
+		[ObservableProperty]
+		private string _windowTitle = "Audio Player";
+		[ObservableProperty]
+		private double _volume = 1.0;
 
 		public ICommand PlayCommand { get; }
 		public ICommand PauseCommand { get; }
@@ -84,7 +90,7 @@ namespace AudioSpectrumPlayer.ViewModels
 					}
 				};
 
-				VolumeControl.VolumeChanged += VolumeControl_VolumeChanged;
+				//VolumeControl.VolumeChanged += VolumeControl_VolumeChanged;
 
 				Log.Debug("MediaPlayer initialized successfully");
 			}
@@ -98,8 +104,8 @@ namespace AudioSpectrumPlayer.ViewModels
 		{
 			if (_mediaPlayer.Source != null)
 			{
-				PlaybackProgress.CurrentPosition = TimeSpan.Zero;
-				PlaybackProgress.TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
+				CurrentPosition = TimeSpan.Zero;
+				TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
 				if (_mediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
 				{
 					_playbackTimer.Start();
@@ -115,8 +121,8 @@ namespace AudioSpectrumPlayer.ViewModels
 				if (_mediaPlayer?.PlaybackSession != null &&
 					_mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
 				{
-					PlaybackProgress.CurrentPosition = _mediaPlayer.PlaybackSession.Position;
-					PlaybackProgress.TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
+					CurrentPosition = _mediaPlayer.PlaybackSession.Position;
+					TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
 				}
 			}
 			catch (Exception ex)
@@ -125,10 +131,82 @@ namespace AudioSpectrumPlayer.ViewModels
 			}
 		}
 
-		private async Task LoadAudioFileAsync(string filePath)
+		public void Play()
 		{
-			// Move file loading logic from MainWindow
+			if (_mediaPlayer.Source != null)
+			{
+				Log.Information("Playing audio");
+				_mediaPlayer.Play();
+			}
 		}
 
+		public void Pause()
+		{
+			if (_mediaPlayer.Source != null)
+			{
+				Log.Information("Pausing audio");
+				_mediaPlayer.Pause();
+				_playbackTimer.Stop();
+			}
+		}
+
+		public void Stop()
+		{
+			if (_mediaPlayer.Source != null)
+			{
+				Log.Information("Stopping audio");
+				_mediaPlayer.Position = TimeSpan.Zero;
+				_mediaPlayer.Pause();
+				_playbackTimer.Stop();
+				CurrentPosition = TimeSpan.Zero;
+			}
+		}
+
+		partial void OnVolumeChanged(double value)
+		{
+			if (_mediaPlayer != null)
+			{
+				_mediaPlayer.Volume = value;
+				Log.Debug($"Volume changed to {(int)(value * 100)}%");
+			}
+		}
+
+		public async Task LoadAudioFileAsync(string filePath)
+		{
+			try
+			{
+				Log.Information($"Loading audio file: {filePath}");
+
+				if (!System.IO.File.Exists(filePath))
+				{
+					Log.Error($"Error: File not found: {filePath}");
+					return;
+				}
+				_currentFilePath = filePath;
+				Uri uri = new(filePath);
+				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
+
+				DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+				{
+					try
+					{
+						_mediaPlayer.Source = mediaSource;
+						_playbackTimer.Start();
+						_windowTitle = $"Audio Spectrum Player - {Path.GetFileName(filePath)}";
+						Log.Information("Media source set successfully");
+					}
+					catch (Exception ex)
+					{
+						Log.Error(ex, "Setting media source on dispatcher");
+					}
+					//await Task.CompletedTask; // only for the IDE to be happy
+				});
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Load Audio File failed");
+			}
+			await Task.CompletedTask; // only for the IDE to be happy
+		}
 	}
 }
