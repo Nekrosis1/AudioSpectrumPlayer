@@ -31,8 +31,7 @@
          <!--Progress Bar-->
         <Grid Grid.Row="1" Margin="0,0,0,12">
             <local:PlaybackProgressControl x:Name="PlaybackProgress"
-                CurrentPosition="{x:Bind ViewModel.CurrentPosition, Mode=OneWay}"
-                TotalDuration="{x:Bind ViewModel.TotalDuration, Mode=OneWay}"/>
+                DataContext="{x:Bind ViewModel}"/>
         </Grid>
 
 

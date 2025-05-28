@@ -1,125 +1,81 @@
+using AudioSpectrumPlayer.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Input;
 using Serilog;
 using System;
+using System.ComponentModel;
 
 namespace AudioSpectrumPlayer.Views
 {
 	public partial class PlaybackProgressControl : UserControl
 	{
-		private bool _isDragging = false;
-
-		public event EventHandler<double>? PositionChanged;
-
-		public static readonly DependencyProperty CurrentPositionProperty =
-			DependencyProperty.Register(
-				nameof(CurrentPosition),
-				typeof(TimeSpan),
-				typeof(PlaybackProgressControl),
-				new PropertyMetadata(TimeSpan.Zero, OnCurrentPositionChanged));
-
-		public static readonly DependencyProperty TotalDurationProperty =
-			DependencyProperty.Register(
-				nameof(TotalDuration),
-				typeof(TimeSpan),
-				typeof(PlaybackProgressControl),
-				new PropertyMetadata(TimeSpan.Zero, OnTotalDurationChanged));
-
-		public TimeSpan CurrentPosition
-		{
-			get => (TimeSpan)GetValue(CurrentPositionProperty);
-			set => SetValue(CurrentPositionProperty, value);
-		}
-
-		public TimeSpan TotalDuration
-		{
-			get => (TimeSpan)GetValue(TotalDurationProperty);
-			set => SetValue(TotalDurationProperty, value);
-		}
-
-		private static void OnCurrentPositionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			//Logger.Log("OnCurrentPositionChanged");
-			if (d is PlaybackProgressControl control && !control._isDragging)
-			{
-				control.UpdateProgressUI();
-			}
-		}
-
-		private static void OnTotalDurationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-		{
-			if (d is PlaybackProgressControl control)
-			{
-				control.UpdateProgressUI();
-			}
-		}
+		private AudioPlayerViewModel? _currentViewModel;
 
 		public PlaybackProgressControl()
 		{
 			this.InitializeComponent();
+			DataContextChanged += PlaybackProgressControl_DataContextChanged;
 			Log.Debug("PlaybackProgressControl INIT");
-			//this.DragStarting += ProgressSlider_DragStarting;
-			//this.Holding += ProgressSlider_Holding;
-			//this.ManipulationStarting += ProgressSlider_ManipulationStarting;
-			//this.PointerPressed += ProgressSlider_PointerPressed;
-			//this.PointerReleased += ProgressSlider_PointerReleased;
-
 		}
 
-		public void ProgressSlider_PointerPressed(object sender, PointerRoutedEventArgs e)
+		private void PlaybackProgressControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
 		{
-			Log.Debug($"PointerPressed");
-			//_isDragging = true;
+			// Unsubscribe from previous ViewModel
+			if (_currentViewModel != null)
+			{
+				_currentViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+			}
+
+			// Subscribe to new ViewModel
+			if (args.NewValue is AudioPlayerViewModel viewModel)
+			{
+				_currentViewModel = viewModel;
+				viewModel.PropertyChanged += ViewModel_PropertyChanged;
+				UpdateProgressUI(); // Initial update
+			}
+			else
+			{
+				_currentViewModel = null;
+			}
 		}
 
-		public void ProgressSlider_PointerReleased(object sender, PointerRoutedEventArgs e)
+		private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			//double newPosition = progressSlider.Value / 100.0;
-			Log.Debug($"PointerReleased");
-			//_isDragging = false;
-			//PositionChanged?.Invoke(this, newPosition);
-		}
-
-		public void ProgressSlider_DragStarting(UIElement sender, DragStartingEventArgs args)
-		{
-			Log.Debug($"DragStarting");
-		}
-
-		public void ProgressSlider_DragEnter(object sender, DragEventArgs e)
-		{
-			Log.Debug($"DragEnter");
-		}
-
-		private void ProgressSlider_ManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
-		{
-			Log.Debug($"ManipulationStarting");
-		}
-
-		private void ProgressSlider_Holding(object sender, dynamic e)
-		{
-			Log.Debug($"Holding");
+			if (e.PropertyName == nameof(AudioPlayerViewModel.CurrentPosition) ||
+				e.PropertyName == nameof(AudioPlayerViewModel.TotalDuration))
+			{
+				UpdateProgressUI();
+			}
 		}
 
 		private void ProgressSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
-			//Debug.WriteLine($"Is Dragging: {_isDragging}");
-			PositionChanged?.Invoke(this, e.NewValue / 100.0);
-			//if (_isDragging)
-			//{
-			//}
+			SeekToPosition(e.NewValue / 100.0);
+		}
+
+		private void SeekToPosition(double percentage)
+		{
+			_currentViewModel?.SeekToPosition(percentage);
 		}
 
 		public void UpdateProgressUI()
 		{
-			if (TotalDuration.TotalMilliseconds > 0)
+			if (_currentViewModel == null) return;
+
+			var currentPosition = _currentViewModel.CurrentPosition;
+			var totalDuration = _currentViewModel.TotalDuration;
+
+			if (totalDuration.TotalMilliseconds > 0)
 			{
-				double progress = (CurrentPosition.TotalMilliseconds / TotalDuration.TotalMilliseconds) * 100;
+				double progress = (currentPosition.TotalMilliseconds / totalDuration.TotalMilliseconds) * 100;
+
+
 				progressSlider.Value = progress;
 
-				string currentTime = FormatTimeSpan(CurrentPosition);
-				string totalTime = FormatTimeSpan(TotalDuration);
+
+				string currentTime = FormatTimeSpan(currentPosition);
+				string totalTime = FormatTimeSpan(totalDuration);
 				timeDisplay.Text = $"{currentTime} / {totalTime}";
 			}
 			else
@@ -138,11 +94,9 @@ namespace AudioSpectrumPlayer.Views
 
 		public void Reset()
 		{
-			CurrentPosition = TimeSpan.Zero;
-			UpdateProgressUI();
+			progressSlider.Value = 0;
+			timeDisplay.Text = "00:00 / 00:00";
 		}
-
-
 	}
 }
 

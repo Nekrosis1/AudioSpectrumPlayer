@@ -13,8 +13,8 @@ namespace AudioSpectrumPlayer.ViewModels
 {
 	public partial class AudioPlayerViewModel : ObservableObject
 	{
-		private MediaPlayer _mediaPlayer;
-		private DispatcherTimer _playbackTimer;
+		private MediaPlayer _mediaPlayer = null!;
+		private DispatcherTimer _playbackTimer = null!;
 
 		[ObservableProperty]
 		private string _currentFilePath;
@@ -207,6 +207,37 @@ namespace AudioSpectrumPlayer.ViewModels
 				Log.Error(ex, "Load Audio File failed");
 			}
 			await Task.CompletedTask; // only for the IDE to be happy
+		}
+
+		public void SeekToPosition(double percentage)
+		{
+			try
+			{
+				if (_mediaPlayer?.PlaybackSession != null &&
+					_mediaPlayer.PlaybackSession.CanSeek &&
+					_mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
+				{
+					TimeSpan newPosition = TimeSpan.FromMilliseconds(
+						percentage * _mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds);
+
+					_mediaPlayer.PlaybackSession.Position = newPosition;
+
+					// Update the property so UI reflects the change immediately
+					CurrentPosition = newPosition;
+
+					Log.Debug($"Seeked to position: {FormatTimeSpan(newPosition)}");
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "SeekToPosition");
+			}
+		}
+		private static string FormatTimeSpan(TimeSpan timeSpan)
+		{
+			return timeSpan.Hours > 0
+				? $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}"
+				: $"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
 		}
 	}
 }

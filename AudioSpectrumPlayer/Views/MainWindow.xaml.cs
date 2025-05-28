@@ -4,7 +4,6 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.IO;
-using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
@@ -15,16 +14,16 @@ namespace AudioSpectrumPlayer.Views
 	/// </summary>
 	public sealed partial class MainWindow : Window
 	{
-		private MediaPlayer mediaPlayer = null!;
-		private DispatcherTimer playbackTimer = null!;
+		//private MediaPlayer mediaPlayer = null!;
+		//private DispatcherTimer playbackTimer = null!;
 		public AudioPlayerViewModel ViewModel { get; }
 		private string? currentFilePath;
 		public MainWindow()
 		{
 			this.InitializeComponent();
 			ViewModel = new AudioPlayerViewModel();
-			InitializeMediaPlayer();
-			PlaybackProgress.PositionChanged += PlaybackProgress_PositionChanged;
+			//InitializeMediaPlayer();
+			//PlaybackProgress.PositionChanged += PlaybackProgress_PositionChanged;
 			MonitorWindowLifetime();
 			Title = "Audio Player";
 
@@ -43,64 +42,64 @@ namespace AudioSpectrumPlayer.Views
 			Log.Debug("Application started");
 		}
 
-		private void InitializeMediaPlayer()
-		{
-			try
-			{
-				Log.Debug("Initializing MediaPlayer");
+		//private void InitializeMediaPlayer()
+		//{
+		//	try
+		//	{
+		//		Log.Debug("Initializing MediaPlayer");
 
-				mediaPlayer = new MediaPlayer();
-				mediaPlayer.MediaOpened += (sender, args) =>
-				{
-					try
-					{
-						Log.Debug("Media opened successfully");
-						SetPlaybackTimer();
+		//		mediaPlayer = new MediaPlayer();
+		//		mediaPlayer.MediaOpened += (sender, args) =>
+		//		{
+		//			try
+		//			{
+		//				Log.Debug("Media opened successfully");
+		//				//SetPlaybackTimer();
 
-					}
-					catch (Exception ex)
-					{
-						Log.Error(ex, "MediaOpened event");
-					}
-				};
+		//			}
+		//			catch (Exception ex)
+		//			{
+		//				Log.Error(ex, "MediaOpened event");
+		//			}
+		//		};
 
-				mediaPlayer.MediaFailed += (sender, args) =>
-				{
-					try
-					{
-						Log.Error($"Media failed to load: {args.Error}");
-					}
-					catch (Exception ex)
-					{
-						Log.Error(ex, "MediaFailed event");
-					}
-				};
+		//		mediaPlayer.MediaFailed += (sender, args) =>
+		//		{
+		//			try
+		//			{
+		//				Log.Error($"Media failed to load: {args.Error}");
+		//			}
+		//			catch (Exception ex)
+		//			{
+		//				Log.Error(ex, "MediaFailed event");
+		//			}
+		//		};
 
-				mediaPlayer.PlaybackSession.PlaybackStateChanged += (sender, args) =>
-				{
-					try
-					{
-						Log.Debug($"Playback state changed to: {sender.PlaybackState}");
-					}
-					catch (Exception ex)
-					{
-						Log.Error(ex, "PlaybackStateChanged event");
-					}
-				};
+		//		mediaPlayer.PlaybackSession.PlaybackStateChanged += (sender, args) =>
+		//		{
+		//			try
+		//			{
+		//				Log.Debug($"Playback state changed to: {sender.PlaybackState}");
+		//			}
+		//			catch (Exception ex)
+		//			{
+		//				Log.Error(ex, "PlaybackStateChanged event");
+		//			}
+		//		};
 
-				playbackTimer = new DispatcherTimer
-				{
-					Interval = TimeSpan.FromMilliseconds(1000)
-				};
-				playbackTimer.Tick += PlaybackTimer_Tick;
+		//		playbackTimer = new DispatcherTimer
+		//		{
+		//			Interval = TimeSpan.FromMilliseconds(1000)
+		//		};
+		//		//playbackTimer.Tick += PlaybackTimer_Tick;
 
-				Log.Debug("MediaPlayer initialized successfully");
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "InitializeMediaPlayer");
-			}
-		}
+		//		Log.Debug("MediaPlayer initialized successfully");
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		Log.Error(ex, "InitializeMediaPlayer");
+		//	}
+		//}
 
 		private void MonitorWindowLifetime()
 		{
@@ -192,60 +191,60 @@ namespace AudioSpectrumPlayer.Views
 		#endregion
 
 		#region Progress Bar
-		private void PlaybackProgress_PositionChanged(object? sender, double e)
-		{
-			try
-			{
-				if (mediaPlayer?.PlaybackSession != null &&
-					mediaPlayer.PlaybackSession.CanSeek &&
-					mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
-				{
-					TimeSpan newPosition = TimeSpan.FromMilliseconds(
-						e * mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds);
+		//private void PlaybackProgress_PositionChanged(object? sender, double e)
+		//{
+		//	try
+		//	{
+		//		if (mediaPlayer?.PlaybackSession != null &&
+		//			mediaPlayer.PlaybackSession.CanSeek &&
+		//			mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
+		//		{
+		//			TimeSpan newPosition = TimeSpan.FromMilliseconds(
+		//				e * mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds);
 
-					mediaPlayer.PlaybackSession.Position = newPosition;
-					// This log is called a lot, only enable when needed
-					//Log.Information($"Playback Position changed: {FormatTimeSpan(newPosition)}");
+		//			mediaPlayer.PlaybackSession.Position = newPosition;
+		//			// This log is called a lot, only enable when needed
+		//			//Log.Information($"Playback Position changed: {FormatTimeSpan(newPosition)}");
 
-					PlaybackProgress.CurrentPosition = newPosition;
-				}
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "PlaybackProgress_PositionChanged");
-			}
-		}
+		//			PlaybackProgress.CurrentPosition = newPosition;
+		//		}
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		Log.Error(ex, "PlaybackProgress_PositionChanged");
+		//	}
+		//}
 
-		private void SetPlaybackTimer()
-		{
-			if (mediaPlayer.Source != null)
-			{
-				PlaybackProgress.CurrentPosition = TimeSpan.Zero;
-				PlaybackProgress.TotalDuration = mediaPlayer.PlaybackSession.NaturalDuration;
-				if (mediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
-				{
-					playbackTimer.Start();
-				}
-				Log.Debug($"Progress Bar Initialized");
-			}
-		}
+		//private void SetPlaybackTimer()
+		//{
+		//	if (mediaPlayer.Source != null)
+		//	{
+		//		PlaybackProgress.CurrentPosition = TimeSpan.Zero;
+		//		PlaybackProgress.TotalDuration = mediaPlayer.PlaybackSession.NaturalDuration;
+		//		if (mediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+		//		{
+		//			playbackTimer.Start();
+		//		}
+		//		Log.Debug($"Progress Bar Initialized");
+		//	}
+		//}
 
-		private void PlaybackTimer_Tick(object? sender, object e)
-		{
-			try
-			{
-				if (mediaPlayer?.PlaybackSession != null &&
-					mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
-				{
-					PlaybackProgress.CurrentPosition = mediaPlayer.PlaybackSession.Position;
-					PlaybackProgress.TotalDuration = mediaPlayer.PlaybackSession.NaturalDuration;
-				}
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "PlaybackTimer_Tick");
-			}
-		}
+		//private void PlaybackTimer_Tick(object? sender, object e)
+		//{
+		//	try
+		//	{
+		//		if (mediaPlayer?.PlaybackSession != null &&
+		//			mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
+		//		{
+		//			PlaybackProgress.CurrentPosition = mediaPlayer.PlaybackSession.Position;
+		//			PlaybackProgress.TotalDuration = mediaPlayer.PlaybackSession.NaturalDuration;
+		//		}
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		Log.Error(ex, "PlaybackTimer_Tick");
+		//	}
+		//}
 		#endregion
 	}
 }
