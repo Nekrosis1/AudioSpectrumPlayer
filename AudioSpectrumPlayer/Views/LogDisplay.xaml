@@ -13,6 +13,7 @@
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Auto">
             <TextBox x:Name="logTextBox"
+                     Text="{x:Bind ViewModel.LogText, Mode=OneWay}"
                      AcceptsReturn="True"
                      IsReadOnly="True" 
                      TextWrapping="Wrap"

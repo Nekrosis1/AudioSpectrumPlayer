@@ -24,8 +24,8 @@ namespace AudioSpectrumPlayer
 
 		public App()
 		{
-			ConfigureLogging();
 			ConfigureServices();
+			ConfigureLogging();
 
 			this.InitializeComponent();
 			Log.Debug("Application components initialized");
@@ -38,9 +38,9 @@ namespace AudioSpectrumPlayer
 			var loggerConfig = new LoggerConfiguration()
 				.MinimumLevel.Debug()
 				.Enrich.WithThreadId()
-				.WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Warning,
+				.WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Information,
 					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
-				.WriteTo.LogDisplay(_logDisplay, restrictedToMinimumLevel: LogEventLevel.Debug,
+				.WriteTo.LogDisplay(_logDisplay, restrictedToMinimumLevel: LogEventLevel.Warning,
 					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
 				.WriteTo.File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt"),
 					rollingInterval: RollingInterval.Day,
@@ -48,7 +48,7 @@ namespace AudioSpectrumPlayer
 
 			Log.Logger = loggerConfig.CreateLogger();
 			Log.Information("Application starting");
-			Log.Warning($"Logs Written to {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt")}");
+			Log.Information($"Logs Written to {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-[Date].txt")}");
 
 			SetupExceptionHandling();
 		}
@@ -65,9 +65,6 @@ namespace AudioSpectrumPlayer
 					services.AddTransient<AudioPlayerViewModel>();
 					services.AddSingleton<LogViewModel>();
 
-					// Register LogDisplay as singleton since we need the same instance everywhere
-					services.AddSingleton(_logDisplay ?? throw new InvalidOperationException("LogDisplay not initialized"));
-
 					// Views
 					services.AddTransient<MainWindow>();
 				});
@@ -75,7 +72,7 @@ namespace AudioSpectrumPlayer
 			_host = hostBuilder.Build();
 		}
 
-		private void SetupExceptionHandling()
+		private static void SetupExceptionHandling()
 		{
 			AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
 			{

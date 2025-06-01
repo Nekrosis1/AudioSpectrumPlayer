@@ -1,9 +1,7 @@
 using AudioSpectrumPlayer.ViewModels;
 using Microsoft.UI.Xaml;
 using Serilog;
-using Serilog.Events;
 using System;
-using System.IO;
 
 namespace AudioSpectrumPlayer.Views
 {
@@ -13,27 +11,13 @@ namespace AudioSpectrumPlayer.Views
 	public sealed partial class MainWindow : Window
 	{
 		public AudioPlayerViewModel ViewModel { get; }
-		public MainWindow(AudioPlayerViewModel viewModel, LogDisplay logDisplay)
+		public MainWindow(AudioPlayerViewModel viewModel)
 		{
 			this.InitializeComponent();
 			ViewModel = viewModel;
-			LogDisplay = logDisplay;
 			MonitorWindowLifetime();
 			Title = "Audio Player";
-
-			var loggerConfig = new LoggerConfiguration()
-				.MinimumLevel.Debug()
-				.Enrich.WithThreadId()
-				.WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Warning,
-					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
-				.WriteTo.LogDisplay(LogDisplay, restrictedToMinimumLevel: LogEventLevel.Debug,
-					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
-				.WriteTo.File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt"),
-					rollingInterval: RollingInterval.Day,
-					outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}");
-
-			Log.Logger = loggerConfig.CreateLogger();
-			Log.Debug("Application started");
+			Log.Information("Application started");
 		}
 
 		private void MonitorWindowLifetime()

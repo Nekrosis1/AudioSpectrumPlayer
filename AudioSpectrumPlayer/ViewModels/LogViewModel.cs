@@ -3,13 +3,12 @@ using System.Text;
 
 namespace AudioSpectrumPlayer.ViewModels
 {
-	public class LogViewModel : ObservableObject
+	public partial class LogViewModel : ObservableObject
 	{
-		private StringBuilder _logBuilder = new();
+		private readonly StringBuilder _logBuilder = new();
 
 		public void Log(string message)
 		{
-			// Centralized logging logic
 			_logBuilder.Append(message);
 			OnPropertyChanged(nameof(LogText));
 		}

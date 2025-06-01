@@ -1,3 +1,4 @@
+using AudioSpectrumPlayer.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,10 +10,12 @@ namespace AudioSpectrumPlayer.Views
 	{
 		private readonly StringBuilder _logBuilder = new();
 		private DispatcherQueue _dispatcherQueue;
+		public LogViewModel ViewModel { get; private set; }
 
 		public LogDisplay()
 		{
 			this.InitializeComponent();
+			ViewModel = App.GetRequiredService<LogViewModel>();
 			_dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 		}
 
@@ -25,8 +28,8 @@ namespace AudioSpectrumPlayer.Views
 
 			_dispatcherQueue?.TryEnqueue(() =>
 			{
-
-				logTextBox.Text = _logBuilder.ToString();
+				ViewModel.Log(message);
+				//logTextBox.Text = _logBuilder.ToString();
 
 				// Auto-scroll to the bottom
 				logTextBox.Select(logTextBox.Text.Length, 0);
