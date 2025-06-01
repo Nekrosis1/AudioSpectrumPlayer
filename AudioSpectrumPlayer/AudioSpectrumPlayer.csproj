@@ -88,8 +88,11 @@
 		<Optimize>False</Optimize>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)' != 'Debug'">
-		<PublishReadyToRun>True</PublishReadyToRun>
-		<PublishTrimmed>True</PublishTrimmed>
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimMode>partial</TrimMode>
+		<DebuggerSupport>false</DebuggerSupport>
+		<EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
 	</PropertyGroup>
 </Project>
