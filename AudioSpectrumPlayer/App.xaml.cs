@@ -31,7 +31,7 @@ namespace AudioSpectrumPlayer
 			Log.Debug("Application components initialized");
 		}
 
-		private void ConfigureLogging()
+		private static void ConfigureLogging()
 		{
 			_logDisplay = new LogDisplay();
 
@@ -62,11 +62,11 @@ namespace AudioSpectrumPlayer
 					services.AddSingleton<IAudioFileService, AudioFileService>();
 
 					// ViewModels
-					services.AddTransient<AudioPlayerViewModel>();
+					services.AddSingleton<AudioPlayerViewModel>();
 					services.AddSingleton<LogViewModel>();
 
 					// Views
-					services.AddTransient<MainWindow>();
+					services.AddSingleton<MainWindow>();
 				});
 
 			_host = hostBuilder.Build();
