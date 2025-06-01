@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using AudioSpectrumPlayer.Services;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Serilog;
@@ -14,6 +15,7 @@ namespace AudioSpectrumPlayer.ViewModels
 	{
 		private MediaPlayer _mediaPlayer = null!;
 		private DispatcherTimer _playbackTimer = null!;
+		private readonly IAudioFileService _audioFileService;
 
 		[ObservableProperty]
 		private string _currentFilePath;
@@ -26,10 +28,10 @@ namespace AudioSpectrumPlayer.ViewModels
 		[ObservableProperty]
 		private double _volume = 1.0;
 
-		public AudioPlayerViewModel()
+		public AudioPlayerViewModel(IAudioFileService audioFileService)
 		{
+			_audioFileService = audioFileService;
 			InitializeMediaPlayer();
-			//SetupCommands();
 		}
 
 		private void InitializeMediaPlayer()
@@ -51,7 +53,7 @@ namespace AudioSpectrumPlayer.ViewModels
 					try
 					{
 						Log.Debug("Media opened successfully");
-						SetPlaybackTimer();
+						InitializePlaybackState();
 
 					}
 					catch (Exception ex)
@@ -94,17 +96,42 @@ namespace AudioSpectrumPlayer.ViewModels
 			}
 		}
 
-		private void SetPlaybackTimer()
+		private void InitializePlaybackState()
 		{
-			if (_mediaPlayer.Source != null)
+			DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
 			{
-				CurrentPosition = TimeSpan.Zero;
-				TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
-				if (_mediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+				if (_mediaPlayer.Source != null)
 				{
-					_playbackTimer.Start();
+					CurrentPosition = TimeSpan.Zero;
+					TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
+
+					if (_mediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+					{
+						_playbackTimer.Start();
+					}
+					Log.Debug("Progress Bar Initialized");
 				}
-				Log.Debug($"Progress Bar Initialized");
+			});
+		}
+
+		public async Task<bool> SelectAndLoadAudioFileAsync(nint windowHandle)
+		{
+			try
+			{
+				string? filePath = await _audioFileService.PickAudioFileAsync(windowHandle);
+
+				if (!string.IsNullOrEmpty(filePath))
+				{
+					await LoadAudioFileAsync(filePath);
+					return true;
+				}
+
+				return false;
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Error selecting and loading audio file");
+				return false;
 			}
 		}
 

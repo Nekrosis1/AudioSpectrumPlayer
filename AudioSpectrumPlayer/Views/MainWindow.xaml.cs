@@ -4,8 +4,6 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.IO;
-using Windows.Storage;
-using Windows.Storage.Pickers;
 
 namespace AudioSpectrumPlayer.Views
 {
@@ -15,10 +13,11 @@ namespace AudioSpectrumPlayer.Views
 	public sealed partial class MainWindow : Window
 	{
 		public AudioPlayerViewModel ViewModel { get; }
-		public MainWindow()
+		public MainWindow(AudioPlayerViewModel viewModel, LogDisplay logDisplay)
 		{
 			this.InitializeComponent();
-			ViewModel = new AudioPlayerViewModel();
+			ViewModel = viewModel;
+			LogDisplay = logDisplay;
 			MonitorWindowLifetime();
 			Title = "Audio Player";
 
@@ -27,7 +26,7 @@ namespace AudioSpectrumPlayer.Views
 				.Enrich.WithThreadId()
 				.WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Warning,
 					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
-				.WriteTo.LogDisplay(LogDisplay, restrictedToMinimumLevel: LogEventLevel.Warning,
+				.WriteTo.LogDisplay(LogDisplay, restrictedToMinimumLevel: LogEventLevel.Debug,
 					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
 				.WriteTo.File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt"),
 					rollingInterval: RollingInterval.Day,
@@ -91,31 +90,8 @@ namespace AudioSpectrumPlayer.Views
 
 		private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
 		{
-			var picker = new FileOpenPicker();
-
 			nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-			WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-
-			picker.FileTypeFilter.Add(".mp3");
-			picker.FileTypeFilter.Add(".mpeg");
-			picker.FileTypeFilter.Add(".wav");
-			picker.FileTypeFilter.Add(".m4a");
-			picker.FileTypeFilter.Add(".wma");
-			picker.FileTypeFilter.Add(".aac");
-			picker.FileTypeFilter.Add(".flac");
-			picker.FileTypeFilter.Add(".ogg");
-			picker.FileTypeFilter.Add(".aiff");
-
-			StorageFile file = await picker.PickSingleFileAsync();
-			if (file != null)
-			{
-				Log.Information($"File selected: {file.Path}");
-				await ViewModel.LoadAudioFileAsync(file.Path);
-			}
-			else
-			{
-				Log.Warning("File selection canceled or failed");
-			}
+			await ViewModel.SelectAndLoadAudioFileAsync(hwnd);
 		}
 
 		private void ClearLogButton_Click(object sender, RoutedEventArgs e)
