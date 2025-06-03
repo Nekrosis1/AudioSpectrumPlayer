@@ -1,6 +1,8 @@
-﻿using AudioSpectrumPlayer.Services;
-using AudioSpectrumPlayer.ViewModels;
-using AudioSpectrumPlayer.Views;
+﻿using AudioSpectrumPlayer.Core.Services;
+using AudioSpectrumPlayer.Core.ViewModels;
+using AudioSpectrumPlayer.Services;
+using AudioSpectrumPlayer.Shared.Services;
+using AudioSpectrumPlayer.WinUI.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -40,7 +42,7 @@ namespace AudioSpectrumPlayer
 				.Enrich.WithThreadId()
 				.WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Information,
 					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
-				.WriteTo.LogDisplay(_logDisplay, restrictedToMinimumLevel: LogEventLevel.Warning,
+				.WriteTo.LogDisplay(_logDisplay, restrictedToMinimumLevel: LogEventLevel.Debug,
 					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
 				.WriteTo.File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt"),
 					rollingInterval: RollingInterval.Day,
@@ -60,6 +62,8 @@ namespace AudioSpectrumPlayer
 				{
 					// Services
 					services.AddSingleton<IAudioFileService, AudioFileService>();
+					services.AddSingleton<IMediaPlayerService, WinMediaPlayerService>();
+
 
 					// ViewModels
 					services.AddSingleton<AudioPlayerViewModel>();
@@ -67,6 +71,8 @@ namespace AudioSpectrumPlayer
 
 					// Views
 					services.AddSingleton<MainWindow>();
+					services.AddSingleton<LogDisplay>(); // Add this
+					services.AddSingleton<ILogDisplayService>(provider => provider.GetRequiredService<LogDisplay>()); // Add this
 				});
 
 			_host = hostBuilder.Build();

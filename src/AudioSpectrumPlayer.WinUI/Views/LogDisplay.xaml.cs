@@ -1,12 +1,13 @@
-using AudioSpectrumPlayer.ViewModels;
+using AudioSpectrumPlayer.Core.Services;
+using AudioSpectrumPlayer.Core.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Text;
 
-namespace AudioSpectrumPlayer.Views
+namespace AudioSpectrumPlayer.WinUI.Views
 {
-	public sealed partial class LogDisplay : UserControl
+	public sealed partial class LogDisplay : UserControl, ILogDisplayService
 	{
 		private readonly StringBuilder _logBuilder = new();
 		private DispatcherQueue _dispatcherQueue;

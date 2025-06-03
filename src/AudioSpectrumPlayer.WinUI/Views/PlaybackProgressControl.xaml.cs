@@ -1,4 +1,4 @@
-using AudioSpectrumPlayer.ViewModels;
+using AudioSpectrumPlayer.Core.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -6,7 +6,7 @@ using Serilog;
 using System;
 using System.ComponentModel;
 
-namespace AudioSpectrumPlayer.Views
+namespace AudioSpectrumPlayer.WinUI.Views
 {
 	public partial class PlaybackProgressControl : UserControl
 	{
