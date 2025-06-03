@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Text;
 
-namespace AudioSpectrumPlayer.ViewModels
+namespace AudioSpectrumPlayer.Core.ViewModels
 {
 	public partial class LogViewModel : ObservableObject
 	{

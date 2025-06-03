@@ -1,10 +1,8 @@
-﻿using Serilog;
-using System;
-using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.Storage.Pickers;
+﻿using AudioSpectrumPlayer.Core.Services;
+using Serilog;
 
-namespace AudioSpectrumPlayer.Services
+
+namespace AudioSpectrumPlayer.Shared.Services
 {
 	public class AudioFileService : IAudioFileService
 	{

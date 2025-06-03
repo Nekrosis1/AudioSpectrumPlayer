@@ -1,15 +1,9 @@
-﻿using AudioSpectrumPlayer.Services;
+﻿using AudioSpectrumPlayer.Core.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Serilog;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Windows.Media.Core;
-using Windows.Media.Playback;
 
-namespace AudioSpectrumPlayer.ViewModels
+
+namespace AudioSpectrumPlayer.Core.ViewModels
 {
 	public partial class AudioPlayerViewModel : ObservableObject
 	{

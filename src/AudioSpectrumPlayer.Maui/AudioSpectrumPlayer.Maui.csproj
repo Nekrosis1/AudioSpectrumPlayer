@@ -60,8 +60,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.70" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
+		<PackageReference Include="Serilog" Version="4.3.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\AudioSpectrumPlayer.Core\AudioSpectrumPlayer.Core.csproj" />
+	  <ProjectReference Include="..\AudioSpectrumPlayer.Shared\AudioSpectrumPlayer.Shared.csproj" />
 	</ItemGroup>
 
 </Project>
