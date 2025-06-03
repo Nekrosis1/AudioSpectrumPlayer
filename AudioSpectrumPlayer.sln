@@ -10,13 +10,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7BD6D93E-C27B-4ED6-8D3C-98E135F6F2CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer.WinUI", "src\AudioSpectrumPlayer\AudioSpectrumPlayer.WinUI.csproj", "{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer.Core", "src\AudioSpectrumPlayer.Core\AudioSpectrumPlayer.Core.csproj", "{E3F2D6F9-9DB7-407F-8256-80FE87489052}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer.Shared", "src\AudioSpectrumPlayer.Shared\AudioSpectrumPlayer.Shared.csproj", "{75BAECF5-6906-4130-8069-AC57921C1891}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer.Maui", "src\AudioSpectrumPlayer.Maui\AudioSpectrumPlayer.Maui.csproj", "{B1D219FD-FC31-4D63-B0B4-D96D7093A67E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer.WinUI", "src\AudioSpectrumPlayer.WinUI\AudioSpectrumPlayer.WinUI.csproj", "{27D3B1EE-A728-613B-4898-08C457D7A78B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,10 +24,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E3F2D6F9-9DB7-407F-8256-80FE87489052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E3F2D6F9-9DB7-407F-8256-80FE87489052}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3F2D6F9-9DB7-407F-8256-80FE87489052}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -40,15 +36,19 @@ Global
 		{B1D219FD-FC31-4D63-B0B4-D96D7093A67E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1D219FD-FC31-4D63-B0B4-D96D7093A67E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1D219FD-FC31-4D63-B0B4-D96D7093A67E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27D3B1EE-A728-613B-4898-08C457D7A78B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27D3B1EE-A728-613B-4898-08C457D7A78B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27D3B1EE-A728-613B-4898-08C457D7A78B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27D3B1EE-A728-613B-4898-08C457D7A78B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6} = {7BD6D93E-C27B-4ED6-8D3C-98E135F6F2CD}
 		{E3F2D6F9-9DB7-407F-8256-80FE87489052} = {7BD6D93E-C27B-4ED6-8D3C-98E135F6F2CD}
 		{75BAECF5-6906-4130-8069-AC57921C1891} = {7BD6D93E-C27B-4ED6-8D3C-98E135F6F2CD}
 		{B1D219FD-FC31-4D63-B0B4-D96D7093A67E} = {7BD6D93E-C27B-4ED6-8D3C-98E135F6F2CD}
+		{27D3B1EE-A728-613B-4898-08C457D7A78B} = {7BD6D93E-C27B-4ED6-8D3C-98E135F6F2CD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A8F4434-B072-45DD-AFE0-2404979BD38F}
