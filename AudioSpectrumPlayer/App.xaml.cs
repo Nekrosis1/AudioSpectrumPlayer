@@ -1,3 +1,4 @@
+using AudioSpectrumPlayer.Services;
 using Uno.Resizetizer;
 
 namespace AudioSpectrumPlayer;
@@ -65,8 +66,12 @@ public partial class App : Application
                 .UseLocalization()
                 .ConfigureServices((context, services) =>
                 {
-                    // TODO: Register your services
-                    //services.AddSingleton<IMyService, MyService>();
+                    // Services
+                    services.AddSingleton<IAudioFileService, AudioFileService>();
+
+                    // ViewModels  
+                    services.AddSingleton<AudioPlayerViewModel>();
+                    services.AddSingleton<LogViewModel>();
                 })
                 .UseNavigation(RegisterRoutes)
             );
@@ -84,16 +89,14 @@ public partial class App : Application
     {
         views.Register(
             new ViewMap(ViewModel: typeof(ShellViewModel)),
-            new ViewMap<MainPage, MainViewModel>(),
-            new DataViewMap<SecondPage, SecondViewModel, Entity>()
-        );
+            new ViewMap<MainPage, AudioPlayerViewModel>()
+            );
 
         routes.Register(
             new RouteMap("", View: views.FindByViewModel<ShellViewModel>(),
                 Nested:
                 [
-                    new ("Main", View: views.FindByViewModel<MainViewModel>(), IsDefault:true),
-                    new ("Second", View: views.FindByViewModel<SecondViewModel>()),
+                    new ("Main", View: views.FindByViewModel<AudioPlayerViewModel>(), IsDefault:true),
                 ]
             )
         );
