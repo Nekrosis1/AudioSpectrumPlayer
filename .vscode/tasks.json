@@ -1,17 +1,31 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		 {
-			  "label": "build",
-			  "command": "dotnet",
-			  "type": "process",
-			  "args": [
-					"build",
-					"${workspaceFolder}/AudioSpectrumPlayer.csproj",
-					"/property:GenerateFullPaths=true",
-					"/consoleloggerparameters:NoSummary"
-			  ],
-			  "problemMatcher": "$msCompile"
-		 }
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-desktop",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/AudioSpectrumPlayer/AudioSpectrumPlayer.csproj",
+        "/property:GenerateFullPaths=true",
+        "/property:TargetFramework=net9.0-desktop",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish-desktop",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/AudioSpectrumPlayer/AudioSpectrumPlayer.csproj",
+        "/property:GenerateFullPaths=true",
+        "/property:TargetFramework=net9.0-desktop",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+  ]
 }

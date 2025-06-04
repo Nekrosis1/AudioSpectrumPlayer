@@ -1,16 +1,24 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35825.156
+VisualStudioVersion = 17.14.36121.58 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer", "AudioSpectrumPlayer\AudioSpectrumPlayer.csproj", "{6E42A571-1B3B-4AFF-BBB8-73E8332840FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer.UITests", "AudioSpectrumPlayer.UITests\AudioSpectrumPlayer.UITests.csproj", "{5DC1020B-7A3A-C565-10AF-757FB1BD4DE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer.Tests", "AudioSpectrumPlayer.Tests\AudioSpectrumPlayer.Tests.csproj", "{9546FD74-D188-5F81-D11A-1515F7B87E52}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E7742B46-9860-42A7-A836-B3BF04517154}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		Directory.Packages.props = Directory.Packages.props
+		global.json = global.json
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer", "src\AudioSpectrumPlayer\AudioSpectrumPlayer.csproj", "{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{37124ADD-8A99-468F-9D64-BBE382DF351D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,20 +26,33 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{6E42A571-1B3B-4AFF-BBB8-73E8332840FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E42A571-1B3B-4AFF-BBB8-73E8332840FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E42A571-1B3B-4AFF-BBB8-73E8332840FD}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{6E42A571-1B3B-4AFF-BBB8-73E8332840FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E42A571-1B3B-4AFF-BBB8-73E8332840FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E42A571-1B3B-4AFF-BBB8-73E8332840FD}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{5DC1020B-7A3A-C565-10AF-757FB1BD4DE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DC1020B-7A3A-C565-10AF-757FB1BD4DE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DC1020B-7A3A-C565-10AF-757FB1BD4DE4}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{5DC1020B-7A3A-C565-10AF-757FB1BD4DE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DC1020B-7A3A-C565-10AF-757FB1BD4DE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DC1020B-7A3A-C565-10AF-757FB1BD4DE4}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{9546FD74-D188-5F81-D11A-1515F7B87E52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9546FD74-D188-5F81-D11A-1515F7B87E52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9546FD74-D188-5F81-D11A-1515F7B87E52}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{9546FD74-D188-5F81-D11A-1515F7B87E52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9546FD74-D188-5F81-D11A-1515F7B87E52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9546FD74-D188-5F81-D11A-1515F7B87E52}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{E10CFE3C-9CA0-A00C-2B3C-FE93D85600F6} = {37124ADD-8A99-468F-9D64-BBE382DF351D}
+		{5DC1020B-7A3A-C565-10AF-757FB1BD4DE4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{9546FD74-D188-5F81-D11A-1515F7B87E52} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {6A8F4434-B072-45DD-AFE0-2404979BD38F}
+		SolutionGuid = {62B7C2CF-6BC1-49EC-8CAD-F153A6C226FC}
 	EndGlobalSection
 EndGlobal
