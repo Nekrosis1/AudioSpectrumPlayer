@@ -6,24 +6,79 @@
       xmlns:utu="using:Uno.Toolkit.UI"
       NavigationCacheMode="Required"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-  <ScrollViewer IsTabStop="True">
-    <Grid utu:SafeArea.Insets="VisibleBounds">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition />
-      </Grid.RowDefinitions>
-      <utu:NavigationBar Content="{Binding Title}" />
+    <Grid utu:SafeArea.Insets="VisibleBounds" Padding="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="150" />
+        </Grid.RowDefinitions>
 
-      <StackPanel Grid.Row="1"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Spacing="16">
-        <TextBox Text="{Binding Name, Mode=TwoWay}"
-            PlaceholderText="Enter your name:" />
-        <Button Content="Go to Second Page"
-            AutomationProperties.AutomationId="SecondPageButton"
-            Command="{Binding GoToSecond}" />
-      </StackPanel>
+        <!-- Audio Visualization Placeholder -->
+        <Border Grid.Row="0" 
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
+            BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            Margin="0,0,0,12">
+            <TextBlock HorizontalAlignment="Center" 
+                 VerticalAlignment="Center" 
+                 Text="Audio Visualization Area (Uno Platform)" />
+        </Border>
+
+        <!-- Progress Bar Placeholder -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <local:PlaybackProgressControl x:Name="PlaybackProgress"
+          DataContext="{x:Bind ViewModel}"/>
+        </Grid>
+
+        <!-- Audio Controls -->
+        <Grid Grid.Row="2" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" 
+                  Orientation="Horizontal" 
+                  HorizontalAlignment="Center"
+                  Spacing="8">
+                <Button x:Name="PlayButton" 
+                Content="&#xE768;"
+                FontFamily="Segoe MDL2 Assets"
+                Click="PlayButton_Click"/>
+                <Button x:Name="PauseButton" 
+                Content="&#xE769;"
+                FontFamily="Segoe MDL2 Assets"
+                Click="PauseButton_Click"/>
+                <Button x:Name="StopButton" 
+                Content="&#xE71A;"
+                FontFamily="Segoe MDL2 Assets"
+                Click="StopButton_Click"/>
+                <Button x:Name="OpenFileButton" 
+                Content="&#xE8E5;"
+                FontFamily="Segoe MDL2 Assets"
+                Click="OpenFileButton_Click"/>
+                <Button x:Name="ClearLogButton"
+                Content="Clear Log"
+                Click="ClearLogButton_Click"/>
+            </StackPanel>
+
+            <!-- Volume Control Placeholder -->
+            <local:VolumeControl Grid.Column="1"
+                   x:Name="VolumeControl"
+                   DataContext="{x:Bind ViewModel}"
+                   HorizontalAlignment="Right"
+                   Width="240" />
+        </Grid>
+
+        <!-- Log Display Placeholder -->
+        <Border Grid.Row="3"
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+            BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1">
+            <TextBlock HorizontalAlignment="Center" 
+                 VerticalAlignment="Center" 
+                 Text="Log Display (TODO)" />
+        </Border>
     </Grid>
-  </ScrollViewer>
 </Page>
