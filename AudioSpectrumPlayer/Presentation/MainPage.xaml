@@ -4,6 +4,7 @@
       xmlns:local="using:AudioSpectrumPlayer.Presentation"
       xmlns:uen="using:Uno.Extensions.Navigation.UI"
       xmlns:utu="using:Uno.Toolkit.UI"
+xmlns:media="using:Uno.UI.Toolkit"
       NavigationCacheMode="Required"
       Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Grid utu:SafeArea.Insets="VisibleBounds" Padding="12">
@@ -21,9 +22,10 @@
             BorderThickness="1"
             Margin="0,0,0,12">
             <TextBlock HorizontalAlignment="Center" 
-                 VerticalAlignment="Center" 
-                 Text="Audio Visualization Area (Uno Platform)" />
+                     VerticalAlignment="Center" 
+                     Text="Audio Visualization Area (Uno Platform)" />
         </Border>
+
 
         <!-- Progress Bar Placeholder -->
         <Grid Grid.Row="1" Margin="0,0,0,12">

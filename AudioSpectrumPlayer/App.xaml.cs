@@ -1,5 +1,6 @@
 using AudioSpectrumPlayer.Services;
 using AudioSpectrumPlayer.ViewModels;
+using Serilog;
 using Uno.Resizetizer;
 
 namespace AudioSpectrumPlayer;
@@ -84,6 +85,7 @@ public partial class App : Application
         MainWindow.SetWindowIcon();
 
         Host = await builder.NavigateAsync<Shell>();
+        await ProcessCommandLineArgs();
     }
 
     private static void RegisterRoutes(IViewRegistry views, IRouteRegistry routes)
@@ -104,4 +106,73 @@ public partial class App : Application
             )
         );
     }
+
+    private async Task ProcessCommandLineArgs()
+    {
+        try
+        {
+            Log.Debug("Processing command line arguments");
+            string[] launchArgs = Environment.GetCommandLineArgs();
+
+            for (int i = 0; i < launchArgs.Length; i++)
+            {
+                Log.Debug($"Arg[{i}]: {launchArgs[i]}");
+            }
+
+            if (launchArgs.Length > 1)
+            {
+                string filePath = launchArgs[1];
+                Log.Debug($"Found file argument to open: {filePath}");
+
+                try
+                {
+                    // Check if file exists
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        // Get the AudioPlayerViewModel from DI
+                        var audioPlayerViewModel = Host?.Services.GetRequiredService<AudioPlayerViewModel>();
+                        var audioFileService = Host?.Services.GetRequiredService<IAudioFileService>();
+
+                        if (audioPlayerViewModel != null && audioFileService != null)
+                        {
+                            if (audioFileService.IsValidAudioFile(filePath))
+                            {
+                                await audioPlayerViewModel.LoadAudioFileAsync(filePath);
+                                Log.Information($"Successfully loaded file from command line: {filePath}");
+                            }
+                            else
+                            {
+                                Log.Warning($"Invalid audio file format: {filePath}");
+                            }
+                        }
+                        else
+                        {
+                            Log.Error("AudioPlayerViewModel or AudioFileService not available from DI");
+                        }
+                    }
+                    else
+                    {
+                        Log.Error($"File does not exist: {filePath}");
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Log.Error($"Access denied to file: {filePath}");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, $"Error processing file: {filePath}");
+                }
+            }
+            else
+            {
+                Log.Debug("No command line arguments provided");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error processing command line arguments");
+        }
+    }
+
 }

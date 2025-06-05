@@ -1,19 +1,19 @@
 using AudioSpectrumPlayer.Services;
-using Microsoft.UI.Dispatching;
+using LibVLCSharp.Shared;
 using Serilog;
-using Windows.Media.Core;
-using Windows.Media.Playback;
+//using Windows.Media.Playback;
 
 namespace AudioSpectrumPlayer.ViewModels;
 
 public partial class AudioPlayerViewModel : ObservableObject
 {
-    private MediaPlayer _mediaPlayer = null!;
+    private LibVLCSharp.Shared.MediaPlayer _mediaPlayer = null!;
+    private LibVLC? _libVLC;
     private DispatcherTimer _playbackTimer = null!;
     private readonly IAudioFileService _audioFileService;
 
     [ObservableProperty]
-    private string _currentFilePath;
+    private string _currentFilePath = string.Empty;
     [ObservableProperty]
     private TimeSpan _currentPosition;
     [ObservableProperty]
@@ -22,20 +22,26 @@ public partial class AudioPlayerViewModel : ObservableObject
     private string _windowTitle = "Audio Player";
     [ObservableProperty]
     private double _volume = 1.0;
+    [ObservableProperty]
+    private string? _mediaSource;
 
     public AudioPlayerViewModel(IAudioFileService audioFileService)
     {
         _audioFileService = audioFileService;
-        InitializeMediaPlayer();
+        InitializeTimer();
+        InitializeLibVLC();
     }
 
-    private void InitializeMediaPlayer()
+    private void InitializeLibVLC()
     {
         try
         {
-            Log.Debug("Initializing MediaPlayer");
+            Log.Debug("Initializing LibVLC");
 
-            _mediaPlayer = new MediaPlayer();
+            Core.Initialize();
+            _libVLC = new LibVLC();
+
+            _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
 
             _playbackTimer = new DispatcherTimer
             {
@@ -43,70 +49,155 @@ public partial class AudioPlayerViewModel : ObservableObject
             };
             _playbackTimer.Tick += PlaybackTimer_Tick;
 
-            _mediaPlayer.MediaOpened += (sender, args) =>
+            _mediaPlayer.Playing += (sender, args) =>
             {
-                try
-                {
-                    Log.Debug("Media opened successfully");
-                    InitializePlaybackState();
-
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "MediaOpened event");
-                }
+                Log.Debug("LibVLC: Media playing");
+                _playbackTimer.Start();
             };
 
-            _mediaPlayer.MediaFailed += (sender, args) =>
+            _mediaPlayer.Paused += (sender, args) =>
             {
-                try
-                {
-                    Log.Error($"Media failed to load: {args.Error}");
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "MediaFailed event");
-                }
+                Log.Debug("LibVLC: Media paused");
+                _playbackTimer.Stop();
             };
 
-            _mediaPlayer.PlaybackSession.PlaybackStateChanged += (sender, args) =>
+            _mediaPlayer.Stopped += (sender, args) =>
             {
-                try
-                {
-                    Log.Debug($"Playback state changed to: {sender.PlaybackState}");
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "PlaybackStateChanged event");
-                }
+                Log.Debug("LibVLC: Media stopped");
+                _playbackTimer.Stop();
+                CurrentPosition = TimeSpan.Zero;
             };
 
-            //VolumeControl.VolumeChanged += VolumeControl_VolumeChanged;
-
-            Log.Debug("MediaPlayer initialized successfully");
+            Log.Debug("LibVLC initialized successfully");
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "InitializeMediaPlayer");
+            Log.Error(ex, "InitializeLibVLC");
         }
     }
 
-    private void InitializePlaybackState()
+    private void PlaybackTimer_Tick(object? sender, object e)
     {
-        DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+        try
         {
-            if (_mediaPlayer.Source != null)
+            if (_mediaPlayer != null && _mediaPlayer.IsPlaying)
             {
-                CurrentPosition = TimeSpan.Zero;
-                TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
-
-                if (_mediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+                CurrentPosition = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
+                if (_mediaPlayer.Length > 0)
                 {
-                    _playbackTimer.Start();
+                    TotalDuration = TimeSpan.FromMilliseconds(_mediaPlayer.Length);
                 }
-                Log.Debug("Progress Bar Initialized");
             }
-        });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "PlaybackTimer_Tick");
+        }
+    }
+
+    private void InitializeTimer()
+    {
+        try
+        {
+            Log.Debug("Initializing Timer");
+
+            _playbackTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(1000)
+            };
+            _playbackTimer.Tick += PlaybackTimer_Tick;
+
+            Log.Debug("Timer initialized successfully");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "InitializeTimer");
+        }
+    }
+
+
+    //private void InitializePlaybackState()
+    //{
+    //    DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+    //    {
+    //        if (_mediaPlayer.Source != null)
+    //        {
+    //            CurrentPosition = TimeSpan.Zero;
+    //            TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
+
+    //            if (_mediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+    //            {
+    //                _playbackTimer.Start();
+    //            }
+    //            Log.Debug("Progress Bar Initialized");
+    //        }
+    //    });
+    //}
+
+    public void Play()
+    {
+        try
+        {
+            if (_mediaPlayer != null)
+            {
+                Log.Information("Playing audio");
+                _mediaPlayer.Play();
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Play");
+        }
+    }
+
+    public void Pause()
+    {
+        try
+        {
+            if (_mediaPlayer != null)
+            {
+                Log.Information("Pausing audio");
+                _mediaPlayer.Pause();
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Pause");
+        }
+    }
+
+    public void Stop()
+    {
+        try
+        {
+            if (_mediaPlayer != null)
+            {
+                Log.Information("Stopping audio");
+                _mediaPlayer.Stop();
+                CurrentPosition = TimeSpan.Zero;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Stop");
+        }
+    }
+
+
+    partial void OnVolumeChanged(double value)
+    {
+        try
+        {
+            if (_mediaPlayer != null)
+            {
+                _mediaPlayer.Volume = (int)(value * 100);
+                Log.Debug($"Volume changed to {(int)(value * 100)}%");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "OnVolumeChanged");
+        }
     }
 
     public async Task<bool> SelectAndLoadAudioFileAsync(nint windowHandle)
@@ -130,63 +221,6 @@ public partial class AudioPlayerViewModel : ObservableObject
         }
     }
 
-    private void PlaybackTimer_Tick(object? sender, object e)
-    {
-        try
-        {
-            if (_mediaPlayer?.PlaybackSession != null &&
-                _mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
-            {
-                CurrentPosition = _mediaPlayer.PlaybackSession.Position;
-                TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "PlaybackTimer_Tick");
-        }
-    }
-
-    public void Play()
-    {
-        if (_mediaPlayer.Source != null)
-        {
-            Log.Information("Playing audio");
-            _mediaPlayer.Play();
-        }
-    }
-
-    public void Pause()
-    {
-        if (_mediaPlayer.Source != null)
-        {
-            Log.Information("Pausing audio");
-            _mediaPlayer.Pause();
-            _playbackTimer.Stop();
-        }
-    }
-
-    public void Stop()
-    {
-        if (_mediaPlayer.Source != null)
-        {
-            Log.Information("Stopping audio");
-            _mediaPlayer.Position = TimeSpan.Zero;
-            _mediaPlayer.Pause();
-            _playbackTimer.Stop();
-            CurrentPosition = TimeSpan.Zero;
-        }
-    }
-
-    partial void OnVolumeChanged(double value)
-    {
-        if (_mediaPlayer != null)
-        {
-            _mediaPlayer.Volume = value;
-            Log.Debug($"Volume changed to {(int)(value * 100)}%");
-        }
-    }
-
     public async Task LoadAudioFileAsync(string filePath)
     {
         try
@@ -198,50 +232,37 @@ public partial class AudioPlayerViewModel : ObservableObject
                 Log.Error($"Error: File not found: {filePath}");
                 return;
             }
-            _currentFilePath = filePath;
-            Uri uri = new(filePath);
-            MediaSource mediaSource = MediaSource.CreateFromUri(uri);
 
-            DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+            _currentFilePath = filePath;
+
+            if (_mediaPlayer != null && _libVLC != null)
             {
-                try
-                {
-                    _mediaPlayer.Source = mediaSource;
-                    _playbackTimer.Start();
-                    _windowTitle = $"Audio Spectrum Player - {Path.GetFileName(filePath)}";
-                    Log.Information("Media source set successfully");
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Setting media source on dispatcher");
-                }
-                //await Task.CompletedTask; // only for the IDE to be happy
-            });
+                var media = new Media(_libVLC, filePath, FromType.FromPath);
+                _mediaPlayer.Media = media;
+                WindowTitle = $"Audio Spectrum Player - {Path.GetFileName(filePath)}";
+
+                Log.Information("Media source set successfully");
+            }
+
+            Log.Information("Media source set successfully");
         }
         catch (Exception ex)
         {
             Log.Error(ex, "Load Audio File failed");
         }
-        await Task.CompletedTask; // only for the IDE to be happy
     }
 
     public void SeekToPosition(double percentage)
     {
         try
         {
-            if (_mediaPlayer?.PlaybackSession != null &&
-                _mediaPlayer.PlaybackSession.CanSeek &&
-                _mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
+            if (_mediaPlayer != null && _mediaPlayer.Length > 0)
             {
-                TimeSpan newPosition = TimeSpan.FromMilliseconds(
-                    percentage * _mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds);
+                float position = (float)percentage;
+                _mediaPlayer.Position = position;
 
-                _mediaPlayer.PlaybackSession.Position = newPosition;
-
-                // Update the property so UI reflects the change immediately
-                CurrentPosition = newPosition;
-
-                Log.Debug($"Seeked to position: {FormatTimeSpan(newPosition)}");
+                CurrentPosition = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
+                Log.Debug($"Seeked to position: {FormatTimeSpan(CurrentPosition)}");
             }
         }
         catch (Exception ex)
@@ -255,4 +276,12 @@ public partial class AudioPlayerViewModel : ObservableObject
             ? $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}"
             : $"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
     }
+
+    public void Dispose()
+    {
+        _playbackTimer?.Stop();
+        _mediaPlayer?.Dispose();
+        _libVLC?.Dispose();
+    }
+
 }

@@ -1,14 +1,5 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:8080",
-      "sslPort": 0
-    }
-  },
   "profiles": {
-    // Note: In order to select this profile, you'll need to comment the `Packaged` profile below until this is fixed: https://aka.platform.uno/wasdk-maui-debug-profile-issue
     "AudioSpectrumPlayer (WinAppSDK Unpackaged)": {
       "commandName": "Project",
       "compatibleTargetFramework": "windows"
@@ -19,6 +10,7 @@
     },
     "AudioSpectrumPlayer (Desktop)": {
       "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\Nekrosis\\Downloads\\Nocturne.mp3",
       "compatibleTargetFramework": "desktop"
     },
     "AudioSpectrumPlayer (Desktop WSL2)": {
@@ -26,6 +18,14 @@
       "commandLineArgs": "{ProjectDir}/bin/Debug/net9.0-desktop/AudioSpectrumPlayer.dll",
       "distributionName": "",
       "compatibleTargetFramework": "desktop"
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:8080",
+      "sslPort": 0
     }
   }
 }
