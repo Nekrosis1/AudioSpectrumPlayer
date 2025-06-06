@@ -22,7 +22,7 @@ public partial class App : Application
     {
         var builder = this.CreateBuilder(args)
             // Add navigation support for toolkit controls such as TabBar and NavigationView
-            .UseToolkitNavigation()
+            //.UseToolkitNavigation()
             .Configure(host => host
 #if DEBUG
                 // Switch to Development environment when running in DEBUG
@@ -65,7 +65,7 @@ public partial class App : Application
                         .Section<AppConfig>()
                 )
                 // Enable localization (see appsettings.json for supported languages)
-                .UseLocalization()
+                //.UseLocalization()
                 .ConfigureServices((context, services) =>
                 {
                     // Services
@@ -74,38 +74,44 @@ public partial class App : Application
                     // ViewModels
                     services.AddSingleton<AudioPlayerViewModel>();
                     services.AddSingleton<LogViewModel>();
+                    // Views
+                    services.AddSingleton<MainWindow>();
                 })
-                .UseNavigation(RegisterRoutes)
+            //.UseNavigation(RegisterRoutes)
             );
-        MainWindow = builder.Window;
+        Host = builder.Build();
+
+        // Create and show the main window
+        MainWindow = Host.Services.GetRequiredService<MainWindow>();
+        MainWindow.Activate();
 
 #if DEBUG
         MainWindow.UseStudio();
 #endif
         MainWindow.SetWindowIcon();
 
-        Host = await builder.NavigateAsync<Shell>();
+        //Host = await builder.NavigateAsync<Shell>();
         await ProcessCommandLineArgs();
     }
 
-    private static void RegisterRoutes(IViewRegistry views, IRouteRegistry routes)
-    {
-        views.Register(
-            new ViewMap(ViewModel: typeof(ShellViewModel)),
-            new ViewMap<MainPage, AudioPlayerViewModel>(),
-            new DataViewMap<SecondPage, SecondViewModel, Entity>()
-        );
+    //private static void RegisterRoutes(IViewRegistry views, IRouteRegistry routes)
+    //{
+    //    views.Register(
+    //        new ViewMap(ViewModel: typeof(ShellViewModel)),
+    //        new ViewMap<MainPage>(),
+    //        new DataViewMap<SecondPage, SecondViewModel, Entity>()
+    //    );
 
-        routes.Register(
-            new RouteMap("", View: views.FindByViewModel<ShellViewModel>(),
-                Nested:
-                [
-                    new ("Main", View: views.FindByViewModel<AudioPlayerViewModel>(), IsDefault:true),
-                    new ("Second", View: views.FindByViewModel<SecondViewModel>()),
-                ]
-            )
-        );
-    }
+    //    routes.Register(
+    //        new RouteMap("", View: views.FindByViewModel<ShellViewModel>(),
+    //            Nested:
+    //            [
+    //                new ("Main", View: views.FindByView<MainPage>(), IsDefault:true),
+    //                new ("Second", View: views.FindByViewModel<SecondViewModel>()),
+    //            ]
+    //        )
+    //    );
+    //}
 
     private async Task ProcessCommandLineArgs()
     {
@@ -173,6 +179,17 @@ public partial class App : Application
         {
             Log.Error(ex, "Error processing command line arguments");
         }
+    }
+
+    public static T? GetService<T>() where T : class
+    {
+        return ((App)Current).Host?.Services.GetService<T>();
+    }
+
+    public static T GetRequiredService<T>() where T : class
+    {
+        return ((App)Current).Host?.Services.GetRequiredService<T>()
+            ?? throw new InvalidOperationException($"Service {typeof(T).Name} not found");
     }
 
 }

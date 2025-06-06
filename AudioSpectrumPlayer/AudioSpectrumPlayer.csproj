@@ -55,4 +55,16 @@
     <PackageReference Include="LibVLCSharp" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Page Update="Presentation\BlankWindow1.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Presentation\MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
 </Project>

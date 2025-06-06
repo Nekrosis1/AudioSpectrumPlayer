@@ -12,6 +12,12 @@ public partial class AudioPlayerViewModel : ObservableObject
     private DispatcherTimer _playbackTimer = null!;
     private readonly IAudioFileService _audioFileService;
 
+    private readonly Guid _instanceId = Guid.NewGuid();
+
+    // Add this property for debugging
+    public string InstanceId => _instanceId.ToString()[..8];
+
+
     [ObservableProperty]
     private string _currentFilePath = string.Empty;
     [ObservableProperty]
@@ -42,7 +48,7 @@ public partial class AudioPlayerViewModel : ObservableObject
             _libVLC = new LibVLC();
 
             _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-
+            _mediaPlayer.SetRole(MediaPlayerRole.Music);
             _playbackTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(1000)
@@ -138,6 +144,16 @@ public partial class AudioPlayerViewModel : ObservableObject
     {
         try
         {
+            Log.Information($"Play called on instance {InstanceId}");
+            Log.Information($"MediaPlayer is null: {_mediaPlayer == null}");
+            Log.Information($"MediaPlayer.Media is null: {_mediaPlayer?.Media == null}");
+
+            if (_mediaPlayer?.Media != null)
+            {
+                Log.Information($"Media duration: {_mediaPlayer.Media.Duration}ms");
+                Log.Information($"Media state: {_mediaPlayer.Media.State}");
+            }
+
             if (_mediaPlayer != null)
             {
                 Log.Information("Playing audio");
@@ -237,7 +253,20 @@ public partial class AudioPlayerViewModel : ObservableObject
 
             if (_mediaPlayer != null && _libVLC != null)
             {
-                var media = new Media(_libVLC, filePath, FromType.FromPath);
+
+                Media media = new(_libVLC, new Uri(filePath));
+                //new Uri(filePath);
+                media.ParsedChanged += (sender, args) =>
+                {
+                    Log.Debug($"Media parsed: {media.IsParsed}");
+                    if (media.Duration > 0)
+                    {
+                        TotalDuration = TimeSpan.FromMilliseconds(media.Duration);
+                        Log.Debug($"Media duration: {TotalDuration}");
+                    }
+                };
+
+                await media.Parse(MediaParseOptions.ParseNetwork);
                 _mediaPlayer.Media = media;
                 WindowTitle = $"Audio Spectrum Player - {Path.GetFileName(filePath)}";
 
