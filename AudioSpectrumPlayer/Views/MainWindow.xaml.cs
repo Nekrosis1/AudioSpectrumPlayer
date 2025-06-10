@@ -16,7 +16,6 @@ namespace AudioSpectrumPlayer.Views
 			this.InitializeComponent();
 			ViewModel = viewModel;
 			MonitorWindowLifetime();
-			Title = "Audio Player";
 			Log.Information("Application started");
 		}
 

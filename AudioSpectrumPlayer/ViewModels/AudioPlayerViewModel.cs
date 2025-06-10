@@ -203,7 +203,7 @@ namespace AudioSpectrumPlayer.ViewModels
 					Log.Error($"Error: File not found: {filePath}");
 					return;
 				}
-				_currentFilePath = filePath;
+				CurrentFilePath = filePath;
 				Uri uri = new(filePath);
 				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
 
@@ -213,7 +213,7 @@ namespace AudioSpectrumPlayer.ViewModels
 					{
 						_mediaPlayer.Source = mediaSource;
 						_playbackTimer.Start();
-						_windowTitle = $"Audio Spectrum Player - {Path.GetFileName(filePath)}";
+						WindowTitle = $"Audio Spectrum Player - {Path.GetFileName(filePath)}";
 						Log.Information("Media source set successfully");
 					}
 					catch (Exception ex)
