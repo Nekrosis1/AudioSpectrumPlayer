@@ -21,56 +21,34 @@
                  VerticalAlignment="Center"
                  Margin="0,0,8,0"/>
 
-        <!-- Custom Volume Slider -->
+        <!-- Volume Triangle -->
         <Canvas Grid.Column="1" 
-        x:Name="volumeCanvas" 
-        Height="32" 
-        Background="Transparent"
-        PointerPressed="VolumeCanvas_PointerPressed"
-        PointerMoved="VolumeCanvas_PointerMoved"
-        PointerReleased="VolumeCanvas_PointerReleased"
-        PointerExited="VolumeCanvas_PointerExited">
+                x:Name="volumeCanvas" 
+                Height="32" 
+                Width="180"
+                Background="Transparent"
+                PointerPressed="VolumeCanvas_PointerPressed"
+                PointerMoved="VolumeCanvas_PointerMoved"
+                PointerReleased="VolumeCanvas_PointerReleased"
+                PointerEntered="VolumeCanvas_PointerEntered"
+                PointerExited="VolumeCanvas_PointerExited">
 
-            <!-- Triangle background shape -->
-            <Path x:Name="volumeBackground"
-                  Fill="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
-                  Opacity="0.3">
-                <Path.Data>
-                    <PathGeometry>
-                        <PathFigure StartPoint="0,30" IsClosed="True">
-                            <LineSegment Point="180,0"/>
-                            <LineSegment Point="180,30"/>
-                        </PathFigure>
-                    </PathGeometry>
-                </Path.Data>
-            </Path>
+            <!-- Background triangle (full volume shape) -->
+            <Polygon x:Name="volumeBackground"
+                     Fill="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                     Opacity="0.3"/>
 
-            <!-- Current volume level indicator -->
-            <Path x:Name="volumeIndicator"
-                  Fill="{ThemeResource SystemControlHighlightAccentBrush}">
-                <Path.Data>
-                    <PathGeometry>
-                        <PathFigure x:Name="volumeFigure" StartPoint="0,30" IsClosed="True">
-                            <LineSegment x:Name="volumePoint" Point="90,15"/>
-                            <LineSegment Point="0,30"/>
-                        </PathFigure>
-                    </PathGeometry>
-                </Path.Data>
-            </Path>
-
-            <!-- Invisible hit area to improve interaction -->
-            <Rectangle x:Name="hitArea" 
-                       Fill="Transparent" 
-                       Height="32" 
-                       Width="180"/>
+            <!-- Current volume triangle -->
+            <Polygon x:Name="volumeIndicator"
+                     Fill="{ThemeResource SystemControlHighlightAccentBrush}"/>
         </Canvas>
 
         <!-- Volume Percentage -->
         <TextBlock Grid.Column="2"
                    x:Name="volumePercentage"
-                   Text="100%"
+                   Text="{x:Bind GetVolumeText(ViewModel.Volume), Mode=OneWay}"
                    VerticalAlignment="Center"
                    Margin="8,0,0,0"
-                   MinWidth="40"/>
+                   MinWidth="30"/>
     </Grid>
 </UserControl>
