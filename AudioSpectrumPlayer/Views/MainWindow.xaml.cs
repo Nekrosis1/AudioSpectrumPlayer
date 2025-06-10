@@ -13,7 +13,7 @@ namespace AudioSpectrumPlayer.Views
 		public AudioPlayerViewModel ViewModel { get; }
 		public MainWindow(AudioPlayerViewModel viewModel)
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 			ViewModel = viewModel;
 			MonitorWindowLifetime();
 			Log.Information("Application started");

@@ -28,6 +28,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="LogDisplay.xaml" />
+	  <None Remove="Views\MenuBarControl.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -78,7 +79,12 @@
 
 	<ItemGroup>
 	  <Folder Include="Models\" />
-	  <Folder Include="Views\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="Views\MenuBarControl.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<!-- Publish Properties -->

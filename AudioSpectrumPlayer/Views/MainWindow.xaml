@@ -9,8 +9,9 @@
     mc:Ignorable="d"
     Title="{x:Bind ViewModel.WindowTitle, Mode=OneWay}">
 
-    <Grid Padding="12">
+    <Grid Padding="12,0,12,12">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -18,8 +19,12 @@
             
         </Grid.RowDefinitions>
 
+        <!-- MenuBar -->
+        <local:MenuBarControl Grid.Row="0" 
+                          DataContext="{x:Bind ViewModel}"/>
+
         <!-- This will be where we show audio visualization later -->
-        <Border Grid.Row="0" 
+        <Border Grid.Row="1" 
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
                 BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                 BorderThickness="1"
@@ -28,15 +33,15 @@
                        VerticalAlignment="Center" 
                        Text="Audio Visualization Area" />
         </Border>
-         <!--Progress Bar-->
-        <Grid Grid.Row="1" Margin="0,0,0,12">
+         <!-- Progress Bar -->
+        <Grid Grid.Row="2" Margin="0,0,0,12">
             <local:PlaybackProgressControl x:Name="PlaybackProgress"
                 DataContext="{x:Bind ViewModel}"/>
         </Grid>
 
 
             <!-- Audio Controls -->
-        <Grid Grid.Row="2" Margin="0,0,0,12">
+        <Grid Grid.Row="3" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -73,7 +78,7 @@
                          Width="240" />
         </Grid>
 
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                 BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
                 BorderThickness="1">

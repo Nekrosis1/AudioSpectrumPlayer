@@ -14,7 +14,7 @@ namespace AudioSpectrumPlayer.Views
 
 		public LogDisplay()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 			ViewModel = App.GetRequiredService<LogViewModel>();
 			_dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 		}

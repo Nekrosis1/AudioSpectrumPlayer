@@ -17,7 +17,7 @@ namespace AudioSpectrumPlayer.Views
 
 		public VolumeControl()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 			DataContextChanged += VolumeControl_DataContextChanged;
 
 			volumeBackground.Points.Clear();

@@ -14,7 +14,7 @@ namespace AudioSpectrumPlayer.Views
 
 		public PlaybackProgressControl()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
 			DataContextChanged += PlaybackProgressControl_DataContextChanged;
 			Log.Debug("PlaybackProgressControl INIT");
 		}
