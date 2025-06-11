@@ -71,17 +71,17 @@ namespace AudioSpectrumPlayer.Views
 			ViewModel.Stop();
 		}
 
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "All exceptions get handled")]
 		private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
 		{
 			nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 			await ViewModel.SelectAndLoadAudioFileAsync(hwnd);
 		}
-
-		private void ClearLogButton_Click(object sender, RoutedEventArgs e)
-		{
-			LogDisplay.Clear();
-			LogDisplay.Log("Log cleared");
-		}
 		#endregion
+
+		private Visibility ConvertBoolToVisibility(bool isVisible)
+		{
+			return isVisible ? Visibility.Visible : Visibility.Collapsed;
+		}
 	}
 }

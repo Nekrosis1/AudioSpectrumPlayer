@@ -40,7 +40,7 @@ namespace AudioSpectrumPlayer
 				.Enrich.WithThreadId()
 				.WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Information,
 					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
-				.WriteTo.LogDisplay(_logDisplay, restrictedToMinimumLevel: LogEventLevel.Warning,
+				.WriteTo.LogDisplay(_logDisplay, restrictedToMinimumLevel: LogEventLevel.Information,
 					outputTemplate: "[{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
 				.WriteTo.File(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt"),
 					rollingInterval: RollingInterval.Day,
@@ -67,6 +67,7 @@ namespace AudioSpectrumPlayer
 
 					// Views
 					services.AddSingleton<MainWindow>();
+					services.AddTransient<MenuBarControl>();
 				});
 
 			_host = hostBuilder.Build();

@@ -15,11 +15,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- Volume Icon -->
-        <FontIcon Grid.Column="0" 
-                 Glyph="&#xE767;" 
-                 FontFamily="Segoe MDL2 Assets"
-                 VerticalAlignment="Center"
-                 Margin="0,0,8,0"/>
+        <FontIcon Glyph="&#xE767;" Margin="0,0,0,8"/>
 
         <!-- Volume Triangle -->
         <Canvas Grid.Column="1" 

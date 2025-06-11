@@ -17,16 +17,20 @@ namespace AudioSpectrumPlayer.ViewModels
 		private DispatcherTimer _playbackTimer = null!;
 		private readonly IAudioFileService _audioFileService;
 
+#pragma warning disable MVVMTK0045 // Using [ObservableProperty] on fields is not AOT compatible for WinRT | I am waiting for the C# feature to be released stable
 		[ObservableProperty]
-		private string _currentFilePath;
+		private string? _currentFilePath;
 		[ObservableProperty]
 		private TimeSpan _currentPosition;
 		[ObservableProperty]
 		private TimeSpan _totalDuration;
 		[ObservableProperty]
-		private string _windowTitle = "Audio Player";
+		private string _windowTitle = "Audio Spectrum Player";
 		[ObservableProperty]
 		private double _volume = 1.0;
+		[ObservableProperty]
+		private bool _isLogVisible = false;
+#pragma warning restore MVVMTK0045 // Using [ObservableProperty] on fields is not AOT compatible for WinRT
 
 		public AudioPlayerViewModel(IAudioFileService audioFileService)
 		{
@@ -213,7 +217,7 @@ namespace AudioSpectrumPlayer.ViewModels
 					{
 						_mediaPlayer.Source = mediaSource;
 						_playbackTimer.Start();
-						WindowTitle = $"Audio Spectrum Player - {Path.GetFileName(filePath)}";
+						WindowTitle = $"{Path.GetFileName(filePath)} - Audio Spectrum Player";
 						Log.Information("Media source set successfully");
 					}
 					catch (Exception ex)
@@ -254,6 +258,13 @@ namespace AudioSpectrumPlayer.ViewModels
 				Log.Error(ex, "SeekToPosition");
 			}
 		}
+
+		public void ToggleLogVisibility()
+		{
+			IsLogVisible = !IsLogVisible;
+			Log.Debug($"Log visibility toggled to: {IsLogVisible}");
+		}
+
 		private static string FormatTimeSpan(TimeSpan timeSpan)
 		{
 			return timeSpan.Hours > 0

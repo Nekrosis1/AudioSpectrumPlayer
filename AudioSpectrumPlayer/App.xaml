@@ -11,6 +11,13 @@
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
+            <Style x:Key="IconButtonStyle" TargetType="Button">
+                <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            </Style>
+
+            <Style x:Key="IconFontIcon" TargetType="FontIcon">
+                <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

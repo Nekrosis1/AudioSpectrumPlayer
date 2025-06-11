@@ -28,29 +28,32 @@
                             Text="Exit" 
                             Click="ExitMenuItem_Click">
                 <MenuFlyoutItem.Icon>
-                    <FontIcon Glyph="&#xE8BB;" FontFamily="Segoe MDL2 Assets"/>
+                    <FontIcon Glyph="&#xE8BB;"/>
                 </MenuFlyoutItem.Icon>
-                <!--<MenuFlyoutItem.KeyboardAccelerators>
+                <MenuFlyoutItem.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Menu" Key="F4"/>
-                    </KeyboardAccelerators>-->
+                </MenuFlyoutItem.KeyboardAccelerators>
             </MenuFlyoutItem>
         </MenuBarItem>
 
         <!-- View Menu -->
         <MenuBarItem Title="View">
             <MenuFlyoutItem x:Name="ShowLogMenuItem" 
-                            Text="Show Log" 
+                            Text="Toggle Log Display" 
                             Click="ShowLogMenuItem_Click">
                 <MenuFlyoutItem.Icon>
-                    <FontIcon Glyph="&#xE90F;" FontFamily="Segoe MDL2 Assets"/>
+                    <FontIcon Glyph="&#xE90F;"/>
                 </MenuFlyoutItem.Icon>
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="Control" Key="L"/>
+                </MenuFlyoutItem.KeyboardAccelerators>
             </MenuFlyoutItem>
 
             <MenuFlyoutItem x:Name="ClearLogMenuItem" 
                             Text="Clear Log" 
                             Click="ClearLogMenuItem_Click">
                 <MenuFlyoutItem.Icon>
-                    <FontIcon Glyph="&#xE894;" FontFamily="Segoe MDL2 Assets"/>
+                    <FontIcon Glyph="&#xE894;"/>
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
         </MenuBarItem>
@@ -62,7 +65,7 @@
                             Click="PreferencesMenuItem_Click"
                             IsEnabled="False">
                 <MenuFlyoutItem.Icon>
-                    <FontIcon Glyph="&#xE713;" FontFamily="Segoe MDL2 Assets"/>
+                    <FontIcon Glyph="&#xE713;"/>
                 </MenuFlyoutItem.Icon>
                 <MenuFlyoutItem.KeyboardAccelerators>
                     <KeyboardAccelerator Modifiers="Control" Key="P"/>
@@ -73,10 +76,10 @@
         <!-- Help Menu -->
         <MenuBarItem Title="Help">
             <MenuFlyoutItem x:Name="AboutMenuItem" 
-                            Text="About Audio Spectrum Player" 
+                            Text="Audio Spectrum Player" 
                             Click="AboutMenuItem_Click">
                 <MenuFlyoutItem.Icon>
-                    <FontIcon Glyph="&#xE946;" FontFamily="Segoe MDL2 Assets"/>
+                    <FontIcon Glyph="&#xE946;"/>
                 </MenuFlyoutItem.Icon>
             </MenuFlyoutItem>
         </MenuBarItem>
