@@ -16,6 +16,7 @@ namespace AudioSpectrumPlayer.ViewModels
 		private MediaPlayer _mediaPlayer = null!;
 		private DispatcherTimer _playbackTimer = null!;
 		private readonly IAudioFileService _audioFileService;
+		public bool IsPlaying { get; set; }
 
 #pragma warning disable MVVMTK0045 // Using [ObservableProperty] on fields is not AOT compatible for WinRT | I am waiting for the C# feature to be released stable
 		[ObservableProperty]
@@ -82,6 +83,16 @@ namespace AudioSpectrumPlayer.ViewModels
 				{
 					try
 					{
+						if (sender.PlaybackState == MediaPlaybackState.Playing)
+						{
+							IsPlaying = true;
+							Log.Debug("AudioPlayer State is Playing");
+						}
+						else
+						{
+							IsPlaying = false;
+							Log.Debug("AudioPlayer State is NOT Playing");
+						}
 						Log.Debug($"Playback state changed to: {sender.PlaybackState}");
 					}
 					catch (Exception ex)
@@ -208,6 +219,7 @@ namespace AudioSpectrumPlayer.ViewModels
 					return;
 				}
 				CurrentFilePath = filePath;
+
 				Uri uri = new(filePath);
 				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
 

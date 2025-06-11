@@ -60,6 +60,8 @@ namespace AudioSpectrumPlayer
 				{
 					// Services
 					services.AddSingleton<IAudioFileService, AudioFileService>();
+					services.AddSingleton<SpectrumGenerationService>();
+					services.AddSingleton<SpectrumVisualizationService>();
 
 					// ViewModels
 					services.AddSingleton<AudioPlayerViewModel>();
