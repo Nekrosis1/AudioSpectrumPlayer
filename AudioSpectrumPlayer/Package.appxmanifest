@@ -10,7 +10,7 @@
 	<Identity
 	  Name="60068fdf-5944-44e9-a5fa-859320b4c550"
 	  Publisher="CN=Nekrosis"
-	  Version="1.0.0.0" />
+	  Version="0.0.2.0" />
 
 	<mp:PhoneIdentity PhoneProductId="60068fdf-5944-44e9-a5fa-859320b4c550" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

@@ -10,21 +10,26 @@
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<UseWinUI>true</UseWinUI>
-		<EnableMsixTooling>true</EnableMsixTooling>
 		<Nullable>enable</Nullable>
-		<WindowsPackageType>None</WindowsPackageType>
+		<EnableMsixTooling>true</EnableMsixTooling>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 
-		<!-- Single file publishing settings -->
+		 <!--Single file publishing settings--> 
 		<PublishSingleFile>true</PublishSingleFile>
 		<SelfContained>true</SelfContained>
+		<WindowsPackageType>None</WindowsPackageType>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 
-		<!-- AOT settings (uncomment when ready to use) -->
-		<!-- <PublishAot>true</PublishAot> -->
-		<!-- <PublishTrimmed>true</PublishTrimmed> -->
-		<!-- <TrimMode>partial</TrimMode> -->
-		<!-- <BuiltInComInteropSupport>true</BuiltInComInteropSupport> -->
+		 <!--MSIX packaging settings-->
+		<!--<WindowsPackageType>MSIX</WindowsPackageType>
+		<EnableMsixTooling>true</EnableMsixTooling>-->
+
+		 <!--AOT settings--> 
+		 <!--<PublishAot>true</PublishAot> 
+		 <PublishTrimmed>true</PublishTrimmed> 
+		 <TrimMode>partial</TrimMode> 
+		 <BuiltInComInteropSupport>true</BuiltInComInteropSupport>--> 
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="LogDisplay.xaml" />
