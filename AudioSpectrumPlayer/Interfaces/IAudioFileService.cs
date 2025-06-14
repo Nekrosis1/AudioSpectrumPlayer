@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace AudioSpectrumPlayer.Services
+namespace AudioSpectrumPlayer.Interfaces
 {
 	public interface IAudioFileService
 	{

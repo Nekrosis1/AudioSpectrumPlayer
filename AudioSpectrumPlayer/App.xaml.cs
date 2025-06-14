@@ -1,4 +1,5 @@
-﻿using AudioSpectrumPlayer.Services;
+﻿using AudioSpectrumPlayer.Interfaces;
+using AudioSpectrumPlayer.Services;
 using AudioSpectrumPlayer.ViewModels;
 using AudioSpectrumPlayer.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,8 +61,9 @@ namespace AudioSpectrumPlayer
 				{
 					// Services
 					services.AddSingleton<IAudioFileService, AudioFileService>();
-					services.AddSingleton<SpectrumGenerationService>();
+					services.AddSingleton<IAudioStateService, AudioStateService>();
 					services.AddSingleton<SpectrumVisualizationService>();
+					services.AddSingleton<SpectrumGenerationService>();
 
 					// ViewModels
 					services.AddSingleton<AudioPlayerViewModel>();

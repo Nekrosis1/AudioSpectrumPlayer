@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using AudioSpectrumPlayer.Interfaces;
+using Serilog;
 using System;
 using System.Threading.Tasks;
 using Windows.Storage;

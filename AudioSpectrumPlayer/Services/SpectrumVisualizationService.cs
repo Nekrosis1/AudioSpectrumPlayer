@@ -1,14 +1,13 @@
-﻿using AudioSpectrumPlayer.ViewModels;
-using System;
+﻿using AudioSpectrumPlayer.Interfaces;
+using Serilog;
 using System.Windows.Media;
 
 namespace AudioSpectrumPlayer.Services
 {
-	public class SpectrumVisualizationService(SpectrumGenerationService _spectrumGenerationService, AudioPlayerViewModel _audioPlayerViewModel)
+	public class SpectrumVisualizationService(SpectrumGenerationService _spectrumGenerationService, IAudioStateService _audioStateService)
 	{
 		private bool _isVisualizationActive = false;
-		//public SpectrumGenerationService? spectrumGenerationService;
-		//public AudioPlayerViewModel? _audioPlayerViewModel;
+
 		public void StartVisualization()
 		{
 			_isVisualizationActive = true;
@@ -23,7 +22,7 @@ namespace AudioSpectrumPlayer.Services
 
 		private void OnRendering(object sender, object e)
 		{
-			if (!_isVisualizationActive || !_audioPlayerViewModel.IsPlaying)
+			if (!_isVisualizationActive || !_audioStateService.IsPlaying)
 				return;
 
 			UpdateSpectrum();
@@ -31,9 +30,11 @@ namespace AudioSpectrumPlayer.Services
 
 		private void UpdateSpectrum()
 		{
-			var currentPosition = _audioPlayerViewModel!.CurrentPosition;
-			Console.WriteLine($"Current Position: {currentPosition.TotalSeconds} seconds");
-			var pcmData = _spectrumGenerationService.GetAudioChunkAtPosition(_audioFile, currentPosition);
+			_spectrumGenerationService.UpdatePCMData();
+			Log.Information("Spectrum data updated.");
+			//var currentPosition = _audioPlayerViewModel!.CurrentPosition;
+			//Console.WriteLine($"Current Position: {currentPosition.TotalSeconds} seconds");
+			//var pcmData = _spectrumGenerationService.GetAudioChunkAtPosition(_audioFile, currentPosition);
 			//var frequencies = AnalyzeFrequencies(pcmData);
 
 			//// Update your visualization UI

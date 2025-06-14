@@ -1,4 +1,5 @@
-﻿using AudioSpectrumPlayer.Services;
+﻿using AudioSpectrumPlayer.Interfaces;
+using AudioSpectrumPlayer.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -16,6 +17,8 @@ namespace AudioSpectrumPlayer.ViewModels
 		private MediaPlayer _mediaPlayer = null!;
 		private DispatcherTimer _playbackTimer = null!;
 		private readonly IAudioFileService _audioFileService;
+		private readonly IAudioStateService _audioStateService;
+		private readonly SpectrumVisualizationService _spectrumVisualizationService;
 		public bool IsPlaying { get; set; }
 
 #pragma warning disable MVVMTK0045 // Using [ObservableProperty] on fields is not AOT compatible for WinRT | I am waiting for the C# feature to be released stable
@@ -33,9 +36,11 @@ namespace AudioSpectrumPlayer.ViewModels
 		private bool _isLogVisible = false;
 #pragma warning restore MVVMTK0045 // Using [ObservableProperty] on fields is not AOT compatible for WinRT
 
-		public AudioPlayerViewModel(IAudioFileService audioFileService)
+		public AudioPlayerViewModel(IAudioFileService audioFileService, IAudioStateService audioStateService, SpectrumVisualizationService spectrumVisualizationService)
 		{
 			_audioFileService = audioFileService;
+			_audioStateService = audioStateService;
+			_spectrumVisualizationService = spectrumVisualizationService;
 			InitializeMediaPlayer();
 		}
 
@@ -59,6 +64,7 @@ namespace AudioSpectrumPlayer.ViewModels
 					{
 						Log.Debug("Media opened successfully");
 						InitializePlaybackState();
+						_audioStateService.UpdateDuration(TotalDuration);
 
 					}
 					catch (Exception ex)
@@ -129,6 +135,70 @@ namespace AudioSpectrumPlayer.ViewModels
 			});
 		}
 
+		private void PlaybackTimer_Tick(object? sender, object e)
+		{
+			try
+			{
+				if (_mediaPlayer?.PlaybackSession != null &&
+					_mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
+				{
+					CurrentPosition = _mediaPlayer.PlaybackSession.Position;
+					_audioStateService.UpdatePosition(CurrentPosition);
+
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "PlaybackTimer_Tick");
+			}
+		}
+
+		public void Play()
+		{
+			if (_mediaPlayer.Source != null)
+			{
+				Log.Information("Playing audio");
+				_mediaPlayer.Play();
+				_audioStateService.UpdatePlaybackState(true);
+				//_spectrumVisualizationService.StartVisualization();
+			}
+		}
+
+		public void Pause()
+		{
+			if (_mediaPlayer.Source != null)
+			{
+				Log.Information("Pausing audio");
+				_mediaPlayer.Pause();
+				_playbackTimer.Stop();
+				_audioStateService.UpdatePlaybackState(false);
+				//_spectrumVisualizationService.StartVisualization();
+			}
+		}
+
+		public void Stop()
+		{
+			if (_mediaPlayer.Source != null)
+			{
+				Log.Information("Stopping audio");
+				_mediaPlayer.Position = TimeSpan.Zero;
+				_mediaPlayer.Pause();
+				_playbackTimer.Stop();
+				_audioStateService.UpdatePlaybackState(false);
+				CurrentPosition = TimeSpan.Zero;
+				_spectrumVisualizationService.StartVisualization();
+			}
+		}
+
+		partial void OnVolumeChanged(double value)
+		{
+			if (_mediaPlayer != null)
+			{
+				_mediaPlayer.Volume = value;
+				Log.Debug($"Volume changed to {(int)(value * 100)}%");
+			}
+		}
+
 		public async Task<bool> SelectAndLoadAudioFileAsync(nint windowHandle)
 		{
 			try
@@ -150,63 +220,6 @@ namespace AudioSpectrumPlayer.ViewModels
 			}
 		}
 
-		private void PlaybackTimer_Tick(object? sender, object e)
-		{
-			try
-			{
-				if (_mediaPlayer?.PlaybackSession != null &&
-					_mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
-				{
-					CurrentPosition = _mediaPlayer.PlaybackSession.Position;
-					TotalDuration = _mediaPlayer.PlaybackSession.NaturalDuration;
-				}
-			}
-			catch (Exception ex)
-			{
-				Log.Error(ex, "PlaybackTimer_Tick");
-			}
-		}
-
-		public void Play()
-		{
-			if (_mediaPlayer.Source != null)
-			{
-				Log.Information("Playing audio");
-				_mediaPlayer.Play();
-			}
-		}
-
-		public void Pause()
-		{
-			if (_mediaPlayer.Source != null)
-			{
-				Log.Information("Pausing audio");
-				_mediaPlayer.Pause();
-				_playbackTimer.Stop();
-			}
-		}
-
-		public void Stop()
-		{
-			if (_mediaPlayer.Source != null)
-			{
-				Log.Information("Stopping audio");
-				_mediaPlayer.Position = TimeSpan.Zero;
-				_mediaPlayer.Pause();
-				_playbackTimer.Stop();
-				CurrentPosition = TimeSpan.Zero;
-			}
-		}
-
-		partial void OnVolumeChanged(double value)
-		{
-			if (_mediaPlayer != null)
-			{
-				_mediaPlayer.Volume = value;
-				Log.Debug($"Volume changed to {(int)(value * 100)}%");
-			}
-		}
-
 		public async Task LoadAudioFileAsync(string filePath)
 		{
 			try
@@ -221,6 +234,7 @@ namespace AudioSpectrumPlayer.ViewModels
 				CurrentFilePath = filePath;
 
 				Uri uri = new(filePath);
+				await _audioStateService.LoadFileAsync(filePath);
 				MediaSource mediaSource = MediaSource.CreateFromUri(uri);
 
 				DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
