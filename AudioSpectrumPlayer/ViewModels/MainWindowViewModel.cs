@@ -252,7 +252,7 @@ namespace AudioSpectrumPlayer.ViewModels
 
 					_mediaPlayer.PlaybackSession.Position = newPosition;
 
-					Log.Information($"Seeked to position: {FormatTimeSpan(newPosition)}");
+					Log.Debug($"Seeked to position: {FormatTimeSpan(newPosition)}");
 				}
 			}
 			catch (Exception ex)

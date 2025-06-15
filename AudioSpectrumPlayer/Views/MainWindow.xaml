@@ -32,7 +32,7 @@
                 Margin="0,0,0,12">
             <TextBlock HorizontalAlignment="Center" 
                        VerticalAlignment="Center" 
-                       Text="TODO: Spectrum" />
+                       Text="Placeholder | I am still working on the Spectrum" />
         </Border>
         <!-- Progress Bar -->
         <Grid Grid.Row="2" Margin="0,0,0,12">
@@ -57,8 +57,7 @@
                         <KeyboardAccelerator Key="Space"/>
                     </Button.KeyboardAccelerators>
                     <FontIcon x:Name="PlayPauseIcon" 
-                    Glyph="&#xE768;"
-                    FontFamily="Segoe MDL2 Assets"/>
+                    Glyph="&#xE768;"/>
                 </Button>
                 <Button x:Name="StopButton" 
                     Click="StopButton_Click">

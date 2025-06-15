@@ -2,6 +2,7 @@ using AudioSpectrumPlayer.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Serilog;
 using System;
 using System.ComponentModel;
 
@@ -118,6 +119,7 @@ namespace AudioSpectrumPlayer.Views
 
 			double newVolume = Math.Clamp(x / TriangleWidth, 0.0, 1.0);
 			ViewModel.Volume = newVolume;
+			Log.Information($"Volume set to {newVolume * 100}% from position");
 		}
 
 		public string GetVolumeText(double volume)

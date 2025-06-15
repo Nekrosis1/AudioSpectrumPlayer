@@ -63,7 +63,7 @@ namespace AudioSpectrumPlayer.Views
 
 			content.Inlines.Add(new Run
 			{
-				Text = "Audio Spectrum Player v0.0.1\n\nAn open source Audio player with frequency spectrum visualization.\n\n"
+				Text = "Audio Spectrum Player v0.0.2\n\nAn open source Audio player with frequency spectrum visualization.\n\n"
 			});
 
 			// Add the clickable link inline
