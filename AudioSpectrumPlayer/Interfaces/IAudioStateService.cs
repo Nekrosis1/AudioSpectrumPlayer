@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Windows.Media.Playback;
 
 namespace AudioSpectrumPlayer.Interfaces
 {
@@ -7,16 +8,20 @@ namespace AudioSpectrumPlayer.Interfaces
 	{
 		string? CurrentFilePath { get; }
 		TimeSpan CurrentPosition { get; }
-		bool IsPlaying { get; }
+		bool IsPlaybackActive { get; }
 		TimeSpan TotalDuration { get; }
 
 		event EventHandler<string>? FileLoaded;
-		event EventHandler<bool>? PlaybackStateChanged;
 		event EventHandler<TimeSpan>? PositionChanged;
+		event EventHandler<TimeSpan>? TotalDurationChanged;
+		event EventHandler<bool>? PlaybackStateChanged;
 
+		void SetMediaPlayer(MediaPlayer mediaPlayer);
+		void StartMonitoring();
+		void StopMonitoring();
 		Task LoadFileAsync(string filePath);
-		void UpdateDuration(TimeSpan duration);
+		void UpdateTotalDuration(TimeSpan duration);
 		void UpdatePlaybackState(bool isPlaying);
-		void UpdatePosition(TimeSpan position);
+		void UpdateCurrentPosition(TimeSpan position);
 	}
 }

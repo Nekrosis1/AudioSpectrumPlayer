@@ -22,7 +22,7 @@ namespace AudioSpectrumPlayer.Services
 
 		private void OnRendering(object sender, object e)
 		{
-			if (!_isVisualizationActive || !_audioStateService.IsPlaying)
+			if (!_isVisualizationActive || !_audioStateService.IsPlaybackActive)
 				return;
 
 			UpdateSpectrum();

@@ -10,8 +10,8 @@ namespace AudioSpectrumPlayer.Views
 	/// </summary>
 	public sealed partial class MainWindow : Window
 	{
-		public AudioPlayerViewModel ViewModel { get; }
-		public MainWindow(AudioPlayerViewModel viewModel)
+		public MainWindowViewModel ViewModel { get; }
+		public MainWindow(MainWindowViewModel viewModel)
 		{
 			InitializeComponent();
 			ViewModel = viewModel;

@@ -66,7 +66,7 @@ namespace AudioSpectrumPlayer
 					services.AddSingleton<SpectrumGenerationService>();
 
 					// ViewModels
-					services.AddSingleton<AudioPlayerViewModel>();
+					services.AddSingleton<MainWindowViewModel>();
 					services.AddSingleton<LogViewModel>();
 
 					// Views

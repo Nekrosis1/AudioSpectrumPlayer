@@ -10,10 +10,10 @@ namespace AudioSpectrumPlayer.Views
 	public sealed partial class VolumeControl : UserControl
 	{
 		private bool _isDragging = false;
-		private AudioPlayerViewModel? _currentViewModel;
+		private MainWindowViewModel? _currentViewModel;
 		private const double TriangleWidth = 150;
 		private const double TriangleHeight = 30;
-		public AudioPlayerViewModel? ViewModel => DataContext as AudioPlayerViewModel;
+		public MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
 		public VolumeControl()
 		{
@@ -32,7 +32,7 @@ namespace AudioSpectrumPlayer.Views
 			{
 				_currentViewModel.PropertyChanged -= ViewModel_PropertyChanged;
 			}
-			if (args.NewValue is AudioPlayerViewModel viewModel)
+			if (args.NewValue is MainWindowViewModel viewModel)
 			{
 				_currentViewModel = viewModel;
 				viewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -46,7 +46,7 @@ namespace AudioSpectrumPlayer.Views
 
 		private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(AudioPlayerViewModel.Volume))
+			if (e.PropertyName == nameof(MainWindowViewModel.Volume))
 			{
 				UpdateVolumeIndicator();
 			}

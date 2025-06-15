@@ -1,16 +1,18 @@
+using AudioSpectrumPlayer.Interfaces;
 using AudioSpectrumPlayer.ViewModels;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Serilog;
 using System;
-using System.ComponentModel;
 
 namespace AudioSpectrumPlayer.Views
 {
 	public partial class PlaybackProgressControl : UserControl
 	{
-		private AudioPlayerViewModel? _currentViewModel;
+		private MainWindowViewModel? _currentViewModel;
+		private IAudioStateService? _audioStateService;
 
 		public PlaybackProgressControl()
 		{
@@ -21,32 +23,41 @@ namespace AudioSpectrumPlayer.Views
 
 		private void PlaybackProgressControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
 		{
-			// Unsubscribe from previous ViewModel
-			if (_currentViewModel != null)
+			if (_audioStateService != null)
 			{
-				_currentViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+				_audioStateService.PositionChanged -= AudioStateService_PositionChanged;
 			}
 
-			// Subscribe to new ViewModel
-			if (args.NewValue is AudioPlayerViewModel viewModel)
+			if (args.NewValue is MainWindowViewModel viewModel)
 			{
+				_audioStateService = App.GetRequiredService<IAudioStateService>();
 				_currentViewModel = viewModel;
-				viewModel.PropertyChanged += ViewModel_PropertyChanged;
-				UpdateProgressUI(); // Initial update
+				_audioStateService.PositionChanged += AudioStateService_PositionChanged;
+				_audioStateService.TotalDurationChanged += AudioStateService_TotalDurationChanged;
+				//UpdateProgressUI();
 			}
 			else
 			{
 				_currentViewModel = null;
+				_audioStateService = null;
 			}
 		}
 
-		private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+		private void AudioStateService_PositionChanged(object? sender, TimeSpan position)
 		{
-			if (e.PropertyName == nameof(AudioPlayerViewModel.CurrentPosition) ||
-				e.PropertyName == nameof(AudioPlayerViewModel.TotalDuration))
+			DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
 			{
 				UpdateProgressUI();
-			}
+			});
+		}
+
+		private void AudioStateService_TotalDurationChanged(object? sender, TimeSpan duration)
+		{
+			// Dispatch to UI thread
+			DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+			{
+				UpdateProgressUI();
+			});
 		}
 
 		private void ProgressSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -61,20 +72,15 @@ namespace AudioSpectrumPlayer.Views
 
 		public void UpdateProgressUI()
 		{
-			if (_currentViewModel == null) return;
+			if (_audioStateService == null) return;
 
-			var currentPosition = _currentViewModel.CurrentPosition;
-			var totalDuration = _currentViewModel.TotalDuration;
+			var currentPosition = _audioStateService.CurrentPosition;
+			var totalDuration = _audioStateService.TotalDuration;
 
-			//DispatcherQueue.GetForCurrentThread()?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
-			//{
 			if (totalDuration.TotalMilliseconds > 0)
 			{
 				double progress = (currentPosition.TotalMilliseconds / totalDuration.TotalMilliseconds) * 100;
-
-
 				progressSlider.Value = progress;
-
 
 				string currentTime = FormatTimeSpan(currentPosition);
 				string totalTime = FormatTimeSpan(totalDuration);
@@ -85,7 +91,6 @@ namespace AudioSpectrumPlayer.Views
 				progressSlider.Value = 0;
 				timeDisplay.Text = "00:00 / 00:00";
 			}
-			//});
 		}
 
 		private static string FormatTimeSpan(TimeSpan timeSpan)

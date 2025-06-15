@@ -11,7 +11,7 @@ namespace AudioSpectrumPlayer.Views
 	public sealed partial class MenuBarControl : UserControl
 	{
 		private readonly LogViewModel _logViewModel;
-		public AudioPlayerViewModel ViewModel => (DataContext as AudioPlayerViewModel)!;
+		public MainWindowViewModel ViewModel => (DataContext as MainWindowViewModel)!;
 		public MenuBarControl()
 		{
 			InitializeComponent();
