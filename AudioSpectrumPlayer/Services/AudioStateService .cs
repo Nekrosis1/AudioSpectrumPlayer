@@ -1,4 +1,5 @@
 ﻿using AudioSpectrumPlayer.Interfaces;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Serilog;
 using System;
@@ -35,18 +36,24 @@ namespace AudioSpectrumPlayer.Services
 
 		public void StartMonitoring()
 		{
-			_playbackTimer ??= new DispatcherTimer
+			DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
 			{
-				Interval = TimeSpan.FromMilliseconds(250)
-			};
+				_playbackTimer ??= new DispatcherTimer
+				{
+					Interval = TimeSpan.FromMilliseconds(250)
+				};
 
-			_playbackTimer.Tick += PlaybackTimer_Tick;
-			_playbackTimer.Start();
+				_playbackTimer.Tick += PlaybackTimer_Tick;
+				_playbackTimer.Start();
+			});
 		}
 
 		public void StopMonitoring()
 		{
-			_playbackTimer?.Stop();
+			DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+			{
+				_playbackTimer?.Stop();
+			});
 		}
 
 		private void PlaybackTimer_Tick(object? sender, object e)
@@ -69,7 +76,7 @@ namespace AudioSpectrumPlayer.Services
 		public void UpdateCurrentPosition(TimeSpan position)
 		{
 			CurrentPosition = position;
-			Log.Information($"Audio position updated: {position}");
+			//Log.Debug($"Audio position updated: {position}");
 			PositionChanged?.Invoke(this, position);
 		}
 

@@ -70,7 +70,6 @@ namespace AudioSpectrumPlayer.ViewModels
 						Log.Error(ex, "MediaOpened event");
 					}
 				};
-
 				_mediaPlayer.MediaFailed += (sender, args) =>
 				{
 					try
@@ -114,8 +113,9 @@ namespace AudioSpectrumPlayer.ViewModels
 
 		private void InitializePlaybackState()
 		{
-			if (_mediaPlayer.Source != null)
+			if (_mediaPlayer.Source != null && _mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
 			{
+				Log.Information($"Initializing playback state, Duration = {_mediaPlayer.PlaybackSession.NaturalDuration}");
 				_audioStateService.UpdateTotalDuration(_mediaPlayer.PlaybackSession.NaturalDuration);
 				_audioStateService.UpdateCurrentPosition(TimeSpan.Zero);
 
@@ -258,11 +258,11 @@ namespace AudioSpectrumPlayer.ViewModels
 						percentage * _mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds);
 
 					_mediaPlayer.PlaybackSession.Position = newPosition;
-
 					// Update the property so UI reflects the change immediately
+					//_audioStateService.UpdateCurrentPosition(newPosition);
 					CurrentPosition = newPosition;
 
-					Log.Debug($"Seeked to position: {FormatTimeSpan(newPosition)}");
+					Log.Information($"Seeked to position: {FormatTimeSpan(newPosition)}");
 				}
 			}
 			catch (Exception ex)

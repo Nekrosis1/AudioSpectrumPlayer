@@ -1,7 +1,6 @@
 using AudioSpectrumPlayer.Interfaces;
 using AudioSpectrumPlayer.ViewModels;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Serilog;
@@ -11,41 +10,25 @@ namespace AudioSpectrumPlayer.Views
 {
 	public partial class PlaybackProgressControl : UserControl
 	{
-		private MainWindowViewModel? _currentViewModel;
+		private readonly DispatcherQueue _uiDispatcher;
+		public MainWindowViewModel ViewModel => (DataContext as MainWindowViewModel)!;
 		private IAudioStateService? _audioStateService;
 
 		public PlaybackProgressControl()
 		{
 			InitializeComponent();
-			DataContextChanged += PlaybackProgressControl_DataContextChanged;
+			_audioStateService = App.GetRequiredService<IAudioStateService>();
+			_audioStateService.PositionChanged += AudioStateService_PositionChanged;
+			_audioStateService.TotalDurationChanged += AudioStateService_TotalDurationChanged;
+			_uiDispatcher = this.DispatcherQueue;
+			//DataContextChanged += PlaybackProgressControl_DataContextChanged;
+			UpdateProgressUI();
 			Log.Debug("PlaybackProgressControl INIT");
-		}
-
-		private void PlaybackProgressControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-		{
-			if (_audioStateService != null)
-			{
-				_audioStateService.PositionChanged -= AudioStateService_PositionChanged;
-			}
-
-			if (args.NewValue is MainWindowViewModel viewModel)
-			{
-				_audioStateService = App.GetRequiredService<IAudioStateService>();
-				_currentViewModel = viewModel;
-				_audioStateService.PositionChanged += AudioStateService_PositionChanged;
-				_audioStateService.TotalDurationChanged += AudioStateService_TotalDurationChanged;
-				//UpdateProgressUI();
-			}
-			else
-			{
-				_currentViewModel = null;
-				_audioStateService = null;
-			}
 		}
 
 		private void AudioStateService_PositionChanged(object? sender, TimeSpan position)
 		{
-			DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+			_uiDispatcher.TryEnqueue(() =>
 			{
 				UpdateProgressUI();
 			});
@@ -53,9 +36,9 @@ namespace AudioSpectrumPlayer.Views
 
 		private void AudioStateService_TotalDurationChanged(object? sender, TimeSpan duration)
 		{
-			// Dispatch to UI thread
-			DispatcherQueue.GetForCurrentThread()?.TryEnqueue(() =>
+			_uiDispatcher.TryEnqueue(() =>
 			{
+				Log.Debug($"Total duration changed: {FormatTimeSpan(duration)}");
 				UpdateProgressUI();
 			});
 		}
@@ -67,7 +50,7 @@ namespace AudioSpectrumPlayer.Views
 
 		private void SeekToPosition(double percentage)
 		{
-			_currentViewModel?.SeekToPosition(percentage);
+			ViewModel?.SeekToPosition(percentage);
 		}
 
 		public void UpdateProgressUI()
