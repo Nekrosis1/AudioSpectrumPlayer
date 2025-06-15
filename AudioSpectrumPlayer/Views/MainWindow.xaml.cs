@@ -1,4 +1,6 @@
+using AudioSpectrumPlayer.Interfaces;
 using AudioSpectrumPlayer.ViewModels;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Serilog;
 using System;
@@ -10,11 +12,16 @@ namespace AudioSpectrumPlayer.Views
 	/// </summary>
 	public sealed partial class MainWindow : Window
 	{
+		private readonly DispatcherQueue _uiDispatcher;
 		public MainWindowViewModel ViewModel { get; }
+		public IAudioStateService _audioStateService;
 		public MainWindow(MainWindowViewModel viewModel)
 		{
 			InitializeComponent();
 			ViewModel = viewModel;
+			_audioStateService = App.GetRequiredService<IAudioStateService>();
+			_audioStateService.PlaybackStateChanged += OnPlaybackStateChanged;
+			_uiDispatcher = this.DispatcherQueue;
 			MonitorWindowLifetime();
 			Log.Information("Application started");
 		}
@@ -56,14 +63,17 @@ namespace AudioSpectrumPlayer.Views
 
 		#region UI Buttons
 
-		private void PlayButton_Click(object sender, RoutedEventArgs e)
+		private void OnPlaybackStateChanged(object? sender, bool isPlaying)
 		{
-			ViewModel.Play();
+			_uiDispatcher?.TryEnqueue(() =>
+			{
+				PlayPauseIcon.Glyph = isPlaying ? "\uE769" : "\uE768";
+			});
 		}
 
-		private void PauseButton_Click(object sender, RoutedEventArgs e)
+		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
 		{
-			ViewModel.Pause();
+			ViewModel.TogglePlayPause();
 		}
 
 		private void StopButton_Click(object sender, RoutedEventArgs e)

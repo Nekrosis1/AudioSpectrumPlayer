@@ -178,6 +178,31 @@ namespace AudioSpectrumPlayer.ViewModels
 			}
 		}
 
+		public void TogglePlayPause()
+		{
+			try
+			{
+				if (_mediaPlayer.Source == null)
+				{
+					Log.Warning("No media loaded, cannot toggle playback");
+					return;
+				}
+
+				if (_audioStateService.IsPlaybackActive)
+				{
+					Pause();
+				}
+				else
+				{
+					Play();
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex, "Error toggling play/pause");
+			}
+		}
+
 		partial void OnVolumeChanged(double value)
 		{
 			if (_mediaPlayer != null)

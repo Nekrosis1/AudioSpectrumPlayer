@@ -16,7 +16,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            
+
         </Grid.RowDefinitions>
 
         <!-- MenuBar -->
@@ -33,29 +33,31 @@
                        VerticalAlignment="Center" 
                        Text="Audio Visualization Area" />
         </Border>
-         <!-- Progress Bar -->
+        <!-- Progress Bar -->
         <Grid Grid.Row="2" Margin="0,0,0,12">
             <local:PlaybackProgressControl x:Name="PlaybackProgress"
                 DataContext="{x:Bind ViewModel}"/>
         </Grid>
 
 
-            <!-- Audio Controls -->
+        <!-- Audio Controls -->
         <Grid Grid.Row="3" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-        <StackPanel Grid.Row="2" 
+            <StackPanel Grid.Row="2" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
                     Spacing="8">
-                <Button x:Name="PlayButton" Click="PlayButton_Click">
-                    <FontIcon Glyph="&#xE768;"/>
-                </Button>
-                <Button x:Name="PauseButton" 
-                    Click="PauseButton_Click">
-                    <FontIcon Glyph="&#xE769;"/>
+                <Button x:Name="PlayPauseButton" 
+                    Click="PlayPauseButton_Click">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Space"/>
+                    </Button.KeyboardAccelerators>
+                    <FontIcon x:Name="PlayPauseIcon" 
+                    Glyph="&#xE768;"
+                    FontFamily="Segoe MDL2 Assets"/>
                 </Button>
                 <Button x:Name="StopButton" 
                     Click="StopButton_Click">
