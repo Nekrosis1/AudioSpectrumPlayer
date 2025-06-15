@@ -20,8 +20,7 @@ namespace AudioSpectrumPlayer.Views
 			_audioStateService = App.GetRequiredService<IAudioStateService>();
 			_audioStateService.PositionChanged += AudioStateService_PositionChanged;
 			_audioStateService.TotalDurationChanged += AudioStateService_TotalDurationChanged;
-			_uiDispatcher = this.DispatcherQueue;
-			//DataContextChanged += PlaybackProgressControl_DataContextChanged;
+			_uiDispatcher = DispatcherQueue;
 			UpdateProgressUI();
 			Log.Debug("PlaybackProgressControl INIT");
 		}

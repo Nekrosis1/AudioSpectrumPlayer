@@ -21,7 +21,7 @@ namespace AudioSpectrumPlayer.Views
 			ViewModel = viewModel;
 			_audioStateService = App.GetRequiredService<IAudioStateService>();
 			_audioStateService.PlaybackStateChanged += OnPlaybackStateChanged;
-			_uiDispatcher = this.DispatcherQueue;
+			_uiDispatcher = DispatcherQueue;
 			MonitorWindowLifetime();
 			Log.Information("Application started");
 		}
@@ -63,17 +63,17 @@ namespace AudioSpectrumPlayer.Views
 
 		#region UI Buttons
 
+
+		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel.TogglePlayPause();
+		}
 		private void OnPlaybackStateChanged(object? sender, bool isPlaying)
 		{
 			_uiDispatcher?.TryEnqueue(() =>
 			{
 				PlayPauseIcon.Glyph = isPlaying ? "\uE769" : "\uE768";
 			});
-		}
-
-		private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
-		{
-			ViewModel.TogglePlayPause();
 		}
 
 		private void StopButton_Click(object sender, RoutedEventArgs e)

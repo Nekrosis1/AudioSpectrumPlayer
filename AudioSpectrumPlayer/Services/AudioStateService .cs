@@ -72,11 +72,9 @@ namespace AudioSpectrumPlayer.Services
 			}
 		}
 
-
 		public void UpdateCurrentPosition(TimeSpan position)
 		{
 			CurrentPosition = position;
-			//Log.Debug($"Audio position updated: {position}");
 			PositionChanged?.Invoke(this, position);
 		}
 
@@ -108,6 +106,5 @@ namespace AudioSpectrumPlayer.Services
 			_playbackTimer = null;
 			_mediaPlayer = null;
 		}
-
 	}
 }

@@ -7,7 +7,6 @@ namespace AudioSpectrumPlayer.Views
 {
 	public sealed partial class LogDisplay : UserControl
 	{
-		//private readonly StringBuilder _logBuilder = new();
 		private DispatcherQueue _dispatcherQueue;
 		public LogViewModel ViewModel { get; private set; }
 
@@ -15,7 +14,7 @@ namespace AudioSpectrumPlayer.Views
 		{
 			InitializeComponent();
 			ViewModel = App.GetRequiredService<LogViewModel>();
-			_dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+			_dispatcherQueue = DispatcherQueue;
 		}
 
 		public void Log(string message)

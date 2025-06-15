@@ -2,7 +2,6 @@
 using AudioSpectrumPlayer.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Serilog;
 using System;
 using System.IO;
@@ -15,15 +14,12 @@ namespace AudioSpectrumPlayer.ViewModels
 	public partial class MainWindowViewModel : ObservableObject
 	{
 		private MediaPlayer _mediaPlayer = null!;
-		private DispatcherTimer _playbackTimer = null!;
 		private readonly IAudioFileService _audioFileService;
 		private readonly IAudioStateService _audioStateService;
 		private readonly SpectrumVisualizationService _spectrumVisualizationService;
-		//public bool IsPlaying { get; set; }
+
 
 #pragma warning disable MVVMTK0045 // Using [ObservableProperty] on fields is not AOT compatible for WinRT | I am waiting for the C# feature to be released stable
-		//[ObservableProperty]
-		//private string? _currentFilePath;
 		[ObservableProperty]
 		private TimeSpan _currentPosition;
 		[ObservableProperty]
@@ -49,14 +45,8 @@ namespace AudioSpectrumPlayer.ViewModels
 			try
 			{
 				Log.Debug("Initializing MediaPlayer");
-
 				_mediaPlayer = new MediaPlayer();
 				_audioStateService.SetMediaPlayer(_mediaPlayer);
-				//_playbackTimer = new DispatcherTimer
-				//{
-				//	Interval = TimeSpan.FromMilliseconds(1000)
-				//};
-				//_playbackTimer.Tick += PlaybackTimer_Tick;
 
 				_mediaPlayer.MediaOpened += (sender, args) =>
 				{
@@ -118,30 +108,9 @@ namespace AudioSpectrumPlayer.ViewModels
 				Log.Information($"Initializing playback state, Duration = {_mediaPlayer.PlaybackSession.NaturalDuration}");
 				_audioStateService.UpdateTotalDuration(_mediaPlayer.PlaybackSession.NaturalDuration);
 				_audioStateService.UpdateCurrentPosition(TimeSpan.Zero);
-
-				//if (_mediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
-				//{
-				//	_playbackTimer.Start();
-				//}
 				Log.Debug("Progress Bar Initialized");
 			}
 		}
-
-		//private void PlaybackTimer_Tick(object? sender, object e)
-		//{
-		//	try
-		//	{
-		//		if (_mediaPlayer?.PlaybackSession != null &&
-		//			_mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds > 0)
-		//		{
-		//			_audioStateService.UpdatePosition(_mediaPlayer.PlaybackSession.Position);
-		//		}
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		Log.Error(ex, "PlaybackTimer_Tick");
-		//	}
-		//}
 
 		public void Play()
 		{
@@ -150,6 +119,7 @@ namespace AudioSpectrumPlayer.ViewModels
 				Log.Information("Playing audio");
 				_mediaPlayer.Play();
 				_audioStateService.UpdatePlaybackState(true);
+				//_spectrumVisualizationService.StartVisualization();
 			}
 		}
 
@@ -159,8 +129,8 @@ namespace AudioSpectrumPlayer.ViewModels
 			{
 				Log.Information("Pausing audio");
 				_mediaPlayer.Pause();
-				//_playbackTimer.Stop();
 				_audioStateService.UpdatePlaybackState(false);
+				_spectrumVisualizationService.StopVisualization();
 			}
 		}
 
@@ -171,10 +141,9 @@ namespace AudioSpectrumPlayer.ViewModels
 				Log.Information("Stopping audio");
 				_mediaPlayer.Position = TimeSpan.Zero;
 				_mediaPlayer.Pause();
-				//_playbackTimer.Stop();
 				_audioStateService.UpdatePlaybackState(false);
-				CurrentPosition = TimeSpan.Zero;
-				_spectrumVisualizationService.StartVisualization();
+				_audioStateService.UpdateCurrentPosition(TimeSpan.Zero);
+				_spectrumVisualizationService.StopVisualization();
 			}
 		}
 
@@ -254,7 +223,6 @@ namespace AudioSpectrumPlayer.ViewModels
 					try
 					{
 						_mediaPlayer.Source = mediaSource;
-						//_playbackTimer.Start();
 						WindowTitle = $"{Path.GetFileName(filePath)} - Audio Spectrum Player";
 						Log.Information("Media source set successfully");
 					}
@@ -283,9 +251,6 @@ namespace AudioSpectrumPlayer.ViewModels
 						percentage * _mediaPlayer.PlaybackSession.NaturalDuration.TotalMilliseconds);
 
 					_mediaPlayer.PlaybackSession.Position = newPosition;
-					// Update the property so UI reflects the change immediately
-					//_audioStateService.UpdateCurrentPosition(newPosition);
-					CurrentPosition = newPosition;
 
 					Log.Information($"Seeked to position: {FormatTimeSpan(newPosition)}");
 				}
