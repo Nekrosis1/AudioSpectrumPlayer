@@ -22,8 +22,19 @@ namespace AudioSpectrumPlayer.Views
 			_audioStateService = App.GetRequiredService<IAudioStateService>();
 			_audioStateService.PlaybackStateChanged += OnPlaybackStateChanged;
 			_uiDispatcher = DispatcherQueue;
+			this.Activated += MainWindow_Activated;
 			MonitorWindowLifetime();
 			Log.Information("Application started");
+
+		}
+
+		private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+		{
+			if (args.WindowActivationState != WindowActivationState.Deactivated)
+			{
+				VisualizationBorder.Focus(FocusState.Programmatic);
+				this.Activated -= MainWindow_Activated;
+			}
 		}
 
 		private void MonitorWindowLifetime()
