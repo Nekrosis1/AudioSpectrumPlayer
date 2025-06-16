@@ -1,7 +1,7 @@
 using AudioSpectrumPlayer.ViewModels;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System.ComponentModel;
 
 namespace AudioSpectrumPlayer.Views
 {
@@ -14,6 +14,7 @@ namespace AudioSpectrumPlayer.Views
 		{
 			InitializeComponent();
 			ViewModel = App.GetRequiredService<LogViewModel>();
+			ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 			_dispatcherQueue = DispatcherQueue;
 		}
 
@@ -25,19 +26,23 @@ namespace AudioSpectrumPlayer.Views
 			_dispatcherQueue?.TryEnqueue(() =>
 			{
 				ViewModel.Log(message);
-				ScrollToBottom();
 			});
 		}
 		public void Clear()
 		{
 			ViewModel.ClearLog();
 		}
-		private void ScrollToBottom()
-		{
-			logTextBox.Select(logTextBox.Text.Length, 0);
-			logTextBox.Focus(FocusState.Programmatic);
-			scrollViewer.ChangeView(null, scrollViewer.ScrollableHeight, null);
-		}
 
+		private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(LogViewModel.LogText))
+			{
+				_dispatcherQueue?.TryEnqueue(DispatcherQueuePriority.Low, () =>
+				{
+					scrollViewer.UpdateLayout();
+					scrollViewer.ChangeView(null, scrollViewer.ScrollableHeight, null);
+				});
+			}
+		}
 	}
 }
