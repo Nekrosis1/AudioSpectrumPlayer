@@ -119,7 +119,7 @@ namespace AudioSpectrumPlayer.ViewModels
 				Log.Information("Playing audio");
 				_mediaPlayer.Play();
 				_audioStateService.UpdatePlaybackState(true);
-				//_spectrumVisualizationService.StartVisualization();
+				_spectrumVisualizationService.StartVisualization();
 			}
 		}
 
