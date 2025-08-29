@@ -34,6 +34,7 @@
 	<ItemGroup>
 	  <None Remove="LogDisplay.xaml" />
 	  <None Remove="Views\MenuBarControl.xaml" />
+	  <None Remove="Views\SpectrumControl.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -86,6 +87,12 @@
 
 	<ItemGroup>
 	  <Folder Include="Models\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="Views\SpectrumControl.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </Page>
 	</ItemGroup>
 
 	<ItemGroup>

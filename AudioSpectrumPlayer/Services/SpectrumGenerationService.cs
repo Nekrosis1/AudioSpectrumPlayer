@@ -117,7 +117,6 @@ namespace AudioSpectrumPlayer.Services
 					complexData[i] = new Complex(pcmData[i] * windowValue, 0);
 				}
 
-				// Perform FFT
 				Fourier.Forward(complexData, FourierOptions.Matlab);
 
 				// Convert to magnitude spectrum and reduce to desired number of bars

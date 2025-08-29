@@ -25,14 +25,12 @@
 
         <!-- This will be where we show audio visualization later -->
         <Border x:Name="VisualizationBorder"
-                Grid.Row="1" 
-                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
-                BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
-                BorderThickness="1"
-                Margin="0,0,0,12">
-            <TextBlock HorizontalAlignment="Center" 
-                       VerticalAlignment="Center" 
-                       Text="Placeholder | I am still working on the Spectrum" />
+        Grid.Row="1" 
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
+        BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+        BorderThickness="1"
+        Margin="0,0,0,12">
+            <local:SpectrumControl x:Name="SpectrumVisualization" />
         </Border>
         <!-- Progress Bar -->
         <Grid Grid.Row="2" Margin="0,0,0,12">
