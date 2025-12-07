@@ -5,15 +5,26 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			 "name": "Debug WinUI3",
-			 "type": "coreclr",
-			 "request": "launch",
-			 "preLaunchTask": "build",
-			 "program": "${workspaceFolder}/bin/Debug/net8.0-windows10.0.19041.0/win-arm64/AudiSpectrumPlayer.exe",
-			 "args": [],
-			 "cwd": "${workspaceFolder}",
-			 "stopAtEntry": false,
-			 "console": "internalConsole"
+			"name": "Debug Avalonia (Linux)",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia/bin/Debug/net9.0/AudioSpectrumPlayer.Avalonia.dll",
+			"args": [],
+			"cwd": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia",
+			"stopAtEntry": false,
+			"console": "internalConsole"
+		},
+		{
+			"name": "Debug WinUI3 (Windows only)",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build-winui3",
+			"program": "${workspaceFolder}/AudioSpectrumPlayer/bin/Debug/net9.0-windows10.0.19041.0/win-x64/AudioSpectrumPlayer.exe",
+			"args": [],
+			"cwd": "${workspaceFolder}/AudioSpectrumPlayer",
+			"stopAtEntry": false,
+			"console": "internalConsole"
 		}
-  ]
+	]
 }

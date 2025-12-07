@@ -13,6 +13,7 @@
 		<Nullable>enable</Nullable>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
 
 		 <!--Single file publishing settings--> 
 		<PublishSingleFile>true</PublishSingleFile>

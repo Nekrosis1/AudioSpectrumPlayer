@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35825.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer", "AudioSpectrumPlayer\AudioSpectrumPlayer.csproj", "{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSpectrumPlayer.Avalonia", "AudioSpectrumPlayer.Avalonia\AudioSpectrumPlayer.Avalonia.csproj", "{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -21,23 +23,23 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Debug|ARM64.Deploy.0 = Debug|Any CPU
 		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Debug|x64.Build.0 = Debug|Any CPU
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Debug|x64.Deploy.0 = Debug|Any CPU
 		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Debug|x86.ActiveCfg = Debug|x86
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Debug|x86.Build.0 = Debug|x86
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Debug|x86.Deploy.0 = Debug|x86
 		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Release|ARM64.Build.0 = Release|Any CPU
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Release|ARM64.Deploy.0 = Release|Any CPU
 		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Release|x64.ActiveCfg = Release|x64
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Release|x64.Build.0 = Release|x64
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Release|x64.Deploy.0 = Release|x64
 		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Release|x86.ActiveCfg = Release|x86
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Release|x86.Build.0 = Release|x86
-		{C4E1F9B9-FD4F-42E2-8D06-8D5CB6B2FA88}.Release|x86.Deploy.0 = Release|x86
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Debug|x64.Build.0 = Debug|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Debug|x86.Build.0 = Debug|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Release|ARM64.Build.0 = Release|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Release|x64.ActiveCfg = Release|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Release|x64.Build.0 = Release|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Release|x86.ActiveCfg = Release|Any CPU
+		{A8D7E2F3-4B1C-4A9E-9F2D-1E5C8B3A7D94}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
