@@ -6,18 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 AudioSpectrumPlayer is a WinUI 3 application built with .NET 9.0 that plays audio files and visualizes their spectrum in real-time. The application uses dependency injection, MVVM pattern with CommunityToolkit.Mvvm, and comprehensive logging with Serilog.
 
-## Build Commands
+### Build and Publish
 
-```bash
-# Debug build
-dotnet build
+The user will always build and publish himself, no need to run `bash dotnet ...`
 
-# Release build with single-file publishing (as specified in Readme.md)
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+## Environment
 
-# Build using VS Code task
-dotnet build AudioSpectrumPlayer.csproj /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary
-```
+- **New to VS Code**: The user has experience in Visual Studio on Windows, but is now working on Arch Linux, with VS Code. If he has questions why things don't work, think about how it may be different in VS or on Windows, as he may not know some seemingly obvious things.
 
 ## Development Workflows
 
@@ -49,7 +44,7 @@ dotnet build AudioSpectrumPlayer.csproj /property:GenerateFullPaths=true /consol
 
 **When prompted to review code, don't generate corrected code right away, instead, follow these steps**
 
-- **Explore** :  Look at the code and how it connects to other parts of the codebase  
+- **Explore**:  Look at the code and how it connects to other parts of the codebase  
 - **Search and explain**: When you find a potential problem, explain to the user what you found and why it is or may be a problem  
 - **Correct**: If the user agrees that what you found is a problem, suggest a correction  
 
