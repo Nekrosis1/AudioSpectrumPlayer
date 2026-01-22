@@ -12,6 +12,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 		private bool _isVisualizationActive = false;
 		private float[] _currentSpectrumData = new float[64];
 
+// comment
 		public SpectrumVisualizationService(SpectrumGenerationService spectrumGenerationService, IAudioStateService audioStateService)
 		{
 			_spectrumGenerationService = spectrumGenerationService;

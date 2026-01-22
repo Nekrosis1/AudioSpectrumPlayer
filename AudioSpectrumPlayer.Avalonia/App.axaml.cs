@@ -73,6 +73,7 @@ public partial class App : Application
             .ConfigureServices(services =>
             {
                 // Services
+                services.AddSingleton<IAudioPlayerService, AudioPlayerService>();
                 services.AddSingleton<IAudioFileService, AudioFileService>();
                 services.AddSingleton<IAudioStateService, AudioStateService>();
                 services.AddSingleton<SpectrumVisualizationService>();
