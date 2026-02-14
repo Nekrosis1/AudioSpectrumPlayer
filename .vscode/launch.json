@@ -9,7 +9,7 @@
 			"type": "coreclr",
 			"request": "launch",
 			"preLaunchTask": "build",
-			"program": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia/bin/Debug/net9.0/AudioSpectrumPlayer.Avalonia.dll",
+			"program": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia/bin/Debug/net10.0/AudioSpectrumPlayer.Avalonia.dll",
 			"args": [],
 			"cwd": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia",
 			"stopAtEntry": false,

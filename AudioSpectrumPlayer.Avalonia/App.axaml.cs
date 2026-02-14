@@ -4,6 +4,7 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using AudioSpectrumPlayer.Avalonia.Interfaces;
+using AudioSpectrumPlayer.Avalonia.Logging;
 using AudioSpectrumPlayer.Avalonia.Services;
 using AudioSpectrumPlayer.Avalonia.ViewModels;
 using AudioSpectrumPlayer.Avalonia.Views;
@@ -60,7 +61,9 @@ public partial class App : Application
             .WriteTo.File(
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-.txt"),
                 rollingInterval: RollingInterval.Day,
-                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}");
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({ThreadId}) {Message:lj}{NewLine}{Exception}")
+            .WriteTo.LogDisplay(
+                restrictedToMinimumLevel: LogEventLevel.Information);
 
         Log.Logger = loggerConfig.CreateLogger();
         Log.Information("AudioSpectrumPlayer Avalonia starting");
@@ -81,6 +84,7 @@ public partial class App : Application
 
                 // ViewModels
                 services.AddSingleton<MainWindowViewModel>();
+                services.AddSingleton<LogViewModel>();
 
                 // Views
                 services.AddSingleton<MainWindow>();
