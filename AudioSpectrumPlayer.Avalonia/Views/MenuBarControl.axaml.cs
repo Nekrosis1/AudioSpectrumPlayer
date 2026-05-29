@@ -35,10 +35,9 @@ public partial class MenuBarControl : UserControl
 	{
 		try
 		{
-			var window = TopLevel.GetTopLevel(this) as Window;
-			if (window is null) return;
+			if (TopLevel.GetTopLevel(this) is not Window window) return;
 
-			var dialog = new Window
+			Window dialog = new Window
 			{
 				Title = "About Audio Spectrum Player",
 				Width = 360,

@@ -10,7 +10,7 @@ namespace AudioSpectrumPlayer.Avalonia.Views;
 
 public partial class SpectrumControl : UserControl
 {
-	private float[] _currentSpectrumData = Array.Empty<float>();
+	private float[] _currentSpectrumData = [];
 	private double _canvasWidth;
 	private double _canvasHeight;
 
@@ -50,12 +50,10 @@ public partial class SpectrumControl : UserControl
 			var linePoints = CreateSpectrumPoints(spectrumData);
 			var fillPoints = CreateFillPoints(linePoints);
 
-			var line = new Points();
-			foreach (var p in linePoints) line.Add(p);
+			Points line = [.. linePoints];
 			spectrumLine.Points = line;
 
-			var fill = new Points();
-			foreach (var p in fillPoints) fill.Add(p);
+			Points fill = [.. fillPoints];
 			spectrumFill.Points = fill;
 		}
 		catch (Exception ex)
@@ -66,7 +64,7 @@ public partial class SpectrumControl : UserControl
 
 	private Point[] CreateSpectrumPoints(float[] spectrumData)
 	{
-		var points = new Point[spectrumData.Length];
+		Point[] points = new Point[spectrumData.Length];
 
 		for (int i = 0; i < spectrumData.Length; i++)
 		{
@@ -80,7 +78,7 @@ public partial class SpectrumControl : UserControl
 
 	private Point[] CreateFillPoints(Point[] linePoints)
 	{
-		var fillPoints = new Point[linePoints.Length + 2];
+		Point[] fillPoints = new Point[linePoints.Length + 2];
 		fillPoints[0] = new Point(0, _canvasHeight);
 		Array.Copy(linePoints, 0, fillPoints, 1, linePoints.Length);
 		fillPoints[^1] = new Point(_canvasWidth, _canvasHeight);
@@ -105,8 +103,8 @@ public partial class SpectrumControl : UserControl
 	{
 		Dispatcher.UIThread.Post(() =>
 		{
-			spectrumLine.Points = new Points();
-			spectrumFill.Points = new Points();
+			spectrumLine.Points = [];
+			spectrumFill.Points = [];
 		});
 	}
 }

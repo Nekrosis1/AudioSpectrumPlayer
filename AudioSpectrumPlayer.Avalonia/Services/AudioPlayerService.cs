@@ -134,7 +134,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 				_mediaPlayer.Media = _currentMedia;
 
-				var duration = TimeSpan.FromMilliseconds(_currentMedia.Duration);
+				TimeSpan duration = TimeSpan.FromMilliseconds(_currentMedia.Duration);
 				if (_currentMedia.Duration > 0)
 				{
 					DurationChanged?.Invoke(this, duration);

@@ -15,7 +15,7 @@ public class LogDisplaySink(ITextFormatter formatter) : ILogEventSink
 
 	public void Emit(LogEvent logEvent)
 	{
-		using var writer = new StringWriter();
+		using StringWriter writer = new StringWriter();
 		formatter.Format(logEvent, writer);
 		LogReceived?.Invoke(this, writer.ToString());
 	}
@@ -29,7 +29,7 @@ public static class LogDisplaySinkExtensions
 		LogEventLevel restrictedToMinimumLevel = LogEventLevel.Verbose,
 		IFormatProvider? formatProvider = null)
 	{
-		var formatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
+		MessageTemplateTextFormatter formatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
 		return sinkConfiguration.Sink(new LogDisplaySink(formatter), restrictedToMinimumLevel);
 	}
 }

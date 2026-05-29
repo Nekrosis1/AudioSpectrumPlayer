@@ -12,7 +12,6 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 		private bool _isVisualizationActive = false;
 		private float[] _currentSpectrumData = new float[64];
 
-// comment
 		public SpectrumVisualizationService(SpectrumGenerationService spectrumGenerationService, IAudioStateService audioStateService)
 		{
 			_spectrumGenerationService = spectrumGenerationService;
@@ -46,7 +45,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 			var currentPosition = _audioStateService!.CurrentPosition;
 			Console.WriteLine($"Current Position: {currentPosition.TotalSeconds} seconds");
-			var pcmData = _spectrumGenerationService.GetAudioChunkAtPosition(currentPosition);
+			float[] pcmData = _spectrumGenerationService.GetAudioChunkAtPosition(currentPosition);
 			//var frequencies = AnalyzeFrequencies(pcmData);
 
 			//// Update your visualization UI

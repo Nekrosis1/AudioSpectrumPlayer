@@ -22,12 +22,12 @@ public partial class VolumeControl : UserControl
 	{
 		InitializeComponent();
 
-		volumeBackground.Points = new Points
-		{
+		volumeBackground.Points =
+		[
 			new Point(0, TriangleHeight),
 			new Point(TriangleWidth, 0),
 			new Point(TriangleWidth, TriangleHeight),
-		};
+		];
 
 		DataContextChanged += OnDataContextChanged;
 	}
@@ -67,12 +67,12 @@ public partial class VolumeControl : UserControl
 		double volumeWidth = TriangleWidth * volume;
 		double volumeHeight = TriangleHeight * volume;
 
-		volumeIndicator.Points = new Points
-		{
+		volumeIndicator.Points =
+		[
 			new Point(0, TriangleHeight),
 			new Point(volumeWidth, TriangleHeight - volumeHeight),
 			new Point(volumeWidth, TriangleHeight),
-		};
+		];
 
 		volumePercentage.Text = $"{(int)Math.Round(volume * 100)}%";
 	}

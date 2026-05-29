@@ -65,7 +65,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 				// The FFT works on complex numbers. Our audio samples are real
 				// (just amplitudes), so each becomes a Complex with the sample as
 				// the real part and 0 as the imaginary part.
-				var complexData = new Complex[FFT_SIZE];
+				Complex[] complexData = new Complex[FFT_SIZE];
 				for (int i = 0; i < FFT_SIZE; i++)
 				{
 					// Apply a Hamming window to reduce "spectral leakage".

@@ -278,7 +278,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		{
 			if (_audioPlayerService.TotalDuration.TotalMilliseconds > 0)
 			{
-				var newPosition = TimeSpan.FromMilliseconds(
+				TimeSpan newPosition = TimeSpan.FromMilliseconds(
 					percentage * _audioPlayerService.TotalDuration.TotalMilliseconds);
 
 				_audioPlayerService.Seek(newPosition);

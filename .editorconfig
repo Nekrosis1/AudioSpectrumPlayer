@@ -1,4 +1,23 @@
-﻿[*.cs]
+﻿# Top-most EditorConfig file — stops the resolver from walking further up the tree.
+root = true
+
+[*.cs]
+
+# --- Indentation: use tabs, not spaces ---
+# Without this key, dotnet format and the editor fall back to their built-in
+# default (spaces), which is why whitespace fixes kept converting tabs.
+indent_style = tab
 
 # Default severity for analyzer diagnostics with category 'Interoperability'
 dotnet_analyzer_diagnostic.category-Interoperability.severity = suggestion
+
+# --- 'var' preferences: prefer explicit type everywhere ---
+# 'false' = prefer the explicit type instead of 'var'.
+# ':suggestion' = show the grey dotted underline + lightbulb (Ctrl+.), not a warning/error.
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = false:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# --- Prefer target-typed 'new()' when the type is already apparent ---
+# Turns 'MyClass myVar = new MyClass();' into a suggestion to write 'MyClass myVar = new();'
+csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion

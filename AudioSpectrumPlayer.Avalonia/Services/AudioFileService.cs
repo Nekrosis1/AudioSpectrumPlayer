@@ -8,25 +8,20 @@ using System.Threading.Tasks;
 
 namespace AudioSpectrumPlayer.Avalonia.Services
 {
-	public class AudioFileService : IAudioFileService
+	public class AudioFileService(ITopLevelProvider topLevelProvider) : IAudioFileService
 	{
 		private static readonly string[] SupportedExtensions = [
 			".mp3", ".mpeg", ".wav", ".m4a", ".wma",
 			".aac", ".flac", ".ogg", ".aiff"
 		];
 
-		private readonly ITopLevelProvider _topLevelProvider;
-
-		public AudioFileService(ITopLevelProvider topLevelProvider)
-		{
-			_topLevelProvider = topLevelProvider;
-		}
+		private readonly ITopLevelProvider _topLevelProvider = topLevelProvider;
 
 		public async Task<string?> PickAudioFileAsync()
 		{
 			try
 			{
-				var storageProvider = _topLevelProvider.TopLevel?.StorageProvider;
+				IStorageProvider? storageProvider = _topLevelProvider.TopLevel?.StorageProvider;
 
 				if (storageProvider is null)
 				{
@@ -41,26 +36,26 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 				}
 
 				// Create file type filters
-				var fileTypeFilters = new List<FilePickerFileType>
-				{
-					new FilePickerFileType("Audio Files")
+				List<FilePickerFileType> fileTypeFilters =
+				[
+					new("Audio Files")
 					{
-						Patterns = SupportedExtensions.Select(ext => $"*{ext}").ToList()
+						Patterns = [.. SupportedExtensions.Select(ext => $"*{ext}")]
 					},
-					new FilePickerFileType("All Files")
+					new("All Files")
 					{
-						Patterns = new List<string> { "*.*" }
+						Patterns = ["*.*"]
 					}
-				};
+				];
 
-				var options = new FilePickerOpenOptions
+				FilePickerOpenOptions options = new()
 				{
 					Title = "Select Audio File",
 					AllowMultiple = false,
 					FileTypeFilter = fileTypeFilters
 				};
 
-				var result = await storageProvider.OpenFilePickerAsync(options);
+				IReadOnlyList<IStorageFile> result = await storageProvider.OpenFilePickerAsync(options);
 
 				if (result != null && result.Count > 0)
 				{
@@ -88,7 +83,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 				return false;
 			}
 
-			var extension = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
+			string extension = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
 			return Array.Exists(SupportedExtensions, ext => ext.Equals(extension, StringComparison.OrdinalIgnoreCase));
 		}
 	}
