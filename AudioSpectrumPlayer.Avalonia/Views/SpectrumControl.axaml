@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shapes="using:Avalonia.Controls.Shapes"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="300"
+             x:Class="AudioSpectrumPlayer.Avalonia.Views.SpectrumControl">
+
+    <Grid Background="Black">
+        <Canvas x:Name="spectrumCanvas"
+                Background="Transparent"
+                ClipToBounds="True"
+                SizeChanged="OnCanvasSizeChanged">
+
+            <shapes:Polygon x:Name="spectrumFill"
+                            Fill="LimeGreen"
+                            Opacity="0.3"
+                            Stroke="Transparent"/>
+
+            <shapes:Polyline x:Name="spectrumLine"
+                             Stroke="LimeGreen"
+                             StrokeThickness="2"
+                             StrokeLineCap="Round"
+                             StrokeJoin="Round"/>
+        </Canvas>
+    </Grid>
+</UserControl>

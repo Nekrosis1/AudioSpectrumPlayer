@@ -1,39 +1,43 @@
 using AudioSpectrumPlayer.Avalonia.Interfaces;
-using NAudio.Wave;
+using LibVLCSharp.Shared;
 using Serilog;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace AudioSpectrumPlayer.Avalonia.Services
 {
 	/// <summary>
-	/// Cross-platform audio playback service using NAudio.
-	/// Uses WaveOutEvent for audio output and AudioFileReader for file loading.
+	/// Cross-platform audio playback service backed by libvlc (via LibVLCSharp).
+	/// Replaces the prior NAudio implementation, which depended on Windows
+	/// Media Foundation (mfplat.dll) for MP3/FLAC/AAC decoding and therefore
+	/// crashed on Linux.
 	/// </summary>
 	public class AudioPlayerService : IAudioPlayerService
 	{
-		private WaveOutEvent? _waveOut;
-		private AudioFileReader? _audioFile;
-		private Timer? _positionTimer;
+		private static bool s_coreInitialized;
+		private static readonly Lock s_initLock = new();
+
+		private readonly LibVLC _libVlc;
+		private readonly MediaPlayer _mediaPlayer;
+		private Media? _currentMedia;
 		private bool _disposed;
 
-		public TimeSpan CurrentPosition => _audioFile?.CurrentTime ?? TimeSpan.Zero;
-		public TimeSpan TotalDuration => _audioFile?.TotalTime ?? TimeSpan.Zero;
+		public TimeSpan CurrentPosition =>
+			TimeSpan.FromMilliseconds(_mediaPlayer.Time < 0 ? 0 : _mediaPlayer.Time);
+
+		public TimeSpan TotalDuration =>
+			TimeSpan.FromMilliseconds(_mediaPlayer.Length < 0 ? 0 : _mediaPlayer.Length);
 
 		public float Volume
 		{
-			get => _waveOut?.Volume ?? 1.0f;
-			set
-			{
-				if (_waveOut != null)
-				{
-					_waveOut.Volume = Math.Clamp(value, 0f, 1f);
-				}
-			}
+			get => _mediaPlayer.Volume / 100f;
+			set => _mediaPlayer.Volume = Math.Clamp((int)Math.Round(value * 100f), 0, 100);
 		}
 
-		public bool IsPlaying => _waveOut?.PlaybackState == PlaybackState.Playing;
+		public bool IsPlaying => _mediaPlayer.IsPlaying;
+
+		public bool HasMedia => _currentMedia is not null;
 
 		public event EventHandler<TimeSpan>? PositionChanged;
 		public event EventHandler<TimeSpan>? DurationChanged;
@@ -44,96 +48,119 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 		public AudioPlayerService()
 		{
-			InitializePositionTimer();
+			EnsureCoreInitialized();
+
+			_libVlc = new LibVLC();
+			_mediaPlayer = new MediaPlayer(_libVlc);
+
+			_mediaPlayer.TimeChanged += OnTimeChanged;
+			_mediaPlayer.LengthChanged += OnLengthChanged;
+			_mediaPlayer.Playing += OnPlaying;
+			_mediaPlayer.Paused += OnPaused;
+			_mediaPlayer.Stopped += OnStopped;
+			_mediaPlayer.EndReached += OnEndReached;
+			_mediaPlayer.EncounteredError += OnEncounteredError;
 		}
 
-		private void InitializePositionTimer()
+		// libvlc requires a one-time native init before any LibVLC instance is created.
+		private static void EnsureCoreInitialized()
 		{
-			_positionTimer = new Timer(250); // Update every 250ms
-			_positionTimer.Elapsed += OnPositionTimerElapsed;
-			_positionTimer.AutoReset = true;
-		}
-
-		private void OnPositionTimerElapsed(object? sender, ElapsedEventArgs e)
-		{
-			if (_audioFile != null && IsPlaying)
+			if (s_coreInitialized) return;
+			lock (s_initLock)
 			{
-				PositionChanged?.Invoke(this, CurrentPosition);
+				if (s_coreInitialized) return;
+				Core.Initialize();
+				s_coreInitialized = true;
+				Log.Debug("LibVLCSharp Core initialized");
 			}
+		}
+
+		private void OnTimeChanged(object? sender, MediaPlayerTimeChangedEventArgs e)
+		{
+			PositionChanged?.Invoke(this, TimeSpan.FromMilliseconds(e.Time));
+		}
+
+		private void OnLengthChanged(object? sender, MediaPlayerLengthChangedEventArgs e)
+		{
+			DurationChanged?.Invoke(this, TimeSpan.FromMilliseconds(e.Length));
+		}
+
+		// These fire on a libvlc background thread and confirm the actual player
+		// state. Logged at Debug (file only); the user-facing "intent" logs live
+		// in MainWindowViewModel (UI thread), which is where the LogDisplay panel
+		// reliably picks them up.
+		private void OnPlaying(object? sender, EventArgs e)
+		{
+			Log.Debug("Playback started");
+			PlaybackStateChanged?.Invoke(this, true);
+		}
+
+		private void OnPaused(object? sender, EventArgs e)
+		{
+			Log.Debug("Playback paused");
+			PlaybackStateChanged?.Invoke(this, false);
+		}
+
+		private void OnStopped(object? sender, EventArgs e)
+		{
+			Log.Debug("Playback stopped");
+			PlaybackStateChanged?.Invoke(this, false);
+		}
+
+		private void OnEndReached(object? sender, EventArgs e)
+		{
+			Log.Information("Playback ended");
+			MediaEnded?.Invoke(this, EventArgs.Empty);
+		}
+
+		private void OnEncounteredError(object? sender, EventArgs e)
+		{
+			const string message = "LibVLC encountered an error during playback";
+			Log.Error(message);
+			MediaFailed?.Invoke(this, message);
 		}
 
 		public async Task LoadAsync(string filePath)
 		{
 			try
 			{
-				Log.Information("Loading audio file: {FilePath}", filePath);
+				_mediaPlayer.Stop();
+				_currentMedia?.Dispose();
 
-				// Dispose previous resources
-				DisposeAudioResources();
+				_currentMedia = new Media(_libVlc, new Uri(filePath));
 
-				// Create new audio file reader
-				_audioFile = new AudioFileReader(filePath);
+				// Parse synchronously enough to fill in Duration before we report MediaOpened.
+				await _currentMedia.Parse(MediaParseOptions.ParseLocal);
 
-				// Create output device
-				_waveOut = new WaveOutEvent();
-				_waveOut.Init(_audioFile);
+				_mediaPlayer.Media = _currentMedia;
 
-				// Subscribe to playback stopped event
-				_waveOut.PlaybackStopped += OnPlaybackStopped;
+				var duration = TimeSpan.FromMilliseconds(_currentMedia.Duration);
+				if (_currentMedia.Duration > 0)
+				{
+					DurationChanged?.Invoke(this, duration);
+				}
 
-				// Notify listeners
-				DurationChanged?.Invoke(this, TotalDuration);
 				MediaOpened?.Invoke(this, EventArgs.Empty);
-
-				Log.Information("Audio file loaded successfully. Duration: {Duration}", TotalDuration);
+				Log.Information("Audio file loaded successfully. Duration: {Duration:hh\\:mm\\:ss}", duration);
 			}
 			catch (Exception ex)
 			{
 				Log.Error(ex, "Failed to load audio file: {FilePath}", filePath);
 				MediaFailed?.Invoke(this, ex.Message);
 			}
-
-			await Task.CompletedTask;
-		}
-
-		private void OnPlaybackStopped(object? sender, StoppedEventArgs e)
-		{
-			if (e.Exception != null)
-			{
-				Log.Error(e.Exception, "Playback error occurred");
-				MediaFailed?.Invoke(this, e.Exception.Message);
-			}
-			else if (_audioFile != null && _audioFile.CurrentTime >= _audioFile.TotalTime - TimeSpan.FromMilliseconds(100))
-			{
-				// Reached end of file
-				Log.Information("Playback ended");
-				MediaEnded?.Invoke(this, EventArgs.Empty);
-			}
-
-			_positionTimer?.Stop();
-			PlaybackStateChanged?.Invoke(this, false);
 		}
 
 		public void Play()
 		{
-			if (_waveOut == null || _audioFile == null)
+			if (_currentMedia is null)
 			{
-				Log.Warning("Cannot play: No audio loaded");
+				Log.Warning("Cannot play: no audio loaded");
 				return;
 			}
 
 			try
 			{
-				// If we're at the end, restart from beginning
-				if (_audioFile.CurrentTime >= _audioFile.TotalTime - TimeSpan.FromMilliseconds(100))
-				{
-					_audioFile.CurrentTime = TimeSpan.Zero;
-				}
-
-				_waveOut.Play();
-				_positionTimer?.Start();
-				PlaybackStateChanged?.Invoke(this, true);
-				Log.Information("Playback started");
+				_mediaPlayer.Play();
 			}
 			catch (Exception ex)
 			{
@@ -144,18 +171,9 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 		public void Pause()
 		{
-			if (_waveOut == null)
-			{
-				Log.Warning("Cannot pause: No audio loaded");
-				return;
-			}
-
 			try
 			{
-				_waveOut.Pause();
-				_positionTimer?.Stop();
-				PlaybackStateChanged?.Invoke(this, false);
-				Log.Information("Playback paused");
+				_mediaPlayer.Pause();
 			}
 			catch (Exception ex)
 			{
@@ -165,20 +183,10 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 		public void Stop()
 		{
-			if (_waveOut == null || _audioFile == null)
-			{
-				Log.Warning("Cannot stop: No audio loaded");
-				return;
-			}
-
 			try
 			{
-				_waveOut.Stop();
-				_audioFile.CurrentTime = TimeSpan.Zero;
-				_positionTimer?.Stop();
+				_mediaPlayer.Stop();
 				PositionChanged?.Invoke(this, TimeSpan.Zero);
-				PlaybackStateChanged?.Invoke(this, false);
-				Log.Information("Playback stopped");
 			}
 			catch (Exception ex)
 			{
@@ -188,21 +196,21 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 		public void Seek(TimeSpan position)
 		{
-			if (_audioFile == null)
+			if (_currentMedia is null)
 			{
-				Log.Warning("Cannot seek: No audio loaded");
+				Log.Warning("Cannot seek: no audio loaded");
 				return;
 			}
 
 			try
 			{
-				// Clamp position to valid range
-				var clampedPosition = TimeSpan.FromTicks(
-					Math.Clamp(position.Ticks, 0, _audioFile.TotalTime.Ticks));
+				long targetMs = (long)Math.Clamp(
+					position.TotalMilliseconds,
+					0,
+					_mediaPlayer.Length > 0 ? _mediaPlayer.Length : long.MaxValue);
 
-				_audioFile.CurrentTime = clampedPosition;
-				PositionChanged?.Invoke(this, clampedPosition);
-				Log.Debug("Seeked to position: {Position}", clampedPosition);
+				_mediaPlayer.Time = targetMs;
+				Log.Debug("Seeked to position: {Position} ms", targetMs);
 			}
 			catch (Exception ex)
 			{
@@ -210,32 +218,15 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 			}
 		}
 
-		private void DisposeAudioResources()
-		{
-			if (_waveOut != null)
-			{
-				_waveOut.PlaybackStopped -= OnPlaybackStopped;
-				_waveOut.Stop();
-				_waveOut.Dispose();
-				_waveOut = null;
-			}
-
-			if (_audioFile != null)
-			{
-				_audioFile.Dispose();
-				_audioFile = null;
-			}
-		}
-
 		public void Dispose()
 		{
 			if (_disposed) return;
 
-			_positionTimer?.Stop();
-			_positionTimer?.Dispose();
-			_positionTimer = null;
+			try { _mediaPlayer.Stop(); } catch { /* tearing down anyway */ }
 
-			DisposeAudioResources();
+			_mediaPlayer.Dispose();
+			_currentMedia?.Dispose();
+			_libVlc.Dispose();
 
 			_disposed = true;
 			Log.Debug("AudioPlayerService disposed");

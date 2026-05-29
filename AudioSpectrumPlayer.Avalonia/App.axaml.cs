@@ -42,7 +42,16 @@ public partial class App : Application
             DisableAvaloniaDataAnnotationValidation();
 
             // Get MainWindow from DI container
-            desktop.MainWindow = _host?.Services.GetRequiredService<MainWindow>();
+            var mainWindow = _host?.Services.GetRequiredService<MainWindow>();
+            desktop.MainWindow = mainWindow;
+
+            // Now that the window exists, hand it to the provider so services
+            // (e.g. the file picker) can reach the TopLevel without depending
+            // on a concrete Window.
+            if (mainWindow is not null)
+            {
+                _host?.Services.GetRequiredService<TopLevelProvider>().TopLevel = mainWindow;
+            }
 
             SetupExceptionHandling();
         }
@@ -76,6 +85,8 @@ public partial class App : Application
             .ConfigureServices(services =>
             {
                 // Services
+                services.AddSingleton<TopLevelProvider>();
+                services.AddSingleton<ITopLevelProvider>(sp => sp.GetRequiredService<TopLevelProvider>());
                 services.AddSingleton<IAudioPlayerService, AudioPlayerService>();
                 services.AddSingleton<IAudioFileService, AudioFileService>();
                 services.AddSingleton<IAudioStateService, AudioStateService>();

@@ -1,8 +1,8 @@
 using AudioSpectrumPlayer.Avalonia.Interfaces;
 using AudioSpectrumPlayer.Avalonia.Services;
-using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Serilog;
 using System;
 using System.IO;
@@ -16,6 +16,14 @@ public partial class MainWindowViewModel : ViewModelBase
 	private readonly IAudioFileService _audioFileService;
 	private readonly IAudioStateService _audioStateService;
 	private readonly SpectrumVisualizationService _spectrumVisualizationService;
+
+	/// <summary>
+	/// Child view model for the log panel. Exposed so the menu's "Clear Log"
+	/// can bind to <c>LogPanel.ClearLogCommand</c> while the menu's DataContext
+	/// remains this view model. (Named LogPanel, not Log, to avoid shadowing
+	/// Serilog's static <c>Log</c> used throughout this class.)
+	/// </summary>
+	public LogViewModel LogPanel { get; }
 
 	[ObservableProperty]
 	private TimeSpan _currentPosition;
@@ -39,12 +47,14 @@ public partial class MainWindowViewModel : ViewModelBase
 		IAudioPlayerService audioPlayerService,
 		IAudioFileService audioFileService,
 		IAudioStateService audioStateService,
-		SpectrumVisualizationService spectrumVisualizationService)
+		SpectrumVisualizationService spectrumVisualizationService,
+		LogViewModel logViewModel)
 	{
 		_audioPlayerService = audioPlayerService;
 		_audioFileService = audioFileService;
 		_audioStateService = audioStateService;
 		_spectrumVisualizationService = spectrumVisualizationService;
+		LogPanel = logViewModel;
 
 		SubscribeToPlayerEvents();
 	}
@@ -109,27 +119,32 @@ public partial class MainWindowViewModel : ViewModelBase
 
 	public void Play()
 	{
+		Log.Information("Play");
 		_audioPlayerService.Play();
 		_spectrumVisualizationService.StartVisualization();
 	}
 
 	public void Pause()
 	{
+		Log.Information("Pause");
 		_audioPlayerService.Pause();
 		_spectrumVisualizationService.StopVisualization();
 	}
 
+	[RelayCommand]
 	public void Stop()
 	{
+		Log.Information("Stop");
 		_audioPlayerService.Stop();
 		_spectrumVisualizationService.StopVisualization();
 	}
 
+	[RelayCommand]
 	public void TogglePlayPause()
 	{
 		try
 		{
-			if (!_audioPlayerService.IsPlaying && _audioPlayerService.TotalDuration == TimeSpan.Zero)
+			if (!_audioPlayerService.HasMedia)
 			{
 				Log.Warning("No media loaded, cannot toggle playback");
 				return;
@@ -150,30 +165,83 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 	}
 
+	// Single point every volume change flows through — keyboard commands and the
+	// VolumeControl drag both set the Volume property, which lands here.
 	partial void OnVolumeChanged(double value)
 	{
 		_audioPlayerService.Volume = (float)value;
-		Log.Debug("Volume changed to {Volume}%", (int)(value * 100));
+		Log.Debug("Volume changed to {Volume}%", (int)Math.Round(value * 100));
 	}
 
-	public async Task<bool> SelectAndLoadAudioFileAsync(Window window)
+	/// <summary>Volume change per +/- key press.</summary>
+	private const double VolumeStep = 0.05;
+
+	/// <summary>How far the seek-forward/backward shortcuts jump.</summary>
+	private static readonly TimeSpan SeekStep = TimeSpan.FromSeconds(10);
+
+	// Round to 2 decimals each step so we don't accumulate floating
+	// point drift.
+	[RelayCommand]
+	private void VolumeUp()
+	{
+		Volume = Math.Clamp(Math.Round(Volume + VolumeStep, 2), 0.0, 1.0);
+		Log.Information("Volume {Volume}%", (int)Math.Round(Volume * 100));
+	}
+
+	[RelayCommand]
+	private void VolumeDown()
+	{
+		Volume = Math.Clamp(Math.Round(Volume - VolumeStep, 2), 0.0, 1.0);
+		Log.Information("Volume {Volume}%", (int)Math.Round(Volume * 100));
+	}
+
+	[RelayCommand]
+	private void SeekForward() => SeekRelative(SeekStep);
+
+	[RelayCommand]
+	private void SeekBackward() => SeekRelative(-SeekStep);
+
+	private void SeekRelative(TimeSpan delta)
 	{
 		try
 		{
-			string? filePath = await _audioFileService.PickAudioFileAsync(window);
+			var total = _audioPlayerService.TotalDuration;
+
+			// libvlc only knows the duration once playback has begun; until then
+			// there is nothing meaningful to seek within.
+			if (total.TotalMilliseconds <= 0)
+			{
+				return;
+			}
+
+			var target = _audioPlayerService.CurrentPosition + delta;
+			if (target < TimeSpan.Zero) target = TimeSpan.Zero;
+			if (target > total) target = total;
+
+			_audioPlayerService.Seek(target);
+			Log.Information("Seek {Delta}s -> {Position}", delta.TotalSeconds, FormatTimeSpan(target));
+		}
+		catch (Exception ex)
+		{
+			Log.Error(ex, "SeekRelative");
+		}
+	}
+
+	[RelayCommand]
+	private async Task OpenFileAsync()
+	{
+		try
+		{
+			string? filePath = await _audioFileService.PickAudioFileAsync();
 
 			if (!string.IsNullOrEmpty(filePath))
 			{
 				await LoadAudioFileAsync(filePath);
-				return true;
 			}
-
-			return false;
 		}
 		catch (Exception ex)
 		{
 			Log.Error(ex, "Error selecting and loading audio file");
-			return false;
 		}
 	}
 
@@ -223,6 +291,7 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 	}
 
+	[RelayCommand]
 	public void ToggleLogVisibility()
 	{
 		IsLogVisible = !IsLogVisible;

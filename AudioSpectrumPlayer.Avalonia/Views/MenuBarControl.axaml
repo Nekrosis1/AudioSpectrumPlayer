@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AudioSpectrumPlayer.Avalonia.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="30"
+             x:Class="AudioSpectrumPlayer.Avalonia.Views.MenuBarControl"
+             x:DataType="vm:MainWindowViewModel">
+
+    <Menu>
+        <MenuItem Header="_File">
+            <MenuItem x:Name="OpenFileMenuItem"
+                      Header="_Open Audio File..."
+                      InputGesture="Ctrl+O"
+                      Command="{Binding OpenFileCommand}"/>
+            <Separator/>
+            <MenuItem x:Name="ExitMenuItem"
+                      Header="E_xit"
+                      InputGesture="Alt+F4"
+                      Click="OnExitClick"/>
+        </MenuItem>
+
+        <MenuItem Header="_View">
+            <MenuItem x:Name="ToggleLogMenuItem"
+                      Header="Toggle _Log Display"
+                      InputGesture="Ctrl+L"
+                      Command="{Binding ToggleLogVisibilityCommand}"/>
+            <MenuItem x:Name="ClearLogMenuItem"
+                      Header="_Clear Log"
+                      Command="{Binding LogPanel.ClearLogCommand}"/>
+        </MenuItem>
+
+        <MenuItem Header="_Settings">
+            <MenuItem x:Name="PreferencesMenuItem"
+                      Header="_Preferences..."
+                      InputGesture="Ctrl+P"
+                      IsEnabled="False"
+                      Click="OnPreferencesClick"/>
+        </MenuItem>
+
+        <MenuItem Header="_Help">
+            <MenuItem x:Name="AboutMenuItem"
+                      Header="_About Audio Spectrum Player"
+                      Click="OnAboutClick"/>
+        </MenuItem>
+    </Menu>
+</UserControl>

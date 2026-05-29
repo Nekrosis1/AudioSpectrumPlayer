@@ -1,14 +1,78 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:AudioSpectrumPlayer.Avalonia.ViewModels"
+        xmlns:views="using:AudioSpectrumPlayer.Avalonia.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
         x:Class="AudioSpectrumPlayer.Avalonia.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
+        Width="900" Height="600"
         Icon="/Assets/avalonia-logo.ico"
         Title="{Binding WindowTitle}">
 
-    <TextBlock Text="{Binding WindowTitle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid RowDefinitions="Auto,*,Auto,Auto,Auto" Margin="12,0,12,12">
 
+        <!-- Menu Bar -->
+        <views:MenuBarControl Grid.Row="0"
+                              x:Name="MenuBar"
+                              DataContext="{Binding}"/>
+
+        <!-- Spectrum Visualization -->
+        <Border Grid.Row="1"
+                x:Name="VisualizationBorder"
+                BorderBrush="Gray"
+                BorderThickness="1"
+                Background="Black"
+                Margin="0,0,0,12">
+            <views:SpectrumControl x:Name="SpectrumVisualization"/>
+        </Border>
+
+        <!-- Progress -->
+        <views:PlaybackProgressControl Grid.Row="2"
+                                       x:Name="PlaybackProgress"
+                                       DataContext="{Binding}"
+                                       Margin="0,0,0,12"/>
+
+        <!-- Transport Controls + Volume -->
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="8">
+                <Button x:Name="PlayPauseButton"
+                        Command="{Binding TogglePlayPauseCommand}"
+                        Width="48" Height="36"
+                        Content="{Binding IsPlaying, Converter={x:Static views:PlayPauseGlyphConverter.Instance}}"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"/>
+                <Button x:Name="StopButton"
+                        Command="{Binding StopCommand}"
+                        Width="48" Height="36"
+                        Content="■"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"/>
+                <Button x:Name="OpenFileButton"
+                        Command="{Binding OpenFileCommand}"
+                        Width="48" Height="36"
+                        Content="📁"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"/>
+            </StackPanel>
+
+            <views:VolumeControl Grid.Column="1"
+                                 x:Name="VolumeControl"
+                                 DataContext="{Binding}"
+                                 HorizontalAlignment="Right"
+                                 Width="240"/>
+        </Grid>
+
+        <!-- Log Display (collapsible) -->
+        <Border Grid.Row="4"
+                BorderBrush="Gray"
+                BorderThickness="1"
+                Height="150"
+                IsVisible="{Binding IsLogVisible}">
+            <views:LogDisplay x:Name="LogDisplay"/>
+        </Border>
+    </Grid>
 </Window>

@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AudioSpectrumPlayer.Avalonia.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="60"
+             x:Class="AudioSpectrumPlayer.Avalonia.Views.PlaybackProgressControl"
+             x:DataType="vm:MainWindowViewModel">
+
+    <Grid x:Name="mainGrid" Margin="8,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Slider x:Name="progressSlider"
+                Grid.Row="0"
+                Minimum="0"
+                Maximum="100"
+                Value="0"
+                Height="32" />
+
+        <TextBlock x:Name="timeDisplay"
+                   Grid.Row="1"
+                   HorizontalAlignment="Right"
+                   Text="00:00 / 00:00"
+                   Margin="0,4,0,0"/>
+    </Grid>
+</UserControl>

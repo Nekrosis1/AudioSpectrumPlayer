@@ -1,6 +1,6 @@
 using AudioSpectrumPlayer.Avalonia.Logging;
 using Avalonia.Threading;
-using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Text;
 
 namespace AudioSpectrumPlayer.Avalonia.ViewModels;
@@ -25,6 +25,7 @@ public partial class LogViewModel : ViewModelBase
 
 	public string LogText => _logBuilder.ToString();
 
+	[RelayCommand]
 	public void ClearLog()
 	{
 		_logBuilder.Clear();

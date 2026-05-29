@@ -1,5 +1,4 @@
 ﻿using AudioSpectrumPlayer.Avalonia.Interfaces;
-using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Serilog;
 using System;
@@ -16,11 +15,24 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 			".aac", ".flac", ".ogg", ".aiff"
 		];
 
-		public async Task<string?> PickAudioFileAsync(Window window)
+		private readonly ITopLevelProvider _topLevelProvider;
+
+		public AudioFileService(ITopLevelProvider topLevelProvider)
+		{
+			_topLevelProvider = topLevelProvider;
+		}
+
+		public async Task<string?> PickAudioFileAsync()
 		{
 			try
 			{
-				var storageProvider = window.StorageProvider;
+				var storageProvider = _topLevelProvider.TopLevel?.StorageProvider;
+
+				if (storageProvider is null)
+				{
+					Log.Warning("File picker unavailable: no active window/TopLevel");
+					return null;
+				}
 
 				if (!storageProvider.CanOpen)
 				{

@@ -9,6 +9,25 @@ AudioSpectrumPlayer.Avalonia is an Avalonia application built with .NET 10, same
 
 The user will always build and publish himself, no need to run `bash dotnet ...`
 
+#### Distribution differs by platform (Windows vs Linux)
+
+The shared goal is that an end user never sees "cannot start, X not found" — they download
+the app and it just runs (or installs and runs). HOW that goal is met differs per platform,
+because Windows and Linux have opposite conventions for dependencies:
+
+- **Windows:** bundle everything into a self-contained build (the .NET runtime, native libs,
+  assets). Native deps come from bundling NuGet packages (e.g. `VideoLAN.LibVLC.Windows`).
+  Windows has no system package manager handling these, so the app must carry them.
+- **Linux:** do NOT bundle. Use distro packaging (e.g. a `PKGBUILD` for Arch) and let the
+  package manager dynamically link system libraries (e.g. system `libvlc`). The package
+  metadata declares the dependency, so the user still gets a working install without manual
+  setup — that's the idiomatic Linux way. Bundling everything goes against the philosophy of
+  most Linux packaging (Snap/Flatpak being the exceptions).
+
+This is also why some native libs ship NuGet packages only for Windows/Mac and **not Linux**
+(e.g. `VideoLAN.LibVLC.Linux` does not exist): on Linux you're expected to depend on the
+system-installed library, not bundle your own copy.
+
 ## Environment
 
 - **New to VS Code**: The user has experience in Visual Studio on Windows, but is now working on Arch Linux, with VS Code. If he has questions why things don't work, think about how it may be different in VS or on Windows, as he may not know some seemingly obvious things.
@@ -20,6 +39,7 @@ The user will always build and publish himself, no need to run `bash dotnet ...`
 
   # Upgrade all packages within their current major version
   dotnet outdated -u -vl Major
+  ```
 
 ## Architecture
 
@@ -67,3 +87,21 @@ Services are configured in `App.xaml.cs:ConfigureServices()` and can be accessed
 ### Code Style Guidelines
 - use `using` statements at the top of the file, rather than adding namespaces to classes when using them.
   - Example: Use `builder.Services.AddScoped<IMyService, MyService>();` instead of `builder.Services.AddScoped<MyNamespace.IMyService, MyNamespace.MyService>();`
+
+## Avalonia Reference Material
+
+When unsure how to use an Avalonia API, type, control, or theme resource, **consult the official
+documentation first** — don't guess at type names or rely on memory of WinUI/WPF equivalents:
+
+- Main docs site: https://docs.avaloniaui.net/
+- API reference (search-friendly): https://docs.avaloniaui.net/api/
+- Fluent theme entry point: https://docs.avaloniaui.net/api/avalonia/themes/fluent
+  (The top page is mostly empty, but it links to every type/resource the Fluent theme exposes.)
+
+Reasoning:
+- Avalonia's NuGet packages ship XAML compiled into DLLs — you cannot just `find` the source
+  `.axaml` files locally. The `.xml` files in the package are only IntelliSense comments.
+- The Avalonia GitHub source is also a valid reference but is large and noisy compared to the docs.
+
+**If you can't find what you need in one or two doc-page fetches, ask the user.** He can help
+locate the correct page faster than blind navigation through many web requests.
