@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "name": "C#: AudioSpectrumPlayer.Avalonia",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia.csproj",
+            "launchConfigurationId": "TargetFramework=;AudioSpectrumPlayer.Avalonia"
+        },
+        {
+            // Uses the classic "coreclr" launcher (not "dotnet") because only it
+            // supports passing "args". Simulates "Open with": the file path is passed
+            // as the first arg, exactly as the OS would. You're prompted for the path
+            // on launch (see "inputs" below).
+            "name": "C#: AudioSpectrumPlayer.Avalonia - open file arg",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/AudioSpectrumPlayer.Avalonia.dll",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "${input:audioFilePath}"
+            ],
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "audioFilePath",
+            "type": "promptString",
+            "description": "Absolute path to the audio file to auto-load on launch",
+            "default": "/home/nekrosis/Music/Industrial Hardtechno/new/Novilunio.mp3"
+        }
+    ]
+}

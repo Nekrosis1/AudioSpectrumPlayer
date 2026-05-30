@@ -2,6 +2,7 @@ using AudioSpectrumPlayer.Avalonia.Interfaces;
 using LibVLCSharp.Shared;
 using Serilog;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -120,34 +121,58 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 			MediaFailed?.Invoke(this, message);
 		}
 
+		/// <summary>
+		/// Loads and validates a media file. Throws on failure (unreadable file, no audio
+		/// track) rather than reporting success — the caller is expected to catch and surface
+		/// the reason to the user. The <see cref="MediaFailed"/> event is reserved for
+		/// errors that occur later, during playback.
+		/// </summary>
 		public async Task LoadAsync(string filePath)
 		{
+			_mediaPlayer.Stop();
+			_currentMedia?.Dispose();
+			_currentMedia = null;
+
+			Media media = new(_libVlc, new Uri(filePath));
 			try
 			{
-				_mediaPlayer.Stop();
-				_currentMedia?.Dispose();
+				// Parse far enough to learn the duration and track list before we commit to
+				// this media. The returned status tells us whether libvlc could actually read
+				// the file — previously this was ignored, so a garbage file still reported
+				// "loaded successfully" and only failed (silently) later on Play().
+				MediaParsedStatus parseStatus = await media.Parse(MediaParseOptions.ParseLocal);
 
-				_currentMedia = new Media(_libVlc, new Uri(filePath));
-
-				// Parse synchronously enough to fill in Duration before we report MediaOpened.
-				await _currentMedia.Parse(MediaParseOptions.ParseLocal);
-
-				_mediaPlayer.Media = _currentMedia;
-
-				TimeSpan duration = TimeSpan.FromMilliseconds(_currentMedia.Duration);
-				if (_currentMedia.Duration > 0)
+				if (parseStatus != MediaParsedStatus.Done)
 				{
-					DurationChanged?.Invoke(this, duration);
+					throw new InvalidOperationException($"The file could not be read (parse status: {parseStatus}).");
 				}
 
-				MediaOpened?.Invoke(this, EventArgs.Empty);
-				Log.Information("Audio file loaded successfully. Duration: {Duration:hh\\:mm\\:ss}", duration);
+				// A parse can succeed on a file with no playable audio (e.g. a renamed text
+				// file or a video-only container). Require at least one audio track.
+				if (!media.Tracks.Any(t => t.TrackType == TrackType.Audio))
+				{
+					throw new InvalidOperationException("No audio track was found in the file.");
+				}
 			}
-			catch (Exception ex)
+			catch
 			{
-				Log.Error(ex, "Failed to load audio file: {FilePath}", filePath);
-				MediaFailed?.Invoke(this, ex.Message);
+				// Drop the half-loaded media so HasMedia stays false (otherwise Play() would
+				// start a track that produces no sound), then let the caller report the reason.
+				media.Dispose();
+				throw;
 			}
+
+			_currentMedia = media;
+			_mediaPlayer.Media = _currentMedia;
+
+			TimeSpan duration = TimeSpan.FromMilliseconds(_currentMedia.Duration);
+			if (_currentMedia.Duration > 0)
+			{
+				DurationChanged?.Invoke(this, duration);
+			}
+
+			MediaOpened?.Invoke(this, EventArgs.Empty);
+			Log.Information("Audio file loaded successfully. Duration: {Duration:hh\\:mm\\:ss}", duration);
 		}
 
 		public void Play()

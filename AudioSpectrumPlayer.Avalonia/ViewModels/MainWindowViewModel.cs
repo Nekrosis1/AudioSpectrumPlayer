@@ -31,8 +31,11 @@ public partial class MainWindowViewModel : ViewModelBase
 	[ObservableProperty]
 	private TimeSpan _totalDuration;
 
+	/// <summary>Title shown when no file is loaded (or after a failed load).</summary>
+	private const string DefaultWindowTitle = "Audio Spectrum Player";
+
 	[ObservableProperty]
-	private string _windowTitle = "Audio Spectrum Player";
+	private string _windowTitle = DefaultWindowTitle;
 
 	[ObservableProperty]
 	private double _volume = 1.0;
@@ -42,6 +45,14 @@ public partial class MainWindowViewModel : ViewModelBase
 
 	[ObservableProperty]
 	private bool _isPlaying;
+
+	/// <summary>Whether the error element is currently shown.</summary>
+	[ObservableProperty]
+	private bool _isErrorVisible;
+
+	/// <summary>Text shown in the error element when <see cref="IsErrorVisible"/> is true.</summary>
+	[ObservableProperty]
+	private string? _errorMessage;
 
 	public MainWindowViewModel(
 		IAudioPlayerService audioPlayerService,
@@ -101,9 +112,62 @@ public partial class MainWindowViewModel : ViewModelBase
 		Log.Debug("Media opened successfully");
 	}
 
+	// Fires for errors that happen during playback (libvlc EncounteredError), on a
+	// background thread. Load-time failures don't come through here — they throw out
+	// of LoadAudioFileAsync instead.
 	private void OnMediaFailed(object? sender, string error)
 	{
-		Log.Error("Media failed to load: {Error}", error);
+		Log.Error("Media failed during playback: {Error}", error);
+		ShowError($"Playback error: {error}");
+	}
+
+	/// <summary>
+	/// Displays a user-facing error message. Safe to call from any thread — marshals to
+	/// the UI thread. (The log panel is a developer aid; this is what the end user sees.)
+	/// </summary>
+	private void ShowError(string message)
+	{
+		Dispatcher.UIThread.Post(() =>
+		{
+			ErrorMessage = message;
+			IsErrorVisible = true;
+		});
+	}
+
+	private void ClearError()
+	{
+		Dispatcher.UIThread.Post(() =>
+		{
+			IsErrorVisible = false;
+			ErrorMessage = null;
+		});
+	}
+
+	[RelayCommand]
+	private void DismissError() => ClearError();
+
+	/// <summary>
+	/// Returns the playback UI to an empty state before a new load attempt. Called up
+	/// front (not just on failure) so a failed — or any future non-success — load never
+	/// leaves the previous file's title, duration, or progress on screen. A successful
+	/// load re-populates these afterwards.
+	/// </summary>
+	private void ResetPlaybackState()
+	{
+		_audioPlayerService.Stop();
+		_spectrumVisualizationService.StopVisualization();
+
+		Dispatcher.UIThread.Post(() =>
+		{
+			IsPlaying = false;
+			CurrentPosition = TimeSpan.Zero;
+			TotalDuration = TimeSpan.Zero;
+			WindowTitle = DefaultWindowTitle;
+
+			_audioStateService.UpdatePlaybackState(false);
+			_audioStateService.UpdateCurrentPosition(TimeSpan.Zero);
+			_audioStateService.UpdateTotalDuration(TimeSpan.Zero);
+		});
 	}
 
 	private void OnMediaEnded(object? sender, EventArgs e)
@@ -250,16 +314,18 @@ public partial class MainWindowViewModel : ViewModelBase
 		try
 		{
 			Log.Information("Loading audio file: {FilePath}", filePath);
+			ClearError();
+			ResetPlaybackState();
 
 			if (!File.Exists(filePath))
 			{
-				Log.Error("Error: File not found: {FilePath}", filePath);
-				return;
+				throw new FileNotFoundException("The file does not exist.", filePath);
 			}
 
 			await _audioStateService.LoadFileAsync(filePath);
 			await _audioPlayerService.LoadAsync(filePath);
 
+			// Only reached when the load genuinely succeeded — LoadAsync throws otherwise.
 			Dispatcher.UIThread.Post(() =>
 			{
 				WindowTitle = $"{Path.GetFileName(filePath)} - Audio Spectrum Player";
@@ -268,7 +334,8 @@ public partial class MainWindowViewModel : ViewModelBase
 		}
 		catch (Exception ex)
 		{
-			Log.Error(ex, "Load Audio File failed");
+			Log.Error(ex, "Load Audio File failed: {FilePath}", filePath);
+			ShowError($"Could not open \"{Path.GetFileName(filePath)}\".\n{ex.Message}");
 		}
 	}
 

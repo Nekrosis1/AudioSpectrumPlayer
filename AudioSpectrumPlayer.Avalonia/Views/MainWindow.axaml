@@ -25,7 +25,13 @@
                 BorderThickness="1"
                 Background="Black"
                 Margin="0,0,0,12">
-            <views:SpectrumControl x:Name="SpectrumVisualization"/>
+            <!-- Spectrum and the error overlay share this cell; ErrorDisplay shows itself
+                 only when the ViewModel reports IsErrorVisible. To move the error element
+                 elsewhere later, lift <views:ErrorDisplay/> out to another Grid row. -->
+            <Grid>
+                <views:SpectrumControl x:Name="SpectrumVisualization"/>
+                <views:ErrorDisplay x:Name="ErrorOverlay" DataContext="{Binding}"/>
+            </Grid>
         </Border>
 
         <!-- Progress -->

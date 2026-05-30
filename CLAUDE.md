@@ -28,6 +28,19 @@ This is also why some native libs ship NuGet packages only for Windows/Mac and *
 (e.g. `VideoLAN.LibVLC.Linux` does not exist): on Linux you're expected to depend on the
 system-installed library, not bundle your own copy.
 
+## Working Style
+
+I work in a **pair-programming style** — I want to stay in the loop and keep control, not
+hand off a task and get a finished result. Prefer working **step by step**: take a small,
+focused action, then report back, rather than completing many things in one autonomous run.
+
+- **Avoid large batches of operations.** Many small steps with check-ins are preferable to
+  one big sweep, even if that means more interruptions. I'd rather be asked than surprised.
+- When a step reveals a decision or an ambiguity, **pause and talk to me** instead of
+  picking and pressing on.
+- This is a deliberate preference for *this* project; optimize for collaboration, not for
+  finishing with the fewest round-trips.
+
 ## Environment
 
 - **New to VS Code**: The user has experience in Visual Studio on Windows, but is now working on Arch Linux, with VS Code. If he has questions why things don't work, think about how it may be different in VS or on Windows, as he may not know some seemingly obvious things.

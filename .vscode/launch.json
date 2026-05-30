@@ -16,6 +16,21 @@
 			"console": "internalConsole"
 		},
 		{
+			"name": "Debug Avalonia (Linux) - open file arg",
+			"type": "coreclr",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia/bin/Debug/net10.0/AudioSpectrumPlayer.Avalonia.dll",
+			// Simulates "Open with": the file path is passed as the first arg, exactly as
+			// the OS would. You're prompted for the path on launch (see "inputs" below).
+			"args": [
+				"${input:audioFilePath}"
+			],
+			"cwd": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia",
+			"stopAtEntry": false,
+			"console": "internalConsole"
+		},
+		{
 			"name": "Debug WinUI3 (Windows only)",
 			"type": "coreclr",
 			"request": "launch",
@@ -25,6 +40,14 @@
 			"cwd": "${workspaceFolder}/AudioSpectrumPlayer",
 			"stopAtEntry": false,
 			"console": "internalConsole"
+		}
+	],
+	"inputs": [
+		{
+			"id": "audioFilePath",
+			"type": "promptString",
+			"description": "Absolute path to the audio file to auto-load on launch",
+			"default": "/home/nekrosis/Music/test.mp3"
 		}
 	]
 }

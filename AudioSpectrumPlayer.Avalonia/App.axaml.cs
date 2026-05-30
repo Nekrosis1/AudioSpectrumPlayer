@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using AudioSpectrumPlayer.Avalonia.Interfaces;
 using AudioSpectrumPlayer.Avalonia.Logging;
 using AudioSpectrumPlayer.Avalonia.Services;
@@ -54,6 +55,11 @@ public partial class App : Application
 			}
 
 			SetupExceptionHandling();
+
+			// "Open with" / command-line launch: the OS passes the chosen file as the
+			// first argument. Load it once the UI loop is running so the window is shown
+			// and the error overlay (on a bad/missing path) has somewhere to render.
+			LoadFileFromArgs(desktop.Args);
 		}
 
 		base.OnFrameworkInitializationCompleted();
@@ -103,6 +109,27 @@ public partial class App : Application
 
 		_host = hostBuilder.Build();
 		Log.Debug("DI container configured with {ServiceCount} services", _host.Services.GetType().Name);
+	}
+
+	// Loads the file named by the first command-line argument, if any. The error
+	// handling (missing file, unsupported format) lives in LoadAudioFileAsync, which
+	// surfaces failures through the in-app error overlay.
+	private void LoadFileFromArgs(string[]? args)
+	{
+		var filePath = args?.FirstOrDefault();
+		if (string.IsNullOrWhiteSpace(filePath))
+		{
+			return;
+		}
+
+		var viewModel = _host?.Services.GetService<MainWindowViewModel>();
+		if (viewModel is null)
+		{
+			return;
+		}
+
+		Log.Information("Loading file from command-line argument: {FilePath}", filePath);
+		Dispatcher.UIThread.Post(async () => await viewModel.LoadAudioFileAsync(filePath));
 	}
 
 	private static void SetupExceptionHandling()

@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AudioSpectrumPlayer.Avalonia.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="300"
+             x:Class="AudioSpectrumPlayer.Avalonia.Views.ErrorDisplay"
+             x:DataType="vm:MainWindowViewModel"
+             IsVisible="{Binding IsErrorVisible}">
+
+    <!-- Self-contained error element. Currently overlaid on the spectrum area, but it
+         only depends on MainWindowViewModel's ErrorMessage/IsErrorVisible/DismissError,
+         so the whole control can be relocated by moving the <views:ErrorDisplay/> tag. -->
+
+    <!-- Transparent root fills the host cell; the amber card floats centered over it. -->
+    <Panel Background="Transparent">
+        <Border HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MaxWidth="440"
+                Margin="16"
+                Padding="16,12"
+                CornerRadius="6"
+                Background="#E63A2A00"
+                BorderBrush="#FFB300"
+                BorderThickness="1">
+            <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto">
+                <TextBlock Grid.Column="0"
+                           Text="⚠"
+                           FontSize="20"
+                           Foreground="#FFC04D"
+                           VerticalAlignment="Top"
+                           Margin="0,0,10,0"/>
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding ErrorMessage}"
+                           TextWrapping="Wrap"
+                           Foreground="#FFF3E0"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="2"
+                        Content="✕"
+                        Command="{Binding DismissErrorCommand}"
+                        Margin="10,0,0,0"
+                        Padding="6,2"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#FFF3E0"
+                        ToolTip.Tip="Dismiss"/>
+            </Grid>
+        </Border>
+    </Panel>
+</UserControl>
