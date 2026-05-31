@@ -17,13 +17,13 @@
                 Grid.Row="0"
                 Minimum="0"
                 Maximum="100"
-                Value="0"
+                Value="{Binding ProgressValue, Mode=TwoWay}"
                 Height="32" />
 
         <TextBlock x:Name="timeDisplay"
                    Grid.Row="1"
                    HorizontalAlignment="Right"
-                   Text="00:00 / 00:00"
+                   Text="{Binding TimeDisplay}"
                    Margin="0,4,0,0"/>
     </Grid>
 </UserControl>

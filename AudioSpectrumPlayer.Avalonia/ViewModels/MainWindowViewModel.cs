@@ -26,34 +26,47 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	/// </summary>
 	public LogViewModel LogPanel { get; }
 
-	[ObservableProperty]
-	private TimeSpan _currentPosition;
+	// Playback position/duration are owned by AudioStateService (the spectrum
+	// services read them too), so the VM does not store its own copy — it projects
+	// the service's values and re-raises change notifications when they update.
+	// This keeps a single source of truth instead of two hand-synced copies.
+	public TimeSpan CurrentPosition => _audioStateService.CurrentPosition;
+	public TimeSpan TotalDuration => _audioStateService.TotalDuration;
 
-	[ObservableProperty]
-	private TimeSpan _totalDuration;
+	/// <summary>Slider position (0–100). Setting it (user drag) seeks.</summary>
+	public double ProgressValue
+	{
+		get => TotalDuration.TotalMilliseconds > 0
+			? CurrentPosition.TotalMilliseconds / TotalDuration.TotalMilliseconds * 100
+			: 0;
+		set => SeekToPosition(value / 100.0);
+	}
+
+	/// <summary>"mm:ss / mm:ss" text shown under the slider.</summary>
+	public string TimeDisplay => TotalDuration.TotalMilliseconds > 0
+		? $"{FormatTimeSpan(CurrentPosition)} / {FormatTimeSpan(TotalDuration)}"
+		: "00:00 / 00:00";
 
 	/// <summary>Title shown when no file is loaded (or after a failed load).</summary>
 	private const string DefaultWindowTitle = "Audio Spectrum Player";
 
 	[ObservableProperty]
-	private string _windowTitle = DefaultWindowTitle;
+	public partial string WindowTitle { get; set; } = DefaultWindowTitle;
+	[ObservableProperty]
+	public partial double Volume { get; set; } = 1.0;
+	[ObservableProperty]
+	public partial bool IsLogVisible { get; set; }
 
 	[ObservableProperty]
-	private double _volume = 1.0;
-
-	[ObservableProperty]
-	private bool _isLogVisible;
-
-	[ObservableProperty]
-	private bool _isPlaying;
+	public partial bool IsPlaying { get; set; }
 
 	/// <summary>Whether the error element is currently shown.</summary>
 	[ObservableProperty]
-	private bool _isErrorVisible;
+	public partial bool IsErrorVisible { get; set; }
 
 	/// <summary>Text shown in the error element when <see cref="IsErrorVisible"/> is true.</summary>
 	[ObservableProperty]
-	private string? _errorMessage;
+	public partial string? ErrorMessage { get; set; }
 
 	public MainWindowViewModel(
 		IAudioPlayerService audioPlayerService,
@@ -95,8 +108,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	{
 		Dispatcher.UIThread.Post(() =>
 		{
-			CurrentPosition = position;
 			_audioStateService.UpdateCurrentPosition(position);
+			NotifyProgressChanged();
 		});
 	}
 
@@ -104,9 +117,21 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	{
 		Dispatcher.UIThread.Post(() =>
 		{
-			TotalDuration = duration;
 			_audioStateService.UpdateTotalDuration(duration);
+			NotifyProgressChanged();
 		});
+	}
+
+	/// <summary>
+	/// Re-raises change notifications for every property that projects playback
+	/// position/duration, so the bound views refresh after the service updates.
+	/// </summary>
+	private void NotifyProgressChanged()
+	{
+		OnPropertyChanged(nameof(CurrentPosition));
+		OnPropertyChanged(nameof(TotalDuration));
+		OnPropertyChanged(nameof(ProgressValue));
+		OnPropertyChanged(nameof(TimeDisplay));
 	}
 
 	private void OnPlaybackStateChanged(object? sender, bool isPlaying)
@@ -171,13 +196,12 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 		Dispatcher.UIThread.Post(() =>
 		{
 			IsPlaying = false;
-			CurrentPosition = TimeSpan.Zero;
-			TotalDuration = TimeSpan.Zero;
 			WindowTitle = DefaultWindowTitle;
 
 			_audioStateService.UpdatePlaybackState(false);
 			_audioStateService.UpdateCurrentPosition(TimeSpan.Zero);
 			_audioStateService.UpdateTotalDuration(TimeSpan.Zero);
+			NotifyProgressChanged();
 		});
 	}
 

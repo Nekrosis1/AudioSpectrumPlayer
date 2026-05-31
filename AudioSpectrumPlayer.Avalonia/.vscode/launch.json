@@ -29,7 +29,7 @@
             "id": "audioFilePath",
             "type": "promptString",
             "description": "Absolute path to the audio file to auto-load on launch",
-            "default": "/home/nekrosis/Music/Industrial Hardtechno/new/Novilunio.mp3"
+            "default": "/home/nekrosis/Music/Test/Alcohol.mp3"
         }
     ]
 }

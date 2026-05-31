@@ -16,10 +16,17 @@ public partial class MainWindow : Window
 		InitializeComponent();
 
 		// Media-player shortcuts. Handled in the TUNNEL phase (window sees the key
-		// before any focused child) so Space isn't swallowed by a focused button and
-		// the arrow keys aren't swallowed by the progress slider. The handlers just
-		// forward to the ViewModel commands — the actual logic stays in the VM.
+		// before any focused child) so the arrow keys aren't swallowed by the progress
+		// slider. The handlers just forward to the ViewModel commands — the actual logic
+		// stays in the VM. Space is deliberately NOT handled here: it's the standard
+		// "activate the focused control" key, so it toggles whatever the user has tabbed
+		// to (and the play/pause button by default — see below), like VLC and other apps.
 		AddHandler(KeyDownEvent, OnShortcutKeyDown, RoutingStrategies.Tunnel);
+
+		// Default keyboard focus to the play/pause button so Space toggles playback when
+		// the user hasn't tabbed elsewhere. Tabbing to another control then makes Space
+		// activate that control instead.
+		Loaded += (_, _) => PlayPauseButton.Focus();
 	}
 
 	private void OnShortcutKeyDown(object? sender, KeyEventArgs e)
@@ -40,9 +47,6 @@ public partial class MainWindow : Window
 
 		switch (e.Key)
 		{
-			case Key.Space:
-				ViewModel.TogglePlayPauseCommand.Execute(null);
-				break;
 			case Key.O when ctrl:
 				ViewModel.OpenFileCommand.Execute(null);
 				break;

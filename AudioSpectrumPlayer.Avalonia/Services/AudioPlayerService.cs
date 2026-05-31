@@ -24,16 +24,51 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 		private Media? _currentMedia;
 		private bool _disposed;
 
-		public TimeSpan CurrentPosition =>
-			TimeSpan.FromMilliseconds(_mediaPlayer.Time < 0 ? 0 : _mediaPlayer.Time);
+		// libvlc ignores a Time change unless the decoder is running, so a seek made
+		// while stopped / not-yet-started is parked here and applied when Playing fires.
+		private long? _pendingSeekMs;
 
-		public TimeSpan TotalDuration =>
-			TimeSpan.FromMilliseconds(_mediaPlayer.Length < 0 ? 0 : _mediaPlayer.Length);
+
+		public TimeSpan CurrentPosition =>
+			// While stopped/not-yet-started, _mediaPlayer.Time stays 0 even though a seek may
+			// be parked in _pendingSeekMs. Report the parked target so relative seeks (and the
+			// UI) build on the intended spot instead of repeatedly computing from 0.
+			_pendingSeekMs is long pendingMs
+				? TimeSpan.FromMilliseconds(pendingMs)
+				: TimeSpan.FromMilliseconds(_mediaPlayer.Time < 0 ? 0 : _mediaPlayer.Time);
+
+		public TimeSpan TotalDuration
+		{
+			get
+			{
+				// _mediaPlayer.Length is -1 until playback actually starts; fall back to the
+				// duration libvlc learned while parsing so the value is known right after load
+				// (otherwise seeking before the first Play computes against a zero duration).
+				long ms = _mediaPlayer.Length;
+				if (ms <= 0 && _currentMedia is not null)
+				{
+					ms = _currentMedia.Duration;
+				}
+				return TimeSpan.FromMilliseconds(ms < 0 ? 0 : ms);
+			}
+		}
+
+		// Intended output volume (0–100), our own source of truth. libvlc only honors a
+		// volume change while a track is playing; when stopped the assignment is dropped
+		// (and libvlc may restore its own last value across restarts). So we keep the
+		// intended volume here and re-apply it on play, rather than trusting _mediaPlayer.
+		private int _volumePercent = 100;
 
 		public float Volume
 		{
-			get => _mediaPlayer.Volume / 100f;
-			set => _mediaPlayer.Volume = Math.Clamp((int)Math.Round(value * 100f), 0, 100);
+			get => _volumePercent / 100f;
+			set
+			{
+				_volumePercent = Math.Clamp((int)Math.Round(value * 100f), 0, 100);
+				// Takes effect immediately while playing; harmlessly ignored while stopped,
+				// where OnPlaying re-applies it once the decoder starts.
+				_mediaPlayer.Volume = _volumePercent;
+			}
 		}
 
 		public bool IsPlaying => _mediaPlayer.IsPlaying;
@@ -78,6 +113,21 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 		private void OnTimeChanged(object? sender, MediaPlayerTimeChangedEventArgs e)
 		{
+			// Self-heal the output volume. libvlc drops volume sets while stopped and
+			// resets the volume whenever it recreates the audio output (e.g. after the
+			// seek we apply on play), so a one-shot re-apply isn't enough. Instead, each
+			// tick, if libvlc has drifted from our intended value, nudge it back. Steady
+			// state is a no-op; the corrective set is hopped off this libvlc-owned thread.
+			if (_mediaPlayer.Volume != _volumePercent)
+			{
+				int volume = _volumePercent;
+				Task.Run(() =>
+				{
+					try { _mediaPlayer.Volume = volume; }
+					catch (Exception ex) { Log.Error(ex, "Failed to re-apply volume"); }
+				});
+			}
+
 			PositionChanged?.Invoke(this, TimeSpan.FromMilliseconds(e.Time));
 		}
 
@@ -93,6 +143,22 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 		private void OnPlaying(object? sender, EventArgs e)
 		{
 			Log.Debug("Playback started");
+
+			// Apply a seek parked while stopped (libvlc ignores Time changes until playing).
+			// Done on the thread pool because this event runs on libvlc's own locked thread
+			// — calling back into libvlc inline deadlocks (the app freezes).
+			long? seekMs = _pendingSeekMs;
+			_pendingSeekMs = null;
+			if (seekMs is long ms)
+			{
+				Task.Run(() =>
+				{
+					try { _mediaPlayer.Time = ms; }
+					catch (Exception ex) { Log.Error(ex, "Failed to apply parked seek"); }
+				});
+			}
+
+			// Volume is handled by OnTimeChanged's self-healing check once audio flows.
 			PlaybackStateChanged?.Invoke(this, true);
 		}
 
@@ -130,6 +196,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 		public async Task LoadAsync(string filePath)
 		{
 			_mediaPlayer.Stop();
+			_pendingSeekMs = null;
 			_currentMedia?.Dispose();
 			_currentMedia = null;
 
@@ -210,6 +277,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 		{
 			try
 			{
+				_pendingSeekMs = null;
 				_mediaPlayer.Stop();
 				PositionChanged?.Invoke(this, TimeSpan.Zero);
 			}
@@ -229,13 +297,29 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 			try
 			{
-				long targetMs = (long)Math.Clamp(
-					position.TotalMilliseconds,
-					0,
-					_mediaPlayer.Length > 0 ? _mediaPlayer.Length : long.MaxValue);
+				double maxMs = TotalDuration.TotalMilliseconds > 0
+					? TotalDuration.TotalMilliseconds
+					: long.MaxValue;
+				long targetMs = (long)Math.Clamp(position.TotalMilliseconds, 0, maxMs);
 
-				_mediaPlayer.Time = targetMs;
-				Log.Debug("Seeked to position: {Position} ms", targetMs);
+				// Only Playing/Paused decoders honor a Time change. Otherwise park the
+				// target for OnPlaying and emit PositionChanged so the UI tracks the spot.
+				if (_mediaPlayer.State is VLCState.Playing or VLCState.Paused)
+				{
+					_mediaPlayer.Time = targetMs;
+					_pendingSeekMs = null;
+					// Emit the new spot ourselves: while paused the decoder is idle, so no
+					// TimeChanged tick follows and the UI would otherwise stay put until play
+					// resumes. While playing this just gives immediate feedback before the next tick.
+					PositionChanged?.Invoke(this, TimeSpan.FromMilliseconds(targetMs));
+					Log.Debug("Seeked to position: {Position} ms", targetMs);
+				}
+				else
+				{
+					_pendingSeekMs = targetMs;
+					PositionChanged?.Invoke(this, TimeSpan.FromMilliseconds(targetMs));
+					Log.Debug("Parked seek until playback: {Position} ms", targetMs);
+				}
 			}
 			catch (Exception ex)
 			{
