@@ -10,12 +10,13 @@ using System.Threading.Tasks;
 
 namespace AudioSpectrumPlayer.Avalonia.ViewModels;
 
-public partial class MainWindowViewModel : ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase, IDisposable
 {
 	private readonly IAudioPlayerService _audioPlayerService;
 	private readonly IAudioFileService _audioFileService;
 	private readonly IAudioStateService _audioStateService;
 	private readonly SpectrumVisualizationService _spectrumVisualizationService;
+	private bool _disposed;
 
 	/// <summary>
 	/// Child view model for the log panel. Exposed so the menu's "Clear Log"
@@ -78,6 +79,16 @@ public partial class MainWindowViewModel : ViewModelBase
 		_audioPlayerService.MediaOpened += OnMediaOpened;
 		_audioPlayerService.MediaFailed += OnMediaFailed;
 		_audioPlayerService.MediaEnded += OnMediaEnded;
+	}
+
+	private void UnsubscribeFromPlayerEvents()
+	{
+		_audioPlayerService.PositionChanged -= OnPositionChanged;
+		_audioPlayerService.DurationChanged -= OnDurationChanged;
+		_audioPlayerService.PlaybackStateChanged -= OnPlaybackStateChanged;
+		_audioPlayerService.MediaOpened -= OnMediaOpened;
+		_audioPlayerService.MediaFailed -= OnMediaFailed;
+		_audioPlayerService.MediaEnded -= OnMediaEnded;
 	}
 
 	private void OnPositionChanged(object? sender, TimeSpan position)
@@ -370,5 +381,14 @@ public partial class MainWindowViewModel : ViewModelBase
 		return timeSpan.Hours > 0
 			? $"{timeSpan.Hours:00}:{timeSpan.Minutes:00}:{timeSpan.Seconds:00}"
 			: $"{timeSpan.Minutes:00}:{timeSpan.Seconds:00}";
+	}
+
+	// Disposed when the DI host is torn down at shutdown. LogPanel is a separate
+	// DI singleton, so the host disposes it directly — we don't own it here.
+	public void Dispose()
+	{
+		if (_disposed) return;
+		UnsubscribeFromPlayerEvents();
+		_disposed = true;
 	}
 }

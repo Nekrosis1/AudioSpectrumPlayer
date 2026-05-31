@@ -5,11 +5,12 @@ using System.Linq;
 
 namespace AudioSpectrumPlayer.Avalonia.Services
 {
-	public class SpectrumVisualizationService
+	public class SpectrumVisualizationService : IDisposable
 	{
 		private readonly SpectrumGenerationService _spectrumGenerationService;
 		private readonly IAudioStateService _audioStateService;
 		private bool _isVisualizationActive = false;
+		private bool _disposed;
 		private float[] _currentSpectrumData = new float[64];
 
 		public SpectrumVisualizationService(SpectrumGenerationService spectrumGenerationService, IAudioStateService audioStateService)
@@ -36,6 +37,13 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 		public void StopVisualization()
 		{
 			_isVisualizationActive = false;
+		}
+
+		public void Dispose()
+		{
+			if (_disposed) return;
+			_spectrumGenerationService.SpectrumDataUpdated -= OnSpectrumDataUpdated;
+			_disposed = true;
 		}
 
 		private void UpdateSpectrum()

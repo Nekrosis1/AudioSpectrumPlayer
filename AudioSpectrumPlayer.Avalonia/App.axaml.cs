@@ -56,6 +56,13 @@ public partial class App : Application
 
 			SetupExceptionHandling();
 
+			// Tear down the DI host when the app is shutting down. The host owns every
+			// service as a singleton, so disposing it cascades Dispose() to all of them —
+			// most importantly AudioPlayerService, which holds native libvlc handles
+			// (MediaPlayer/LibVLC/Media) that are otherwise only freed by process teardown.
+			// ShutdownRequested fires once, before the app actually exits.
+			desktop.ShutdownRequested += OnShutdownRequested;
+
 			// "Open with" / command-line launch: the OS passes the chosen file as the
 			// first argument. Load it once the UI loop is running so the window is shown
 			// and the error overlay (on a bad/missing path) has somewhere to render.
@@ -130,6 +137,13 @@ public partial class App : Application
 
 		Log.Information("Loading file from command-line argument: {FilePath}", filePath);
 		Dispatcher.UIThread.Post(async () => await viewModel.LoadAudioFileAsync(filePath));
+	}
+
+	private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
+	{
+		Log.Information("Shutdown requested — disposing services");
+		_host?.Dispose();
+		_host = null;
 	}
 
 	private static void SetupExceptionHandling()

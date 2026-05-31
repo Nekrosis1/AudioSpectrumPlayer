@@ -1,13 +1,15 @@
 using AudioSpectrumPlayer.Avalonia.Logging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Text;
 
 namespace AudioSpectrumPlayer.Avalonia.ViewModels;
 
-public partial class LogViewModel : ViewModelBase
+public partial class LogViewModel : ViewModelBase, IDisposable
 {
 	private readonly StringBuilder _logBuilder = new();
+	private bool _disposed;
 
 	public LogViewModel()
 	{
@@ -30,5 +32,15 @@ public partial class LogViewModel : ViewModelBase
 	{
 		_logBuilder.Clear();
 		OnPropertyChanged(nameof(LogText));
+	}
+
+	// LogReceived is a static event, so it outlives every instance: without this
+	// unsubscribe a recreated LogViewModel would be pinned alive for the whole
+	// process. Disposed when the DI host is torn down at shutdown.
+	public void Dispose()
+	{
+		if (_disposed) return;
+		LogDisplaySink.LogReceived -= OnLogReceived;
+		_disposed = true;
 	}
 }
