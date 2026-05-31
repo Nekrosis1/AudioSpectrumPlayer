@@ -269,7 +269,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	partial void OnVolumeChanged(double value)
 	{
 		_audioPlayerService.Volume = (float)value;
-		Log.Debug("Volume changed to {Volume}%", (int)Math.Round(value * 100));
+		Log.Information("Volume changed to {Volume}%", (int)Math.Round(value * 100));
 	}
 
 	/// <summary>Volume change per +/- key press.</summary>
@@ -284,14 +284,14 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	private void VolumeUp()
 	{
 		Volume = Math.Clamp(Math.Round(Volume + VolumeStep, 2), 0.0, 1.0);
-		Log.Information("Volume {Volume}%", (int)Math.Round(Volume * 100));
+		// Log.Information("Volume {Volume}%", (int)Math.Round(Volume * 100));
 	}
 
 	[RelayCommand]
 	private void VolumeDown()
 	{
 		Volume = Math.Clamp(Math.Round(Volume - VolumeStep, 2), 0.0, 1.0);
-		Log.Information("Volume {Volume}%", (int)Math.Round(Volume * 100));
+		// Log.Information("Volume {Volume}%", (int)Math.Round(Volume * 100));
 	}
 
 	[RelayCommand]
@@ -384,7 +384,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 					percentage * _audioPlayerService.TotalDuration.TotalMilliseconds);
 
 				_audioPlayerService.Seek(newPosition);
-				Log.Debug("Seeked to position: {Position}", FormatTimeSpan(newPosition));
+				Log.Information("Seeked to position: {Position}", FormatTimeSpan(newPosition));
 			}
 		}
 		catch (Exception ex)

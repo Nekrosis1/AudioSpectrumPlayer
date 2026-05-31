@@ -15,7 +15,7 @@ public class LogDisplaySink(ITextFormatter formatter) : ILogEventSink
 
 	public void Emit(LogEvent logEvent)
 	{
-		using StringWriter writer = new StringWriter();
+		using StringWriter writer = new();
 		formatter.Format(logEvent, writer);
 		LogReceived?.Invoke(this, writer.ToString());
 	}
