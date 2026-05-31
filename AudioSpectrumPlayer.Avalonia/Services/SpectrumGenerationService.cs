@@ -103,7 +103,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 		private static float[] ConvertToSpectrumBars(Complex[] fftData)
 		{
-			var spectrumBars = new float[SPECTRUM_BARS];
+			float[] spectrumBars = new float[SPECTRUM_BARS];
 
 			// Only use the first half of FFT data (positive frequencies).
 			// Why: for real-valued input, the FFT output is symmetric — the second

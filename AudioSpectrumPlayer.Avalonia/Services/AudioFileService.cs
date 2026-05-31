@@ -59,7 +59,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 				if (result != null && result.Count > 0)
 				{
-					var filePath = result[0].Path.LocalPath;
+					string filePath = result[0].Path.LocalPath;
 					Log.Information($"File selected: {filePath}");
 					return filePath;
 				}

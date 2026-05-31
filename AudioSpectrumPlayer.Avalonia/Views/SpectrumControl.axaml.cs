@@ -18,7 +18,7 @@ public partial class SpectrumControl : UserControl
 	{
 		InitializeComponent();
 
-		var spectrumGenerationService = App.GetRequiredService<SpectrumGenerationService>();
+		SpectrumGenerationService spectrumGenerationService = App.GetRequiredService<SpectrumGenerationService>();
 		spectrumGenerationService.SpectrumDataUpdated += OnSpectrumDataUpdated;
 	}
 
@@ -47,8 +47,8 @@ public partial class SpectrumControl : UserControl
 		{
 			_currentSpectrumData = spectrumData;
 
-			var linePoints = CreateSpectrumPoints(spectrumData);
-			var fillPoints = CreateFillPoints(linePoints);
+			Point[] linePoints = CreateSpectrumPoints(spectrumData);
+			Point[] fillPoints = CreateFillPoints(linePoints);
 
 			Points line = [.. linePoints];
 			spectrumLine.Points = line;

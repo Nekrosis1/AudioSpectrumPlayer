@@ -43,7 +43,7 @@ public partial class App : Application
 			DisableAvaloniaDataAnnotationValidation();
 
 			// Get MainWindow from DI container
-			var mainWindow = _host?.Services.GetRequiredService<MainWindow>();
+			MainWindow? mainWindow = _host?.Services.GetRequiredService<MainWindow>();
 			desktop.MainWindow = mainWindow;
 
 			// Now that the window exists, hand it to the provider so services
@@ -74,7 +74,7 @@ public partial class App : Application
 
 	private static void ConfigureLogging()
 	{
-		var loggerConfig = new LoggerConfiguration()
+		LoggerConfiguration loggerConfig = new LoggerConfiguration()
 			.MinimumLevel.Debug()
 			.Enrich.WithThreadId()
 			.WriteTo.Debug(
@@ -94,7 +94,7 @@ public partial class App : Application
 
 	private void ConfigureServices()
 	{
-		var hostBuilder = Host.CreateDefaultBuilder()
+		IHostBuilder hostBuilder = Host.CreateDefaultBuilder()
 			.ConfigureServices(services =>
 			{
 				// Services
@@ -123,13 +123,13 @@ public partial class App : Application
 	// surfaces failures through the in-app error overlay.
 	private void LoadFileFromArgs(string[]? args)
 	{
-		var filePath = args?.FirstOrDefault();
+		string? filePath = args?.FirstOrDefault();
 		if (string.IsNullOrWhiteSpace(filePath))
 		{
 			return;
 		}
 
-		var viewModel = _host?.Services.GetService<MainWindowViewModel>();
+		MainWindowViewModel? viewModel = _host?.Services.GetService<MainWindowViewModel>();
 		if (viewModel is null)
 		{
 			return;
@@ -165,11 +165,11 @@ public partial class App : Application
 	private void DisableAvaloniaDataAnnotationValidation()
 	{
 		// Get an array of plugins to remove
-		var dataValidationPluginsToRemove =
+		DataAnnotationsValidationPlugin[] dataValidationPluginsToRemove =
 			BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
 		// remove each entry found
-		foreach (var plugin in dataValidationPluginsToRemove)
+		foreach (DataAnnotationsValidationPlugin? plugin in dataValidationPluginsToRemove)
 		{
 			BindingPlugins.DataValidators.Remove(plugin);
 		}

@@ -304,7 +304,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	{
 		try
 		{
-			var total = _audioPlayerService.TotalDuration;
+			TimeSpan total = _audioPlayerService.TotalDuration;
 
 			// libvlc only knows the duration once playback has begun; until then
 			// there is nothing meaningful to seek within.
@@ -313,7 +313,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 				return;
 			}
 
-			var target = _audioPlayerService.CurrentPosition + delta;
+			TimeSpan target = _audioPlayerService.CurrentPosition + delta;
 			if (target < TimeSpan.Zero) target = TimeSpan.Zero;
 			if (target > total) target = total;
 

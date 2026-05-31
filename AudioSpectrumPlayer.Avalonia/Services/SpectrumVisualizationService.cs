@@ -51,9 +51,9 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 			_spectrumGenerationService.UpdateSpectrumData();
 			Log.Information("Spectrum data updated.");
 
-			var currentPosition = _audioStateService!.CurrentPosition;
+			TimeSpan currentPosition = _audioStateService!.CurrentPosition;
 			Console.WriteLine($"Current Position: {currentPosition.TotalSeconds} seconds");
-			float[] pcmData = _spectrumGenerationService.GetAudioChunkAtPosition(currentPosition);
+			_ = _spectrumGenerationService.GetAudioChunkAtPosition(currentPosition);
 			//var frequencies = AnalyzeFrequencies(pcmData);
 
 			//// Update your visualization UI
