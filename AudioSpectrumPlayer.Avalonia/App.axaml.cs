@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -43,7 +42,7 @@ public partial class App : Application
 			DisableAvaloniaDataAnnotationValidation();
 
 			// Get MainWindow from DI container
-			MainWindow? mainWindow = _host?.Services.GetRequiredService<MainWindow>();
+			MainWindowView? mainWindow = _host?.Services.GetRequiredService<MainWindowView>();
 			desktop.MainWindow = mainWindow;
 
 			// Now that the window exists, hand it to the provider so services
@@ -111,7 +110,7 @@ public partial class App : Application
 				services.AddSingleton<LogViewModel>();
 
 				// Views
-				services.AddSingleton<MainWindow>();
+				services.AddSingleton<MainWindowView>();
 			});
 
 		_host = hostBuilder.Build();

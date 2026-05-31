@@ -8,7 +8,7 @@ using System.ComponentModel;
 
 namespace AudioSpectrumPlayer.Avalonia.Views;
 
-public partial class VolumeControl : UserControl
+public partial class VolumeControlView : UserControl
 {
 	private const double TriangleWidth = 150;
 	private const double TriangleHeight = 30;
@@ -18,7 +18,7 @@ public partial class VolumeControl : UserControl
 
 	public MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
-	public VolumeControl()
+	public VolumeControlView()
 	{
 		InitializeComponent();
 

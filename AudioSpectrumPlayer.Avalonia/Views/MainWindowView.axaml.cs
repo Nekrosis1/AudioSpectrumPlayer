@@ -6,12 +6,12 @@ using Serilog;
 
 namespace AudioSpectrumPlayer.Avalonia.Views;
 
-public partial class MainWindow : Window
+public partial class MainWindowView : Window
 {
 	public MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
 	// Parameterless constructor for Avalonia XAML loader / designer
-	public MainWindow()
+	public MainWindowView()
 	{
 		InitializeComponent();
 
@@ -74,10 +74,10 @@ public partial class MainWindow : Window
 		e.Handled = true;
 	}
 
-	public MainWindow(MainWindowViewModel viewModel) : this()
+	public MainWindowView(MainWindowViewModel viewModel) : this()
 	{
 		DataContext = viewModel;
-		Log.Information("MainWindow constructed with ViewModel");
+		Log.Information("MainWindowView constructed with ViewModel");
 		Closed += (_, _) => Log.Debug("Window closed");
 	}
 }

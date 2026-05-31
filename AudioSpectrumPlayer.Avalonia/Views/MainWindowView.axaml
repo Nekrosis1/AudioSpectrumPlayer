@@ -5,7 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
-        x:Class="AudioSpectrumPlayer.Avalonia.Views.MainWindow"
+        x:Class="AudioSpectrumPlayer.Avalonia.Views.MainWindowView"
         x:DataType="vm:MainWindowViewModel"
         Width="900" Height="600"
         Icon="/Assets/avalonia-logo.ico"
@@ -14,7 +14,7 @@
     <Grid RowDefinitions="Auto,*,Auto,Auto,Auto" Margin="12,0,12,12">
 
         <!-- Menu Bar -->
-        <views:MenuBarControl Grid.Row="0"
+        <views:MenuBarControlView Grid.Row="0"
                               x:Name="MenuBar"
                               DataContext="{Binding}"/>
 
@@ -27,15 +27,15 @@
                 Margin="0,0,0,12">
             <!-- Spectrum and the error overlay share this cell; ErrorDisplay shows itself
                  only when the ViewModel reports IsErrorVisible. To move the error element
-                 elsewhere later, lift <views:ErrorDisplay/> out to another Grid row. -->
+                 elsewhere later, lift <views:ErrorDisplayView/> out to another Grid row. -->
             <Grid>
-                <views:SpectrumControl x:Name="SpectrumVisualization"/>
-                <views:ErrorDisplay x:Name="ErrorOverlay" DataContext="{Binding}"/>
+                <views:SpectrumControlView x:Name="SpectrumVisualization"/>
+                <views:ErrorDisplayView x:Name="ErrorOverlay" DataContext="{Binding}"/>
             </Grid>
         </Border>
 
         <!-- Progress -->
-        <views:PlaybackProgressControl Grid.Row="2"
+        <views:PlaybackProgressControlView Grid.Row="2"
                                        x:Name="PlaybackProgress"
                                        DataContext="{Binding}"
                                        Margin="0,0,0,12"/>
@@ -65,7 +65,7 @@
                         VerticalContentAlignment="Center"/>
             </StackPanel>
 
-            <views:VolumeControl Grid.Column="1"
+            <views:VolumeControlView Grid.Column="1"
                                  x:Name="VolumeControl"
                                  DataContext="{Binding}"
                                  HorizontalAlignment="Right"
@@ -78,7 +78,7 @@
                 BorderThickness="1"
                 Height="150"
                 IsVisible="{Binding IsLogVisible}">
-            <views:LogDisplay x:Name="LogDisplay"/>
+            <views:LogDisplayView x:Name="LogDisplay"/>
         </Border>
     </Grid>
 </Window>

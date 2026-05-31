@@ -7,11 +7,11 @@ using System;
 
 namespace AudioSpectrumPlayer.Avalonia.Views;
 
-public partial class MenuBarControl : UserControl
+public partial class MenuBarControlView : UserControl
 {
 	public MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
 
-	public MenuBarControl()
+	public MenuBarControlView()
 	{
 		InitializeComponent();
 	}

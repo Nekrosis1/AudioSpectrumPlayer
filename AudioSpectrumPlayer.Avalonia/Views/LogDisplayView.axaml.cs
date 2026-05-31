@@ -5,11 +5,11 @@ using System.ComponentModel;
 
 namespace AudioSpectrumPlayer.Avalonia.Views;
 
-public partial class LogDisplay : UserControl
+public partial class LogDisplayView : UserControl
 {
 	public LogViewModel ViewModel { get; }
 
-	public LogDisplay()
+	public LogDisplayView()
 	{
 		InitializeComponent();
 		ViewModel = App.GetRequiredService<LogViewModel>();

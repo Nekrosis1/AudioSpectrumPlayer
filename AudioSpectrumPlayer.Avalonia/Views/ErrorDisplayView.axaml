@@ -4,13 +4,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="300"
-             x:Class="AudioSpectrumPlayer.Avalonia.Views.ErrorDisplay"
+             x:Class="AudioSpectrumPlayer.Avalonia.Views.ErrorDisplayView"
              x:DataType="vm:MainWindowViewModel"
              IsVisible="{Binding IsErrorVisible}">
 
     <!-- Self-contained error element. Currently overlaid on the spectrum area, but it
          only depends on MainWindowViewModel's ErrorMessage/IsErrorVisible/DismissError,
-         so the whole control can be relocated by moving the <views:ErrorDisplay/> tag. -->
+         so the whole control can be relocated by moving the <views:ErrorDisplayView/> tag. -->
 
     <!-- Transparent root fills the host cell; the amber card floats centered over it. -->
     <Panel Background="Transparent">

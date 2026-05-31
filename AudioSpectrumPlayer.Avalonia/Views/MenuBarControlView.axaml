@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="30"
-             x:Class="AudioSpectrumPlayer.Avalonia.Views.MenuBarControl"
+             x:Class="AudioSpectrumPlayer.Avalonia.Views.MenuBarControlView"
              x:DataType="vm:MainWindowViewModel">
 
     <Menu>

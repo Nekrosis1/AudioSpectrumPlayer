@@ -8,13 +8,13 @@ using System;
 
 namespace AudioSpectrumPlayer.Avalonia.Views;
 
-public partial class SpectrumControl : UserControl
+public partial class SpectrumControlView : UserControl
 {
 	private float[] _currentSpectrumData = [];
 	private double _canvasWidth;
 	private double _canvasHeight;
 
-	public SpectrumControl()
+	public SpectrumControlView()
 	{
 		InitializeComponent();
 
