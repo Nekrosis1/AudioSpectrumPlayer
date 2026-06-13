@@ -29,7 +29,7 @@ namespace AudioSpectrumPlayer.Avalonia.Logging
 			LogEventLevel restrictedToMinimumLevel = LogEventLevel.Verbose,
 			IFormatProvider? formatProvider = null)
 		{
-			MessageTemplateTextFormatter formatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
+			MessageTemplateTextFormatter formatter = new(outputTemplate, formatProvider);
 			return sinkConfiguration.Sink(new LogDisplaySink(formatter), restrictedToMinimumLevel);
 		}
 	}

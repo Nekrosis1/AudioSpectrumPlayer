@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:AudioSpectrumPlayer.Avalonia.ViewModels"
+             xmlns:ic="using:FluentIcons.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="240" d:DesignHeight="40"
@@ -14,10 +15,10 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Text="🔊"
-                   FontSize="16"
-                   VerticalAlignment="Center"
-                   Margin="0,0,8,0"/>
+        <ic:FluentIcon Icon="Speaker2"
+                        IconVariant="Filled"
+                        VerticalAlignment="Center"
+                        Margin="0,0,8,0"/>
 
         <Canvas Grid.Column="1"
                 x:Name="volumeCanvas"

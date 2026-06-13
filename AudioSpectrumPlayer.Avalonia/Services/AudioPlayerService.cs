@@ -54,9 +54,8 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 		}
 
 		// Intended output volume (0–100), our own source of truth. libvlc only honors a
-		// volume change while a track is playing; when stopped the assignment is dropped
-		// (and libvlc may restore its own last value across restarts). So we keep the
-		// intended volume here and re-apply it on play, rather than trusting _mediaPlayer.
+		// volume change while an audio output exists (playing/paused); a set while stopped
+		// is dropped, so we re-apply this value when playback (re)starts.
 		private int _volumePercent = 100;
 
 		public float Volume
@@ -65,8 +64,8 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 			set
 			{
 				_volumePercent = Math.Clamp((int)Math.Round(value * 100f), 0, 100);
-				// Takes effect immediately while playing; harmlessly ignored while stopped,
-				// where OnPlaying re-applies it once the decoder starts.
+				// Takes effect immediately while playing/paused (an audio output exists);
+				// dropped while stopped, where OnPlaying re-applies it once the output comes up.
 				_mediaPlayer.Volume = _volumePercent;
 			}
 		}
@@ -113,21 +112,6 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 		private void OnTimeChanged(object? sender, MediaPlayerTimeChangedEventArgs e)
 		{
-			// Self-heal the output volume. libvlc drops volume sets while stopped and
-			// resets the volume whenever it recreates the audio output (e.g. after the
-			// seek we apply on play), so a one-shot re-apply isn't enough. Instead, each
-			// tick, if libvlc has drifted from our intended value, nudge it back. Steady
-			// state is a no-op; the corrective set is hopped off this libvlc-owned thread.
-			if (_mediaPlayer.Volume != _volumePercent)
-			{
-				int volume = _volumePercent;
-				Task.Run(() =>
-				{
-					try { _mediaPlayer.Volume = volume; }
-					catch (Exception ex) { Log.Error(ex, "Failed to re-apply volume"); }
-				});
-			}
-
 			PositionChanged?.Invoke(this, TimeSpan.FromMilliseconds(e.Time));
 		}
 
@@ -136,30 +120,50 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 			DurationChanged?.Invoke(this, TimeSpan.FromMilliseconds(e.Length));
 		}
 
-		// These fire on a libvlc background thread and confirm the actual player
-		// state. Logged at Debug (file only); the user-facing "intent" logs live
-		// in MainWindowViewModel (UI thread), which is where the LogDisplay panel
-		// reliably picks them up.
+		// fire on libvlc background thread and confirm actual state.
 		private void OnPlaying(object? sender, EventArgs e)
 		{
 			Log.Debug("Playback started");
 
-			// Apply a seek parked while stopped (libvlc ignores Time changes until playing).
-			// Done on the thread pool because this event runs on libvlc's own locked thread
-			// — calling back into libvlc inline deadlocks (the app freezes).
+			// Re-apply the parked seek and the intended volume now that the decoder/output
+			// are coming up — both are dropped by libvlc while stopped. Done on the thread
+			// pool because this event runs on libvlc's own locked thread; calling back into
+			// libvlc inline deadlocks (the app freezes).
 			long? seekMs = _pendingSeekMs;
 			_pendingSeekMs = null;
-			if (seekMs is long ms)
+			Task.Run(() =>
 			{
-				Task.Run(() =>
+				try
 				{
-					try { _mediaPlayer.Time = ms; }
-					catch (Exception ex) { Log.Error(ex, "Failed to apply parked seek"); }
-				});
-			}
-
-			// Volume is handled by OnTimeChanged's self-healing check once audio flows.
+					if (seekMs is long ms)
+					{
+						_mediaPlayer.Time = ms;
+					}
+					ApplyIntendedVolumeUntilItSticks();
+				}
+				catch (Exception ex) { Log.Error(ex, "Failed to apply parked seek/volume"); }
+			});
 			PlaybackStateChanged?.Invoke(this, true);
+		}
+
+		// When Playing fires, libvlc's audio output usually doesn't exist yet, so a single
+		// volume set is silently dropped (libvlc_audio_set_volume returns -1, no output).
+		// Retry briefly until the output accepts it, verified by reading the value back.
+		// Once it sticks we stop: volume does not drift during steady playback. _volumePercent
+		// is re-read each pass so a volume change made during this startup window still wins.
+		private void ApplyIntendedVolumeUntilItSticks()
+		{
+			for (int attempt = 0; attempt < 20; attempt++)
+			{
+				int wanted = _volumePercent;
+				_mediaPlayer.Volume = wanted;
+				if (_mediaPlayer.Volume == wanted)
+				{
+					return;
+				}
+				Thread.Sleep(25); // up to ~500 ms total for the output to appear
+			}
+			Log.Warning("Volume did not take effect after retries (wanted {Volume})", _volumePercent);
 		}
 
 		private void OnPaused(object? sender, EventArgs e)
@@ -189,8 +193,8 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 
 		/// <summary>
 		/// Loads and validates a media file. Throws on failure (unreadable file, no audio
-		/// track) rather than reporting success — the caller is expected to catch and surface
-		/// the reason to the user. The <see cref="MediaFailed"/> event is reserved for
+		/// track) and HasMedia remains false.
+		/// The <see cref="MediaFailed"/> event is reserved for
 		/// errors that occur later, during playback.
 		/// </summary>
 		public async Task LoadAsync(string filePath)
@@ -204,9 +208,7 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 			try
 			{
 				// Parse far enough to learn the duration and track list before we commit to
-				// this media. The returned status tells us whether libvlc could actually read
-				// the file — previously this was ignored, so a garbage file still reported
-				// "loaded successfully" and only failed (silently) later on Play().
+				// this media. Status tells whether libvlc could actually read the file
 				MediaParsedStatus parseStatus = await media.Parse(MediaParseOptions.ParseLocal);
 
 				if (parseStatus != MediaParsedStatus.Done)

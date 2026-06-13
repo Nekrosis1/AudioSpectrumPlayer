@@ -1,4 +1,5 @@
 using Avalonia.Data.Converters;
+using FluentIcons.Common;
 using System;
 using System.Globalization;
 
@@ -11,7 +12,7 @@ public sealed class PlayPauseGlyphConverter : IValueConverter
 	public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
 		bool isPlaying = value is bool b && b;
-		return isPlaying ? "❚❚" : "▶";
+		return isPlaying ? Icon.Pause : Icon.Play;
 	}
 
 	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

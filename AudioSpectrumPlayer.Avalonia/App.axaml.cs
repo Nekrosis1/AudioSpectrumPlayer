@@ -1,13 +1,12 @@
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core.Plugins;
-using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using AudioSpectrumPlayer.Avalonia.Interfaces;
 using AudioSpectrumPlayer.Avalonia.Logging;
 using AudioSpectrumPlayer.Avalonia.Services;
 using AudioSpectrumPlayer.Avalonia.ViewModels;
 using AudioSpectrumPlayer.Avalonia.Views;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -37,10 +36,6 @@ public partial class App : Application
 	{
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
-			// Avoid duplicate validations from both Avalonia and the CommunityToolkit.
-			// More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
-			DisableAvaloniaDataAnnotationValidation();
-
 			// Get MainWindow from DI container
 			MainWindowView? mainWindow = _host?.Services.GetRequiredService<MainWindowView>();
 			desktop.MainWindow = mainWindow;
@@ -159,19 +154,6 @@ public partial class App : Application
 				Log.Error($"Unknown exception type: {args.ExceptionObject?.GetType().ToString() ?? "null"}");
 			}
 		};
-	}
-
-	private void DisableAvaloniaDataAnnotationValidation()
-	{
-		// Get an array of plugins to remove
-		DataAnnotationsValidationPlugin[] dataValidationPluginsToRemove =
-			BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
-
-		// remove each entry found
-		foreach (DataAnnotationsValidationPlugin? plugin in dataValidationPluginsToRemove)
-		{
-			BindingPlugins.DataValidators.Remove(plugin);
-		}
 	}
 
 	// Helper methods to get services from anywhere in the app

@@ -362,5 +362,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# Claude Code working files (plans, local commands)
+# Claude Code
 .claude/
+CLAUDE.local.md
+settings.local.json
+
+# libvlcsharp source
+libvlcsharp-3.9.7.1/

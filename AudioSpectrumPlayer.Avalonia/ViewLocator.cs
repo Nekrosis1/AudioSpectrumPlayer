@@ -1,8 +1,8 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
+using AudioSpectrumPlayer.Avalonia.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using AudioSpectrumPlayer.Avalonia.ViewModels;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AudioSpectrumPlayer.Avalonia;
 
