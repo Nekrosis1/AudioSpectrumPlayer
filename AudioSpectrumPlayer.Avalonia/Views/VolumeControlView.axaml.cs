@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media;
 using System;
 using System.ComponentModel;
 
@@ -10,9 +11,6 @@ namespace AudioSpectrumPlayer.Avalonia.Views;
 
 public partial class VolumeControlView : UserControl
 {
-	private const double TriangleWidth = 150;
-	private const double TriangleHeight = 30;
-
 	private bool _isDragging;
 	private MainWindowViewModel? _currentViewModel;
 
@@ -22,14 +20,27 @@ public partial class VolumeControlView : UserControl
 	{
 		InitializeComponent();
 
-		volumeBackground.Points =
-		[
-			new Point(0, TriangleHeight),
-			new Point(TriangleWidth, 0),
-			new Point(TriangleWidth, TriangleHeight),
-		];
+		// Build the polygons from the Canvas's actual size so the visible
+		// triangle always fills its layout slot exactly (no dead space, no
+		// mismatch between where you click and the volume it maps to).
+		volumeCanvas.SizeChanged += OnCanvasSizeChanged;
 
 		DataContextChanged += OnDataContextChanged;
+	}
+
+	private void OnCanvasSizeChanged(object? sender, SizeChangedEventArgs e)
+	{
+		double width = volumeCanvas.Bounds.Width;
+		double height = volumeCanvas.Bounds.Height;
+
+		volumeBackground.Points =
+		[
+			new Point(0, height),
+			new Point(width, 0),
+			new Point(width, height),
+		];
+
+		UpdateVolumeIndicator();
 	}
 
 	private void OnDataContextChanged(object? sender, EventArgs e)
@@ -53,7 +64,8 @@ public partial class VolumeControlView : UserControl
 
 	private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName == nameof(MainWindowViewModel.Volume))
+		if (e.PropertyName == nameof(MainWindowViewModel.Volume) ||
+			e.PropertyName == nameof(MainWindowViewModel.IsMuted))
 		{
 			UpdateVolumeIndicator();
 		}
@@ -63,16 +75,23 @@ public partial class VolumeControlView : UserControl
 	{
 		if (ViewModel == null) return;
 
+		double width = volumeCanvas.Bounds.Width;
+		double height = volumeCanvas.Bounds.Height;
+
 		double volume = ViewModel.Volume;
-		double volumeWidth = TriangleWidth * volume;
-		double volumeHeight = TriangleHeight * volume;
+		double volumeWidth = width * volume;
+		double volumeHeight = height * volume;
 
 		volumeIndicator.Points =
 		[
-			new Point(0, TriangleHeight),
-			new Point(volumeWidth, TriangleHeight - volumeHeight),
-			new Point(volumeWidth, TriangleHeight),
+			new Point(0, height),
+			new Point(volumeWidth, height - volumeHeight),
+			new Point(volumeWidth, height),
 		];
+
+		// Grey the indicator out while muted; the level (Points/text) is preserved.
+		volumeIndicator.Fill = ViewModel.IsMuted ? Brushes.Gray : Brushes.DodgerBlue;
+		volumePercentage.Opacity = ViewModel.IsMuted ? 0.5 : 1.0;
 
 		volumePercentage.Text = $"{(int)Math.Round(volume * 100)}%";
 	}
@@ -125,7 +144,10 @@ public partial class VolumeControlView : UserControl
 	{
 		if (ViewModel == null) return;
 
-		double newVolume = Math.Clamp(x / TriangleWidth, 0.0, 1.0);
+		// Interacting with the slider unmutes (VLC-style); the level set below applies.
+		ViewModel.IsMuted = false;
+
+		double newVolume = Math.Clamp(x / volumeCanvas.Bounds.Width, 0.0, 1.0);
 		// Setting Volume routes through MainWindowViewModel.OnVolumeChanged,
 		// which is the single place volume changes are logged (for both mouse
 		// and keyboard), so we don't log again here.

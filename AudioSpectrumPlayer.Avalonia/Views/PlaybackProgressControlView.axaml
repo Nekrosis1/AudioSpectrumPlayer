@@ -7,23 +7,22 @@
              x:Class="AudioSpectrumPlayer.Avalonia.Views.PlaybackProgressControlView"
              x:DataType="vm:MainWindowViewModel">
 
-    <Grid x:Name="mainGrid" Margin="8,0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Grid x:Name="mainGrid" Margin="0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
         <Slider x:Name="progressSlider"
-                Grid.Row="0"
+                Grid.Column="0"
                 Minimum="0"
                 Maximum="100"
-                Value="{Binding ProgressValue, Mode=TwoWay}"
-                Height="32" />
+                Value="{Binding ProgressValue, Mode=TwoWay}"/>
 
         <TextBlock x:Name="timeDisplay"
-                   Grid.Row="1"
-                   HorizontalAlignment="Right"
+                   Grid.Column="1"
+                   VerticalAlignment="Center"
                    Text="{Binding TimeDisplay}"
-                   Margin="0,4,0,0"/>
+                   Margin="8,0,0,0"/>
     </Grid>
 </UserControl>

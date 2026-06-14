@@ -54,6 +54,13 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	public partial string WindowTitle { get; set; } = DefaultWindowTitle;
 	[ObservableProperty]
 	public partial double Volume { get; set; } = 1.0;
+
+	/// <summary>
+	/// When true, audio output is silenced but <see cref="Volume"/> keeps its value
+	/// so the previous level is restored on unmute.
+	/// </summary>
+	[ObservableProperty]
+	public partial bool IsMuted { get; set; }
 	[ObservableProperty]
 	public partial bool IsLogVisible { get; set; }
 
@@ -268,9 +275,25 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	// VolumeControl drag both set the Volume property, which lands here.
 	partial void OnVolumeChanged(double value)
 	{
-		_audioPlayerService.Volume = (float)value;
+		ApplyEffectiveVolume();
 		Log.Information("Volume changed to {Volume}%", (int)Math.Round(value * 100));
 	}
+
+	partial void OnIsMutedChanged(bool value)
+	{
+		ApplyEffectiveVolume();
+		Log.Information("Audio {State}", value ? "muted" : "unmuted");
+	}
+
+	// Pushes the actual output level to the player: zero while muted, otherwise the
+	// remembered Volume. Both Volume and IsMuted changes funnel through here.
+	private void ApplyEffectiveVolume()
+	{
+		_audioPlayerService.Volume = IsMuted ? 0f : (float)Volume;
+	}
+
+	[RelayCommand]
+	private void ToggleMute() => IsMuted = !IsMuted;
 
 	/// <summary>Volume change per +/- key press.</summary>
 	private const double VolumeStep = 0.05;

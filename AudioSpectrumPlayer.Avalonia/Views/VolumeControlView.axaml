@@ -8,17 +8,29 @@
              x:Class="AudioSpectrumPlayer.Avalonia.Views.VolumeControlView"
              x:DataType="vm:MainWindowViewModel">
 
-    <Grid x:Name="mainGrid" Margin="8,4">
+    <Grid x:Name="mainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <ic:FluentIcon Icon="Speaker2"
-                        IconVariant="Filled"
-                        VerticalAlignment="Center"
-                        Margin="0,0,8,0"/>
+        <Button Command="{Binding ToggleMuteCommand}"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="0"
+                Margin="0,0,4,0"
+                VerticalAlignment="Bottom"
+                ToolTip.Tip="Mute (M)">
+            <Panel>
+                <ic:FluentIcon Icon="Speaker2"
+                                IconVariant="Filled"
+                                IsVisible="{Binding !IsMuted}"/>
+                <ic:FluentIcon Icon="SpeakerMute"
+                                IconVariant="Filled"
+                                IsVisible="{Binding IsMuted}"/>
+            </Panel>
+        </Button>
 
         <Canvas Grid.Column="1"
                 x:Name="volumeCanvas"

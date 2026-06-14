@@ -118,3 +118,36 @@ Reasoning:
 
 **If you can't find what you need in one or two doc-page fetches, ask the user.** He can help
 locate the correct page faster than blind navigation through many web requests.
+
+## UI layout philosophy: content-driven boxes
+
+This is about *how* UI elements are arranged, not how they look.
+
+**Core rule: a component's layout box (its slot/cell/bounds) must be bound to the component.**
+When I change a component's size, its box
+should grow or shrink to match, and *neighbors get pushed*, instead of the component
+overflowing and encroaching on another component.
+When I set the size of a box, it content should be made to fit, getting smaller or larger,
+instead of being stuck at the beginning or getting cut off.
+
+The test I use: "If I want this element 20% bigger, can I change *one* value and have
+its box follow and the neighbors move — without touching 13 other values and without
+overlap?" If yes, the layout is built correctly.
+
+Concrete guidance:
+- **Prefer content-sizing for slots** (`Auto` columns/rows, intrinsic/shrink-to-fit
+  sizing) over space-filling slots (`*`/star, `flex-grow`, fixed parent widths) for
+  elements that should be exactly as big as their content. Star/fill slots ignore the
+  child's desired size and hand it leftover space — when that space is too small the
+  child overflows and overlaps its neighbors. That failure mode is the thing to avoid.
+- **Don't stack two fixed sizes that fight.** A fixed outer width (a parent cap) plus a
+  fixed inner width is the classic trap: if outer < inner + siblings + margins, the
+  inner element overflows. Let the container size to its contents instead of capping it.
+- **Minimize hardcoded sizing values**, but don't pretend zero is achievable: some
+  elements have no intrinsic content size (e.g. a drawing canvas/polygon) and legitimately
+  need one explicit size or ratio. That's fine — it's the *single source* for that element.
+- **Margin lines up with the visible element only when the element fills its box.** If a
+  drawn element is smaller than its slot, margins measure from the slot edge, not the
+  visible edge, and feel unintuitive. Keep the visible content filling its box.
+
+

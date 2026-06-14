@@ -1,4 +1,5 @@
 using AudioSpectrumPlayer.Avalonia.ViewModels;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -14,6 +15,13 @@ public partial class MainWindowView : Window
 	public MainWindowView()
 	{
 		InitializeComponent();
+
+#if DEBUG
+		// Enables the Avalonia DevTools overlay (visual tree + layout bounds) via F12.
+		// The Avalonia.Diagnostics package is excluded from Release builds, so this is
+		// DEBUG-only. Press F12 with the window focused to open it.
+		this.AttachDevTools();
+#endif
 
 		// Media-player shortcuts. Handled in the TUNNEL phase (window sees the key
 		// before any focused child) so the arrow keys aren't swallowed by the progress
@@ -66,6 +74,9 @@ public partial class MainWindowView : Window
 			case Key.OemMinus:
 			case Key.Subtract:
 				ViewModel.VolumeDownCommand.Execute(null);
+				break;
+			case Key.M:
+				ViewModel.ToggleMuteCommand.Execute(null);
 				break;
 			default:
 				return; // not one of ours — leave the event unhandled
