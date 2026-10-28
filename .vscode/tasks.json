@@ -12,18 +12,6 @@
 				"/consoleloggerparameters:NoSummary;ForceNoAlign"
 			],
 			"problemMatcher": "$msCompile"
-		},
-		{
-			"label": "build-winui3",
-			"command": "dotnet",
-			"type": "process",
-			"args": [
-				"build",
-				"${workspaceFolder}/AudioSpectrumPlayer/AudioSpectrumPlayer.csproj",
-				"/property:GenerateFullPaths=true",
-				"/consoleloggerparameters:NoSummary"
-			],
-			"problemMatcher": "$msCompile"
 		}
 	]
 }
