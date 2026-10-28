@@ -5,28 +5,26 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Debug Avalonia (Linux)",
-			"type": "coreclr",
+			"name": "C#: AudioSpectrumPlayer.Avalonia",
+			"type": "dotnet",
 			"request": "launch",
-			"preLaunchTask": "build",
-			"program": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia/bin/Debug/net10.0/AudioSpectrumPlayer.Avalonia.dll",
-			"args": [],
-			"cwd": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia",
-			"stopAtEntry": false,
-			"console": "internalConsole"
+			"projectPath": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia/AudioSpectrumPlayer.Avalonia.csproj",
+			"launchConfigurationId": "TargetFramework=;AudioSpectrumPlayer.Avalonia"
 		},
 		{
-			"name": "Debug Avalonia (Linux) - open file arg",
+			// Uses the classic "coreclr" launcher (not "dotnet") because only it
+			// supports passing "args". Simulates "Open with": the file path is passed
+			// as the first arg, exactly as the OS would. You're prompted for the path
+			// on launch (see "inputs" below).
+			"name": "C#: AudioSpectrumPlayer.Avalonia - open file arg",
 			"type": "coreclr",
 			"request": "launch",
 			"preLaunchTask": "build",
 			"program": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia/bin/Debug/net10.0/AudioSpectrumPlayer.Avalonia.dll",
-			// Simulates "Open with": the file path is passed as the first arg, exactly as
-			// the OS would. You're prompted for the path on launch (see "inputs" below).
+			"cwd": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia",
 			"args": [
 				"${input:audioFilePath}"
 			],
-			"cwd": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia",
 			"stopAtEntry": false,
 			"console": "internalConsole"
 		}
@@ -36,7 +34,7 @@
 			"id": "audioFilePath",
 			"type": "promptString",
 			"description": "Absolute path to the audio file to auto-load on launch",
-			"default": "/home/nekrosis/Music/test.mp3"
+			"default": "/home/nekrosis/Music/Test/Alcohol.mp3"
 		}
 	]
 }

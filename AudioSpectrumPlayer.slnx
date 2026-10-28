@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="AudioSpectrumPlayer.Avalonia/AudioSpectrumPlayer.Avalonia.csproj" />
+</Solution>
