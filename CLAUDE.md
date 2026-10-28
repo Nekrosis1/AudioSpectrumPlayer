@@ -2,12 +2,33 @@
 
 ## Project Overview
 
-AudioSpectrumPlayer is a WinUI 3 application built with .NET 9.0 that plays audio files and visualizes their spectrum in real-time. The application uses dependency injection, MVVM pattern with CommunityToolkit.Mvvm, and comprehensive logging with Serilog.
-AudioSpectrumPlayer.Avalonia is an Avalonia application built with .NET 10, same features but now also works on Linux.
+AudioSpectrumPlayer is a cross-platform (Linux + Windows) Avalonia desktop application built
+with .NET 10 that plays audio files and visualizes their spectrum. Playback uses libvlc via
+LibVLCSharp. The application uses dependency injection, the MVVM pattern with
+CommunityToolkit.Mvvm, and logging with Serilog.
+
+### Repository Layout
+
+```
+/                               (repo root — open this folder in VS Code)
+├── AudioSpectrumPlayer.slnx    # the only solution
+├── .vscode/                    # launch.json (normal run + "open file arg") and tasks.json (build)
+├── .editorconfig
+├── CLAUDE.md
+├── scripts/agent-build.sh      # quiet build wrapper for agents (see Build and Publish)
+├── libvlcsharp-3.9.7.1/        # gitignored, read-only reference source (see below)
+└── AudioSpectrumPlayer/        # the app project
+    ├── AudioSpectrumPlayer.csproj
+    └── publish.sh
+```
 
 ### Build and Publish
 
-The user will always build and publish himself, no need to run `bash dotnet ...`
+Agents build with `scripts/agent-build.sh` (see the `agent-build` skill), never with `dotnet`
+directly. Running, testing and publishing stay with the user.
+
+`AudioSpectrumPlayer/publish.sh` produces self-contained single-file builds into
+`AudioSpectrumPlayer/Release/<rid>` (default: `win-x64` and `linux-x64`).
 
 #### Distribution differs by platform (Windows vs Linux)
 
@@ -56,46 +77,67 @@ focused action, then report back, rather than completing many things in one auto
 
 ## Architecture
 
-### Dependency Injection
-Services are configured in `App.xaml.cs:ConfigureServices()` and can be accessed via:
-- `App.GetService<T>()` - nullable service retrieval
-- `App.GetRequiredService<T>()` - throws if service not found
+### Startup and Dependency Injection
+- `Program.cs` builds the Avalonia app; `App.axaml.cs` sets up logging and a
+  `Microsoft.Extensions.Hosting` host in `ConfigureServices()`. All services, view models and
+  `MainWindowView` are registered as singletons.
+- Services can be accessed via `App.GetService<T>()` (nullable) or `App.GetRequiredService<T>()`
+  (throws), but prefer constructor injection.
+- On shutdown the host is disposed, which disposes all services — important for
+  `AudioPlayerService`, which holds native libvlc handles.
+- "Open with" / command-line: the first argument is treated as an audio file path and loaded
+  after startup (`App.LoadFileFromArgs`).
 
 ### Core Services
-- **IAudioFileService**: File selection and validation
-- **IAudioStateService**: Playback state management and PCM data handling
-- **SpectrumVisualizationService**: Real-time spectrum visualization
-- **SpectrumGenerationService**: FFT processing for spectrum analysis
+- **IAudioPlayerService / AudioPlayerService**: playback via LibVLCSharp (load, play, pause,
+  stop, seek, volume, playback events). Also contains the native-library resolver that finds
+  the system libvlc on Linux.
+- **IAudioFileService / AudioFileService**: file picker and file validation.
+- **IAudioStateService / AudioStateService**: current file, position, duration and playback
+  state, exposed as events for the UI.
+- **ITopLevelProvider / TopLevelProvider**: gives services access to the window's `TopLevel`
+  (e.g. for the file picker) without depending on a concrete window.
+- **SpectrumGenerationService**: FFT (MathNet.Numerics, Hamming window, log-frequency binning);
+  raises `SpectrumDataUpdated` with the bar values.
+- **SpectrumVisualizationService**: unfinished scaffolding — injected into
+  `MainWindowViewModel` but not doing anything yet.
+
+### Audio / Spectrum Pipeline — current state (the spectrum is NOT working yet)
+1. Audio is loaded and played through libvlc (`AudioPlayerService`). This works.
+2. **PCM input is a stub**: `SpectrumGenerationService.GetAudioChunkAtPosition` returns silence.
+   The old NAudio-based source was removed in the libvlc migration (`Services/FileToPCM.cs` is
+   fully commented out). Feeding real PCM, e.g. via libvlc's audio callbacks, is still to do.
+3. **Nothing triggers updates**: no code calls `SpectrumGenerationService.UpdateSpectrumData()`.
+4. The FFT and the drawing side are in place: `SpectrumControlView` subscribes directly to
+   `SpectrumDataUpdated` and renders the bars as a polygon.
 
 ### MVVM Implementation
-- ViewModels use `[ObservableProperty]` from CommunityToolkit.Mvvm
-- MainWindowViewModel coordinates audio playback and UI state
-- LogViewModel manages application logging display
-
-### Audio Processing Pipeline
-1. Audio files loaded via Windows MediaPlayer API
-2. PCM data extracted using FileToPCM service
-3. FFT processing in SpectrumGenerationService
-4. Real-time visualization in SpectrumVisualizationService
+- ViewModels derive from `ViewModelBase` and use `[ObservableProperty]` from CommunityToolkit.Mvvm.
+- Compiled bindings are on by default (`AvaloniaUseCompiledBindingsByDefault`).
+- `MainWindowViewModel` coordinates playback and UI state; `LogViewModel` backs the in-app log.
+- `ViewLocator` maps `XxxViewModel` → `XxxView` by name, so views keep the `-View` suffix.
 
 ### Logging
-- Serilog configured for Debug output, file logging, and custom LogDisplay sink
-- Custom LogDisplaySink writes to in-app log viewer
-- Log files written to `logs/log-[Date].txt` in application directory
+- Serilog writes to Debug output, to a rolling file, and to the in-app log viewer
+  (custom `LogDisplaySink` in `Logging/`).
+- Log files go to `logs/log-[Date].txt` in the application (build output) directory.
 
-### Key Components
-- **MainWindow**: Primary application window with spectrum visualization
-- **MenuBarControl**: Application menu and controls
-- **PlaybackProgressControl**: Seek bar and position display
-- **VolumeControl**: Audio volume management
-- **SpectrumControl**: Audio spectrum visualization display
-- **LogDisplay**: In-application log viewer
+### Key Components (`Views/`)
+- **MainWindowView**: primary window, hosts the other views
+- **MenuBarControlView**: application menu
+- **PlaybackProgressControlView**: seek bar and position display
+- **VolumeControlView**: volume
+- **SpectrumControlView**: spectrum display
+- **LogDisplayView**: in-app log viewer
+- **ErrorDisplayView**: error overlay (e.g. bad/missing file)
 
-### File Structure
-- `Services/`: Core business logic and audio processing
+### File Structure (inside `AudioSpectrumPlayer/`)
+- `Services/`: core logic, playback and audio processing
+- `Interfaces/`: service contracts
 - `ViewModels/`: MVVM view models
-- `Views/`: WinUI 3 XAML views and code-behind
-- `Interfaces/`: Service contracts
+- `Views/`: Avalonia `.axaml` views, code-behind and converters
+- `Logging/`: custom Serilog sink
+- `Assets/`: icons and other Avalonia resources
 
 ### Code Style Guidelines
 - use `using` statements at the top of the file, rather than adding namespaces to classes when using them.
@@ -118,6 +160,15 @@ Reasoning:
 
 **If you can't find what you need in one or two doc-page fetches, ask the user.** He can help
 locate the correct page faster than blind navigation through many web requests.
+
+## LibVLCSharp Reference Source
+
+`libvlcsharp-3.9.7.1/` in the repo root is the **source code of LibVLCSharp 3.9.7.1**, the same
+version the app references via NuGet. It is there only so agents can read it — it is gitignored,
+not part of the solution, and not built. When unsure how a LibVLCSharp API behaves (e.g.
+`MediaPlayer`, `Media`, audio callbacks), read it there instead of guessing; the library code
+is under `src/`, examples under `samples/`. If the NuGet version is upgraded, this copy should
+be replaced to match.
 
 ## UI layout philosophy: content-driven boxes
 
