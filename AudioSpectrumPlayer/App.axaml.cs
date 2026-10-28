@@ -83,7 +83,7 @@ public partial class App : Application
 
 		Log.Logger = loggerConfig.CreateLogger();
 		Log.Information("AudioSpectrumPlayer Avalonia starting");
-		Log.Information($"Logs written to {Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-[Date].txt")}");
+		Log.Information("Logs written to {LogPath}", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", "log-[Date].txt"));
 	}
 
 	private void ConfigureServices()
@@ -109,7 +109,7 @@ public partial class App : Application
 			});
 
 		_host = hostBuilder.Build();
-		Log.Debug("DI container configured with {ServiceCount} services", _host.Services.GetType().Name);
+		Log.Debug("DI container configured");
 	}
 
 	// Loads the file named by the first command-line argument, if any. The error
@@ -151,7 +151,7 @@ public partial class App : Application
 			}
 			else
 			{
-				Log.Error($"Unknown exception type: {args.ExceptionObject?.GetType().ToString() ?? "null"}");
+				Log.Error("Unknown exception type: {ExceptionType}", args.ExceptionObject?.GetType().ToString() ?? "null");
 			}
 		};
 	}

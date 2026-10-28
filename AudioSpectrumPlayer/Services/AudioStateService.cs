@@ -77,12 +77,12 @@ namespace AudioSpectrumPlayer.Services
 			if (isActive == true)
 			{
 				StartMonitoring();
-				Log.Information($"Current Position Ticking started");
+				Log.Information("Current Position Ticking started");
 			}
 			else
 			{
 				StopMonitoring();
-				Log.Information($"Current Position Ticking stopped");
+				Log.Information("Current Position Ticking stopped");
 			}
 			PlaybackStateChanged?.Invoke(this, isActive);
 		}

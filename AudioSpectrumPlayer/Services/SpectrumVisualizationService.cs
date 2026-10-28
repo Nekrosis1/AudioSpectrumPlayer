@@ -25,7 +25,7 @@ namespace AudioSpectrumPlayer.Services
 		{
 			_currentSpectrumData = spectrumData;
 			// Here you can trigger UI updates or store data for rendering
-			Log.Debug($"Spectrum updated - Max value: {spectrumData.Max():F3}");
+			Log.Debug("Spectrum updated - Max value: {MaxValue:F3}", spectrumData.Max());
 
 		}
 

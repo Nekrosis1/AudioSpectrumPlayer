@@ -3,6 +3,7 @@ using Avalonia.Platform.Storage;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -60,7 +61,7 @@ namespace AudioSpectrumPlayer.Services
 				if (result != null && result.Count > 0)
 				{
 					string filePath = result[0].Path.LocalPath;
-					Log.Information($"File selected: {filePath}");
+					Log.Information("File selected: {FilePath}", filePath);
 					return filePath;
 				}
 				else
@@ -78,12 +79,12 @@ namespace AudioSpectrumPlayer.Services
 
 		public bool IsValidAudioFile(string filePath)
 		{
-			if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+			if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
 			{
 				return false;
 			}
 
-			string extension = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
+			string extension = Path.GetExtension(filePath).ToLowerInvariant();
 			return Array.Exists(SupportedExtensions, ext => ext.Equals(extension, StringComparison.OrdinalIgnoreCase));
 		}
 	}

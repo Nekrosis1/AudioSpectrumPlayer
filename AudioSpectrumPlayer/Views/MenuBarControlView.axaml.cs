@@ -1,7 +1,9 @@
 using AudioSpectrumPlayer.ViewModels;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Serilog;
 using System;
 
@@ -19,7 +21,7 @@ public partial class MenuBarControlView : UserControl
 	private void OnExitClick(object? sender, RoutedEventArgs e)
 	{
 		Log.Information("Exit requested via menu");
-		if (global::Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			desktop.Shutdown();
 		}
@@ -46,19 +48,19 @@ public partial class MenuBarControlView : UserControl
 				WindowStartupLocation = WindowStartupLocation.CenterOwner,
 				Content = new StackPanel
 				{
-					Margin = new global::Avalonia.Thickness(16),
+					Margin = new Thickness(16),
 					Spacing = 8,
 					Children =
 					{
 						new TextBlock
 						{
 							Text = "Audio Spectrum Player v0.0.2\n\nAn open source audio player with frequency spectrum visualization.",
-							TextWrapping = global::Avalonia.Media.TextWrapping.Wrap,
+							TextWrapping = TextWrapping.Wrap,
 						},
 						new TextBlock
 						{
 							Text = "https://github.com/Nekrosis1/AudioSpectrumPlayer",
-							Foreground = global::Avalonia.Media.Brushes.SteelBlue,
+							Foreground = Brushes.SteelBlue,
 						},
 					},
 				},
