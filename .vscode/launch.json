@@ -5,23 +5,23 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "C#: AudioSpectrumPlayer.Avalonia",
+			"name": "C#: AudioSpectrumPlayer",
 			"type": "dotnet",
 			"request": "launch",
-			"projectPath": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia/AudioSpectrumPlayer.Avalonia.csproj",
-			"launchConfigurationId": "TargetFramework=;AudioSpectrumPlayer.Avalonia"
+			"projectPath": "${workspaceFolder}/AudioSpectrumPlayer/AudioSpectrumPlayer.csproj",
+			"launchConfigurationId": "TargetFramework=;AudioSpectrumPlayer"
 		},
 		{
 			// Uses the classic "coreclr" launcher (not "dotnet") because only it
 			// supports passing "args". Simulates "Open with": the file path is passed
 			// as the first arg, exactly as the OS would. You're prompted for the path
 			// on launch (see "inputs" below).
-			"name": "C#: AudioSpectrumPlayer.Avalonia - open file arg",
+			"name": "C#: AudioSpectrumPlayer - open file arg",
 			"type": "coreclr",
 			"request": "launch",
 			"preLaunchTask": "build",
-			"program": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia/bin/Debug/net10.0/AudioSpectrumPlayer.Avalonia.dll",
-			"cwd": "${workspaceFolder}/AudioSpectrumPlayer.Avalonia",
+			"program": "${workspaceFolder}/AudioSpectrumPlayer/bin/Debug/net10.0/AudioSpectrumPlayer.dll",
+			"cwd": "${workspaceFolder}/AudioSpectrumPlayer",
 			"args": [
 				"${input:audioFilePath}"
 			],

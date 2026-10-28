@@ -7,7 +7,7 @@
 			"type": "process",
 			"args": [
 				"build",
-				"${workspaceFolder}/AudioSpectrumPlayer.Avalonia/AudioSpectrumPlayer.Avalonia.csproj",
+				"${workspaceFolder}/AudioSpectrumPlayer/AudioSpectrumPlayer.csproj",
 				"/property:GenerateFullPaths=true",
 				"/consoleloggerparameters:NoSummary;ForceNoAlign"
 			],

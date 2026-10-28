@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AudioSpectrumPlayer.ViewModels"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="240" d:DesignHeight="40"
+             x:Class="AudioSpectrumPlayer.Views.VolumeControlView"
+             x:DataType="vm:MainWindowViewModel">
+
+    <Grid x:Name="mainGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <Button Command="{Binding ToggleMuteCommand}"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="0"
+                Margin="0,0,4,0"
+                VerticalAlignment="Bottom"
+                ToolTip.Tip="Mute (M)">
+            <Panel>
+                <ic:FluentIcon Icon="Speaker2"
+                                IconVariant="Filled"
+                                IsVisible="{Binding !IsMuted}"/>
+                <ic:FluentIcon Icon="SpeakerMute"
+                                IconVariant="Filled"
+                                IsVisible="{Binding IsMuted}"/>
+            </Panel>
+        </Button>
+
+        <Canvas Grid.Column="1"
+                x:Name="volumeCanvas"
+                Height="32"
+                Width="180"
+                Background="Transparent"
+                PointerPressed="OnPointerPressed"
+                PointerMoved="OnPointerMoved"
+                PointerReleased="OnPointerReleased"
+                PointerEntered="OnPointerEntered"
+                PointerExited="OnPointerExited">
+
+            <Polygon x:Name="volumeBackground"
+                     Fill="Gray"
+                     Opacity="0.3"/>
+
+            <Polygon x:Name="volumeIndicator"
+                     Fill="DodgerBlue"/>
+        </Canvas>
+
+        <TextBlock Grid.Column="2"
+                   x:Name="volumePercentage"
+                   VerticalAlignment="Center"
+                   Margin="8,0,0,0"
+                   MinWidth="36"/>
+    </Grid>
+</UserControl>

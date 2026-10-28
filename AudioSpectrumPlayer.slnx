@@ -2,5 +2,5 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
-  <Project Path="AudioSpectrumPlayer.Avalonia/AudioSpectrumPlayer.Avalonia.csproj" />
+  <Project Path="AudioSpectrumPlayer/AudioSpectrumPlayer.csproj" />
 </Solution>
