@@ -3,6 +3,7 @@ using LibVLCSharp.Shared;
 using Serilog;
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -104,10 +105,49 @@ namespace AudioSpectrumPlayer.Avalonia.Services
 			lock (s_initLock)
 			{
 				if (s_coreInitialized) return;
+				RegisterLinuxSonameResolver();
 				Core.Initialize();
 				s_coreInitialized = true;
 				Log.Debug("LibVLCSharp Core initialized");
 			}
+		}
+
+		/// <summary>
+		/// Teaches the .NET loader to find libvlc by its *versioned* soname on Linux.
+		/// </summary>
+		/// <remarks>
+		/// LibVLCSharp's DllImports use the bare names "libvlc"/"libvlccore", so the loader
+		/// looks for libvlc.so — the unversioned symlink. Distros disagree about who ships
+		/// that symlink: Arch puts it in the runtime `libvlc` package, but Debian/Ubuntu/Mint
+		/// put it in `libvlc-dev` and Fedora in `vlc-devel`, so `apt install vlc` alone leaves
+		/// only libvlc.so.5 and startup dies with DllNotFoundException. Versioned sonames are
+		/// always in the runtime package, so we try those first and fall back to the
+		/// unversioned name. Returning Zero lets .NET's default probing take over.
+		/// </remarks>
+		private static void RegisterLinuxSonameResolver()
+		{
+			if (!OperatingSystem.IsLinux()) return;
+
+			NativeLibrary.SetDllImportResolver(typeof(LibVLC).Assembly, (name, assembly, searchPath) =>
+			{
+				string[] candidates = name switch
+				{
+					"libvlc" => ["libvlc.so.5", "libvlc.so"],
+					"libvlccore" => ["libvlccore.so.9", "libvlccore.so"],
+					_ => []
+				};
+
+				foreach (string candidate in candidates)
+				{
+					if (NativeLibrary.TryLoad(candidate, assembly, searchPath, out IntPtr handle))
+					{
+						Log.Debug("Resolved native library {Name} to {Candidate}", name, candidate);
+						return handle;
+					}
+				}
+
+				return IntPtr.Zero;
+			});
 		}
 
 		private void OnTimeChanged(object? sender, MediaPlayerTimeChangedEventArgs e)
