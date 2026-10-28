@@ -6,6 +6,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Serilog;
 using System;
+using System.Reflection;
 
 namespace AudioSpectrumPlayer.Views;
 
@@ -54,7 +55,7 @@ public partial class MenuBarControlView : UserControl
 					{
 						new TextBlock
 						{
-							Text = "Audio Spectrum Player v0.0.2\n\nAn open source audio player with frequency spectrum visualization.",
+							Text = $"Audio Spectrum Player v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}\n\nAn open source audio player with frequency spectrum visualization.",
 							TextWrapping = TextWrapping.Wrap,
 						},
 						new TextBlock
