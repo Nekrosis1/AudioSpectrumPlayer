@@ -366,6 +366,7 @@ FodyWeavers.xsd
 .claude/
 CLAUDE.local.md
 settings.local.json
+plans/
 
 # libvlcsharp source
 libvlcsharp-3.9.7.1/

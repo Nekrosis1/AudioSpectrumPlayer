@@ -15,6 +15,7 @@ CommunityToolkit.Mvvm, and logging with Serilog.
 ├── .vscode/                    # launch.json (normal run + "open file arg") and tasks.json (build)
 ├── .editorconfig
 ├── CLAUDE.md
+├── plans/                      # gitignored; my plans (e.g. spectrum pipeline) and Todo.md — read these for context on planned work
 ├── scripts/agent-build.sh      # quiet build wrapper for agents (see Build and Publish)
 ├── libvlcsharp-3.9.7.1/        # gitignored, read-only reference source (see below)
 └── AudioSpectrumPlayer/        # the app project
