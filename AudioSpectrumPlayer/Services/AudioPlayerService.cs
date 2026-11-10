@@ -9,12 +9,7 @@ using System.Threading.Tasks;
 
 namespace AudioSpectrumPlayer.Services
 {
-	/// <summary>
-	/// Cross-platform audio playback service backed by libvlc (via LibVLCSharp).
-	/// Replaces the prior NAudio implementation, which depended on Windows
-	/// Media Foundation (mfplat.dll) for MP3/FLAC/AAC decoding and therefore
-	/// crashed on Linux.
-	/// </summary>
+	/// <inheritdoc cref="IAudioPlayerService"/>
 	public class AudioPlayerService : IAudioPlayerService
 	{
 		private static bool s_coreInitialized;
@@ -31,20 +26,17 @@ namespace AudioSpectrumPlayer.Services
 
 
 		public TimeSpan CurrentPosition =>
-			// While stopped/not-yet-started, _mediaPlayer.Time stays 0 even though a seek may
-			// be parked in _pendingSeekMs. Report the parked target so relative seeks (and the
-			// UI) build on the intended spot instead of repeatedly computing from 0.
-			_pendingSeekMs is long pendingMs
-				? TimeSpan.FromMilliseconds(pendingMs)
-				: TimeSpan.FromMilliseconds(_mediaPlayer.Time < 0 ? 0 : _mediaPlayer.Time);
+		// _mediaPlayer.Time stays 0 while stopped; report parked seek so relative seeks build on it.
+		_pendingSeekMs is long pendingMs
+			? TimeSpan.FromMilliseconds(pendingMs)
+			: TimeSpan.FromMilliseconds(_mediaPlayer.Time < 0 ? 0 : _mediaPlayer.Time);
 
+		/// <inheritdoc/>
 		public TimeSpan TotalDuration
 		{
 			get
 			{
-				// _mediaPlayer.Length is -1 until playback actually starts; fall back to the
-				// duration libvlc learned while parsing so the value is known right after load
-				// (otherwise seeking before the first Play computes against a zero duration).
+				// _mediaPlayer.Length is -1 until playback starts.
 				long ms = _mediaPlayer.Length;
 				if (ms <= 0 && _currentMedia is not null)
 				{
@@ -54,19 +46,16 @@ namespace AudioSpectrumPlayer.Services
 			}
 		}
 
-		// Intended output volume (0–100), our own source of truth. libvlc only honors a
-		// volume change while an audio output exists (playing/paused); a set while stopped
-		// is dropped, so we re-apply this value when playback (re)starts.
+		// Own source of truth: libvlc drops a volume set while no audio output exists (stopped).
 		private int _volumePercent = 100;
 
+		/// <inheritdoc/>
 		public float Volume
 		{
 			get => _volumePercent / 100f;
 			set
 			{
 				_volumePercent = Math.Clamp((int)Math.Round(value * 100f), 0, 100);
-				// Takes effect immediately while playing/paused (an audio output exists);
-				// dropped while stopped, where OnPlaying re-applies it once the output comes up.
 				_mediaPlayer.Volume = _volumePercent;
 			}
 		}
@@ -75,11 +64,20 @@ namespace AudioSpectrumPlayer.Services
 
 		public bool HasMedia => _currentMedia is not null;
 
+		/// <inheritdoc/>
+		public string? CurrentFilePath { get; private set; }
+
+		/// <inheritdoc/>
 		public event EventHandler<TimeSpan>? PositionChanged;
+		/// <inheritdoc/>
 		public event EventHandler<TimeSpan>? DurationChanged;
+		/// <inheritdoc/>
 		public event EventHandler<bool>? PlaybackStateChanged;
+		/// <inheritdoc/>
 		public event EventHandler<string>? MediaFailed;
+		/// <inheritdoc/>
 		public event EventHandler? MediaOpened;
+		/// <inheritdoc/>
 		public event EventHandler? MediaEnded;
 
 		public AudioPlayerService()
@@ -98,7 +96,6 @@ namespace AudioSpectrumPlayer.Services
 			_mediaPlayer.EncounteredError += OnEncounteredError;
 		}
 
-		// libvlc requires a one-time native init before any LibVLC instance is created.
 		private static void EnsureCoreInitialized()
 		{
 			if (s_coreInitialized) return;
@@ -112,18 +109,8 @@ namespace AudioSpectrumPlayer.Services
 			}
 		}
 
-		/// <summary>
-		/// Teaches the .NET loader to find libvlc by its *versioned* soname on Linux.
-		/// </summary>
-		/// <remarks>
-		/// LibVLCSharp's DllImports use the bare names "libvlc"/"libvlccore", so the loader
-		/// looks for libvlc.so — the unversioned symlink. Distros disagree about who ships
-		/// that symlink: Arch puts it in the runtime `libvlc` package, but Debian/Ubuntu/Mint
-		/// put it in `libvlc-dev` and Fedora in `vlc-devel`, so `apt install vlc` alone leaves
-		/// only libvlc.so.5 and startup dies with DllNotFoundException. Versioned sonames are
-		/// always in the runtime package, so we try those first and fall back to the
-		/// unversioned name. Returning Zero lets .NET's default probing take over.
-		/// </remarks>
+		// LibVLCSharp imports bare "libvlc", i.e. the unversioned libvlc.so symlink, which
+		// Debian/Ubuntu/Fedora ship only in -dev packages. Versioned sonames are always there.
 		private static void RegisterLinuxSonameResolver()
 		{
 			if (!OperatingSystem.IsLinux()) return;
@@ -160,15 +147,11 @@ namespace AudioSpectrumPlayer.Services
 			DurationChanged?.Invoke(this, TimeSpan.FromMilliseconds(e.Length));
 		}
 
-		// fire on libvlc background thread and confirm actual state.
 		private void OnPlaying(object? sender, EventArgs e)
 		{
 			Log.Debug("Playback started");
 
-			// Re-apply the parked seek and the intended volume now that the decoder/output
-			// are coming up — both are dropped by libvlc while stopped. Done on the thread
-			// pool because this event runs on libvlc's own locked thread; calling back into
-			// libvlc inline deadlocks (the app freezes).
+			// Runs on libvlc's event thread; calling back into libvlc inline deadlocks.
 			long? seekMs = _pendingSeekMs;
 			_pendingSeekMs = null;
 			Task.Run(() =>
@@ -186,11 +169,8 @@ namespace AudioSpectrumPlayer.Services
 			PlaybackStateChanged?.Invoke(this, true);
 		}
 
-		// When Playing fires, libvlc's audio output usually doesn't exist yet, so a single
-		// volume set is silently dropped (libvlc_audio_set_volume returns -1, no output).
-		// Retry briefly until the output accepts it, verified by reading the value back.
-		// Once it sticks we stop: volume does not drift during steady playback. _volumePercent
-		// is re-read each pass so a volume change made during this startup window still wins.
+		// Audio output usually doesn't exist yet when Playing fires, so a volume set is silently dropped.
+		// _volumePercent re-read each pass so a change made meanwhile wins.
 		private void ApplyIntendedVolumeUntilItSticks()
 		{
 			for (int attempt = 0; attempt < 20; attempt++)
@@ -201,7 +181,7 @@ namespace AudioSpectrumPlayer.Services
 				{
 					return;
 				}
-				Thread.Sleep(25); // up to ~500 ms total for the output to appear
+				Thread.Sleep(25);
 			}
 			Log.Warning("Volume did not take effect after retries (wanted {Volume})", _volumePercent);
 		}
@@ -231,24 +211,18 @@ namespace AudioSpectrumPlayer.Services
 			MediaFailed?.Invoke(this, message);
 		}
 
-		/// <summary>
-		/// Loads and validates a media file. Throws on failure (unreadable file, no audio
-		/// track) and HasMedia remains false.
-		/// The <see cref="MediaFailed"/> event is reserved for
-		/// errors that occur later, during playback.
-		/// </summary>
+		/// <inheritdoc/>
 		public async Task LoadAsync(string filePath)
 		{
 			_mediaPlayer.Stop();
 			_pendingSeekMs = null;
 			_currentMedia?.Dispose();
 			_currentMedia = null;
+			CurrentFilePath = null;
 
 			Media media = new(_libVlc, new Uri(filePath));
 			try
 			{
-				// Parse far enough to learn the duration and track list before we commit to
-				// this media. Status tells whether libvlc could actually read the file
 				MediaParsedStatus parseStatus = await media.Parse(MediaParseOptions.ParseLocal);
 
 				if (parseStatus != MediaParsedStatus.Done)
@@ -256,8 +230,7 @@ namespace AudioSpectrumPlayer.Services
 					throw new InvalidOperationException($"The file could not be read (parse status: {parseStatus}).");
 				}
 
-				// A parse can succeed on a file with no playable audio (e.g. a renamed text
-				// file or a video-only container). Require at least one audio track.
+				// Parse succeeds on files without audio (e.g. renamed text file, video-only container).
 				if (!media.Tracks.Any(t => t.TrackType == TrackType.Audio))
 				{
 					throw new InvalidOperationException("No audio track was found in the file.");
@@ -265,14 +238,13 @@ namespace AudioSpectrumPlayer.Services
 			}
 			catch
 			{
-				// Drop the half-loaded media so HasMedia stays false (otherwise Play() would
-				// start a track that produces no sound), then let the caller report the reason.
 				media.Dispose();
 				throw;
 			}
 
 			_currentMedia = media;
 			_mediaPlayer.Media = _currentMedia;
+			CurrentFilePath = filePath;
 
 			TimeSpan duration = TimeSpan.FromMilliseconds(_currentMedia.Duration);
 			if (_currentMedia.Duration > 0)
@@ -329,6 +301,7 @@ namespace AudioSpectrumPlayer.Services
 			}
 		}
 
+		/// <inheritdoc/>
 		public void Seek(TimeSpan position)
 		{
 			if (_currentMedia is null)
@@ -344,15 +317,11 @@ namespace AudioSpectrumPlayer.Services
 					: long.MaxValue;
 				long targetMs = (long)Math.Clamp(position.TotalMilliseconds, 0, maxMs);
 
-				// Only Playing/Paused decoders honor a Time change. Otherwise park the
-				// target for OnPlaying and emit PositionChanged so the UI tracks the spot.
 				if (_mediaPlayer.State is VLCState.Playing or VLCState.Paused)
 				{
 					_mediaPlayer.Time = targetMs;
 					_pendingSeekMs = null;
-					// Emit the new spot ourselves: while paused the decoder is idle, so no
-					// TimeChanged tick follows and the UI would otherwise stay put until play
-					// resumes. While playing this just gives immediate feedback before the next tick.
+					// No TimeChanged tick follows while paused.
 					PositionChanged?.Invoke(this, TimeSpan.FromMilliseconds(targetMs));
 					Log.Debug("Seeked to position: {Position} ms", targetMs);
 				}
@@ -373,7 +342,7 @@ namespace AudioSpectrumPlayer.Services
 		{
 			if (_disposed) return;
 
-			try { _mediaPlayer.Stop(); } catch { /* tearing down anyway */ }
+			try { _mediaPlayer.Stop(); } catch { }
 
 			_mediaPlayer.Dispose();
 			_currentMedia?.Dispose();

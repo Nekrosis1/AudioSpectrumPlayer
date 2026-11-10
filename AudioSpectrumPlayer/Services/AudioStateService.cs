@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace AudioSpectrumPlayer.Services
 {
+	/// <inheritdoc cref="IAudioStateService"/>
 	public class AudioStateService : IAudioStateService
 	{
 		private DispatcherTimer? _playbackTimer;
@@ -14,11 +15,16 @@ namespace AudioSpectrumPlayer.Services
 		public TimeSpan TotalDuration { get; private set; }
 		public bool IsPlaybackActive { get; private set; }
 
+		/// <inheritdoc/>
 		public event EventHandler<string>? FileLoaded;
+		/// <inheritdoc/>
 		public event EventHandler<TimeSpan>? PositionChanged;
+		/// <inheritdoc/>
 		public event EventHandler<TimeSpan>? TotalDurationChanged;
+		/// <inheritdoc/>
 		public event EventHandler<bool>? PlaybackStateChanged;
 
+		/// <inheritdoc/>
 		public async Task LoadFileAsync(string filePath)
 		{
 			CurrentFilePath = filePath;
@@ -55,9 +61,6 @@ namespace AudioSpectrumPlayer.Services
 		{
 			try
 			{
-				// The ViewModel or AudioPlayerService will call UpdateCurrentPosition
-				// This timer just ensures regular position updates are requested
-				// We don't update position here directly anymore
 			}
 			catch (Exception ex)
 			{

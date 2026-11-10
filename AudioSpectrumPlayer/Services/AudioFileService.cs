@@ -18,6 +18,7 @@ namespace AudioSpectrumPlayer.Services
 
 		private readonly ITopLevelProvider _topLevelProvider = topLevelProvider;
 
+		/// <inheritdoc/>
 		public async Task<string?> PickAudioFileAsync()
 		{
 			try
@@ -36,7 +37,6 @@ namespace AudioSpectrumPlayer.Services
 					return null;
 				}
 
-				// Create file type filters
 				List<FilePickerFileType> fileTypeFilters =
 				[
 					new("Audio Files")
@@ -77,6 +77,7 @@ namespace AudioSpectrumPlayer.Services
 			}
 		}
 
+		/// <inheritdoc/>
 		public bool IsValidAudioFile(string filePath)
 		{
 			if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))

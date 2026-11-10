@@ -36,13 +36,9 @@ public partial class App : Application
 	{
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
-			// Get MainWindow from DI container
 			MainWindowView? mainWindow = _host?.Services.GetRequiredService<MainWindowView>();
 			desktop.MainWindow = mainWindow;
 
-			// Now that the window exists, hand it to the provider so services
-			// (e.g. the file picker) can reach the TopLevel without depending
-			// on a concrete Window.
 			if (mainWindow is not null)
 			{
 				_host?.Services.GetRequiredService<TopLevelProvider>().TopLevel = mainWindow;
@@ -50,16 +46,8 @@ public partial class App : Application
 
 			SetupExceptionHandling();
 
-			// Tear down the DI host when the app is shutting down. The host owns every
-			// service as a singleton, so disposing it cascades Dispose() to all of them —
-			// most importantly AudioPlayerService, which holds native libvlc handles
-			// (MediaPlayer/LibVLC/Media) that are otherwise only freed by process teardown.
-			// ShutdownRequested fires once, before the app actually exits.
 			desktop.ShutdownRequested += OnShutdownRequested;
 
-			// "Open with" / command-line launch: the OS passes the chosen file as the
-			// first argument. Load it once the UI loop is running so the window is shown
-			// and the error overlay (on a bad/missing path) has somewhere to render.
 			LoadFileFromArgs(desktop.Args);
 		}
 
@@ -112,9 +100,6 @@ public partial class App : Application
 		Log.Debug("DI container configured");
 	}
 
-	// Loads the file named by the first command-line argument, if any. The error
-	// handling (missing file, unsupported format) lives in LoadAudioFileAsync, which
-	// surfaces failures through the in-app error overlay.
 	private void LoadFileFromArgs(string[]? args)
 	{
 		string? filePath = args?.FirstOrDefault();
@@ -156,7 +141,6 @@ public partial class App : Application
 		};
 	}
 
-	// Helper methods to get services from anywhere in the app
 	public static T? GetService<T>() where T : class
 	{
 		if (Current is App app)
