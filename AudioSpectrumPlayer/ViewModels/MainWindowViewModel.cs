@@ -14,7 +14,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 {
 	private readonly IAudioPlayerService _audioPlayerService;
 	private readonly IAudioFileService _audioFileService;
-	private readonly IAudioStateService _audioStateService;
 	private readonly SpectrumVisualizationService _spectrumVisualizationService;
 	private bool _disposed;
 
@@ -26,12 +25,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	/// </summary>
 	public LogViewModel LogPanel { get; }
 
-	// Playback position/duration are owned by AudioStateService (the spectrum
-	// services read them too), so the VM does not store its own copy — it projects
-	// the service's values and re-raises change notifications when they update.
-	// This keeps a single source of truth instead of two hand-synced copies.
-	public TimeSpan CurrentPosition => _audioStateService.CurrentPosition;
-	public TimeSpan TotalDuration => _audioStateService.TotalDuration;
+	// Projected from the player instead of copied, so there is one source of truth;
+	// the player's events trigger the change notifications.
+	public TimeSpan CurrentPosition => _audioPlayerService.CurrentPosition;
+	public TimeSpan TotalDuration => _audioPlayerService.TotalDuration;
 
 	/// <summary>Slider position (0–100). Setting it (user drag) seeks.</summary>
 	public double ProgressValue
@@ -78,13 +75,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	public MainWindowViewModel(
 		IAudioPlayerService audioPlayerService,
 		IAudioFileService audioFileService,
-		IAudioStateService audioStateService,
 		SpectrumVisualizationService spectrumVisualizationService,
 		LogViewModel logViewModel)
 	{
 		_audioPlayerService = audioPlayerService;
 		_audioFileService = audioFileService;
-		_audioStateService = audioStateService;
 		_spectrumVisualizationService = spectrumVisualizationService;
 		LogPanel = logViewModel;
 
@@ -113,25 +108,17 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
 	private void OnPositionChanged(object? sender, TimeSpan position)
 	{
-		Dispatcher.UIThread.Post(() =>
-		{
-			_audioStateService.UpdateCurrentPosition(position);
-			NotifyProgressChanged();
-		});
+		Dispatcher.UIThread.Post(NotifyProgressChanged);
 	}
 
 	private void OnDurationChanged(object? sender, TimeSpan duration)
 	{
-		Dispatcher.UIThread.Post(() =>
-		{
-			_audioStateService.UpdateTotalDuration(duration);
-			NotifyProgressChanged();
-		});
+		Dispatcher.UIThread.Post(NotifyProgressChanged);
 	}
 
 	/// <summary>
 	/// Re-raises change notifications for every property that projects playback
-	/// position/duration, so the bound views refresh after the service updates.
+	/// position/duration, so the bound views refresh after the player reports a change.
 	/// </summary>
 	private void NotifyProgressChanged()
 	{
@@ -143,11 +130,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
 	private void OnPlaybackStateChanged(object? sender, bool isPlaying)
 	{
-		Dispatcher.UIThread.Post(() =>
-		{
-			IsPlaying = isPlaying;
-			_audioStateService.UpdatePlaybackState(isPlaying);
-		});
+		Dispatcher.UIThread.Post(() => IsPlaying = isPlaying);
 	}
 
 	private void OnMediaOpened(object? sender, EventArgs e)
@@ -204,10 +187,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 		{
 			IsPlaying = false;
 			WindowTitle = DefaultWindowTitle;
-
-			_audioStateService.UpdatePlaybackState(false);
-			_audioStateService.UpdateCurrentPosition(TimeSpan.Zero);
-			_audioStateService.UpdateTotalDuration(TimeSpan.Zero);
 			NotifyProgressChanged();
 		});
 	}
@@ -218,7 +197,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 		Dispatcher.UIThread.Post(() =>
 		{
 			IsPlaying = false;
-			_audioStateService.UpdatePlaybackState(false);
 			_spectrumVisualizationService.StopVisualization();
 		});
 	}
@@ -380,7 +358,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 				throw new FileNotFoundException("The file does not exist.", filePath);
 			}
 
-			await _audioStateService.LoadFileAsync(filePath);
 			await _audioPlayerService.LoadAsync(filePath);
 
 			// Only reached when the load genuinely succeeded — LoadAsync throws otherwise.

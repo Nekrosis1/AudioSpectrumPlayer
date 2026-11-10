@@ -8,15 +8,15 @@ namespace AudioSpectrumPlayer.Services
 	public class SpectrumVisualizationService : IDisposable
 	{
 		private readonly SpectrumGenerationService _spectrumGenerationService;
-		private readonly IAudioStateService _audioStateService;
+		private readonly IAudioPlayerService _audioPlayerService;
 		private bool _isVisualizationActive = false;
 		private bool _disposed;
 		private float[] _currentSpectrumData = new float[64];
 
-		public SpectrumVisualizationService(SpectrumGenerationService spectrumGenerationService, IAudioStateService audioStateService)
+		public SpectrumVisualizationService(SpectrumGenerationService spectrumGenerationService, IAudioPlayerService audioPlayerService)
 		{
 			_spectrumGenerationService = spectrumGenerationService;
-			_audioStateService = audioStateService;
+			_audioPlayerService = audioPlayerService;
 			_spectrumGenerationService.SpectrumDataUpdated += OnSpectrumDataUpdated;
 
 		}
@@ -51,7 +51,7 @@ namespace AudioSpectrumPlayer.Services
 			_spectrumGenerationService.UpdateSpectrumData();
 			Log.Information("Spectrum data updated.");
 
-			TimeSpan currentPosition = _audioStateService!.CurrentPosition;
+			TimeSpan currentPosition = _audioPlayerService.CurrentPosition;
 			Console.WriteLine($"Current Position: {currentPosition.TotalSeconds} seconds");
 			_ = _spectrumGenerationService.GetAudioChunkAtPosition(currentPosition);
 			//var frequencies = AnalyzeFrequencies(pcmData);

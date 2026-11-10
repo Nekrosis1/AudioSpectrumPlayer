@@ -15,22 +15,22 @@ namespace AudioSpectrumPlayer.Services
 	/// </summary>
 	public class SpectrumGenerationService : IDisposable
 	{
-		private readonly IAudioStateService _audioStateService;
+		private readonly IAudioPlayerService _audioPlayerService;
 
 		private const int FFT_SIZE = 1024; // Must be power of 2
 		private const int SPECTRUM_BARS = 64; // Number of frequency bars to display
 
 		public event EventHandler<float[]>? SpectrumDataUpdated;
 
-		public SpectrumGenerationService(IAudioStateService audioStateService)
+		public SpectrumGenerationService(IAudioPlayerService audioPlayerService)
 		{
-			_audioStateService = audioStateService;
-			_audioStateService.FileLoaded += OnFileLoaded;
+			_audioPlayerService = audioPlayerService;
+			_audioPlayerService.MediaOpened += OnMediaOpened;
 		}
 
-		private void OnFileLoaded(object? sender, string filePath)
+		private void OnMediaOpened(object? sender, EventArgs e)
 		{
-			Log.Debug("SpectrumGenerationService received FileLoaded for: {FilePath} (no PCM tap wired yet)", filePath);
+			Log.Debug("SpectrumGenerationService received MediaOpened for: {FilePath} (no PCM tap wired yet)", _audioPlayerService.CurrentFilePath);
 		}
 
 		// Silent until a libvlc PCM tap feeds real audio in a later pass.
@@ -41,9 +41,9 @@ namespace AudioSpectrumPlayer.Services
 
 		public void UpdateSpectrumData()
 		{
-			if (_audioStateService.CurrentFilePath is null) return;
+			if (_audioPlayerService.CurrentFilePath is null) return;
 
-			float[] pcmData = GetAudioChunkAtPosition(_audioStateService.CurrentPosition);
+			float[] pcmData = GetAudioChunkAtPosition(_audioPlayerService.CurrentPosition);
 			float[] spectrumData = GenerateSpectrumData(pcmData);
 			SpectrumDataUpdated?.Invoke(this, spectrumData);
 		}
@@ -171,7 +171,7 @@ namespace AudioSpectrumPlayer.Services
 
 		public void Dispose()
 		{
-			_audioStateService.FileLoaded -= OnFileLoaded;
+			_audioPlayerService.MediaOpened -= OnMediaOpened;
 		}
 	}
 }
