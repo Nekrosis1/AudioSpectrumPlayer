@@ -17,6 +17,7 @@ cd "$(dirname "$0")/.."
 # One entry per project: "<name> [aliases...]|<path to .csproj, relative to repo root>"
 PROJECTS=(
 	"AudioSpectrumPlayer asp|AudioSpectrumPlayer/AudioSpectrumPlayer.csproj"
+	"AudioSpectrumPlayer.Tests tests|AudioSpectrumPlayer.Tests/AudioSpectrumPlayer.Tests.csproj"
 )
 
 usage() {

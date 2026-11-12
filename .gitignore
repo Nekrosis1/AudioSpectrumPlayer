@@ -370,3 +370,6 @@ plans/
 
 # libvlcsharp source
 libvlcsharp-3.9.7.1/
+
+# Audio Test files
+AudioSpectrumPlayer.Tests/TestData/

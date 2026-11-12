@@ -2,5 +2,6 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
+  <Project Path="AudioSpectrumPlayer.Tests/AudioSpectrumPlayer.Tests.csproj" />
   <Project Path="AudioSpectrumPlayer/AudioSpectrumPlayer.csproj" />
 </Solution>
