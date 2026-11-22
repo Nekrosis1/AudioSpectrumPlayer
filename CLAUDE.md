@@ -129,9 +129,11 @@ focused action, then report back, rather than completing many things in one auto
 
 ### Audio / Spectrum Pipeline — current state (the spectrum is NOT working yet)
 1. Audio is loaded and played through libvlc (`AudioPlayerService`). This works.
-2. **PCM input is a stub**: `SpectrumGenerationService.GetAudioChunkAtPosition` returns silence.
-   The old NAudio-based source was removed in the libvlc migration (`Services/FileToPCM.cs` is
-   fully commented out). Feeding real PCM, e.g. via libvlc's audio callbacks, is still to do.
+2. **PCM input is a stub in the app**: `SpectrumGenerationService.GetAudioChunkAtPosition` returns
+   silence. A WAV-only PCM path exists and is tested but not wired in yet: `WavDecoder`
+   (`IPcmDecoder`) decodes a file into `PcmData`, and `PcmBuffer` (`IPcmSource`) slices it by
+   time and mixes it to mono. Other formats are meant to come as further `IPcmDecoder`
+   implementations (libvlc).
 3. **Nothing triggers updates**: no code calls `SpectrumGenerationService.UpdateSpectrumData()`.
 4. The FFT and the drawing side are in place: `SpectrumControlView` subscribes directly to
    `SpectrumDataUpdated` and renders the bars as a polygon.
@@ -159,6 +161,7 @@ focused action, then report back, rather than completing many things in one auto
 ### File Structure (inside `AudioSpectrumPlayer/`)
 - `Services/`: core logic, playback and audio processing
 - `Interfaces/`: service contracts
+- `Models/`: plain data records (e.g. `PcmData`, `PcmBlock`)
 - `ViewModels/`: MVVM view models
 - `Views/`: Avalonia `.axaml` views, code-behind and converters
 - `Logging/`: custom Serilog sink
