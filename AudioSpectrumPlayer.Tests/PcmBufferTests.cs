@@ -1,5 +1,6 @@
 using AudioSpectrumPlayer.Models;
 using AudioSpectrumPlayer.Services;
+using AudioSpectrumPlayer.Tests.Helpers;
 
 namespace AudioSpectrumPlayer.Tests
 {

@@ -84,8 +84,6 @@ public partial class App : Application
 				services.AddSingleton<ITopLevelProvider>(sp => sp.GetRequiredService<TopLevelProvider>());
 				services.AddSingleton<IAudioPlayerService, AudioPlayerService>();
 				services.AddSingleton<IAudioFileService, AudioFileService>();
-				services.AddSingleton<SpectrumVisualizationService>();
-				services.AddSingleton<SpectrumGenerationService>();
 
 				// ViewModels
 				services.AddSingleton<MainWindowViewModel>();

@@ -116,27 +116,30 @@ focused action, then report back, rather than completing many things in one auto
 ### Core Services
 - **IAudioPlayerService / AudioPlayerService**: playback via LibVLCSharp (load, play, pause,
   stop, seek, volume, playback events). Source of truth for playback state
-  (current file, position, duration, playing); the ViewModel and spectrum services read it
+  (current file, position, duration, playing); the ViewModel reads it
   directly and subscribe to its events. Also contains the native-library resolver that finds
   the system libvlc on Linux.
 - **IAudioFileService / AudioFileService**: file picker and file validation.
 - **ITopLevelProvider / TopLevelProvider**: gives services access to the window's `TopLevel`
   (e.g. for the file picker) without depending on a concrete window.
-- **SpectrumGenerationService**: FFT (MathNet.Numerics, Hamming window, log-frequency binning);
-  raises `SpectrumDataUpdated` with the bar values.
-- **SpectrumVisualizationService**: unfinished scaffolding — injected into
-  `MainWindowViewModel` but not doing anything yet.
+- **ISpectrumAnalyzerService / SpectrumAnalyzerService**: turns one `PcmBlock` of exactly
+  `FftSize` (8192) mono samples into a `Spectrum` — one dBFS value per bin (DC … Nyquist), floored
+  at −200 dB. Hann window, MathNet.Numerics `Fourier.Forward` (unscaled). FFT size, window length
+  and window function are constants at the top of the class. Reuses its FFT buffer, so an instance
+  is not thread-safe; meant to be transient. Not registered in DI yet.
 
 ### Audio / Spectrum Pipeline — current state (the spectrum is NOT working yet)
 1. Audio is loaded and played through libvlc (`AudioPlayerService`). This works.
-2. **PCM input is a stub in the app**: `SpectrumGenerationService.GetAudioChunkAtPosition` returns
-   silence. A WAV-only PCM path exists and is tested but not wired in yet: `WavDecoder`
+2. **PCM is not wired into the app**: a WAV-only PCM path exists and is tested: `WavDecoder`
    (`IPcmDecoder`) decodes a file into `PcmData`, and `PcmBuffer` (`IPcmSource`) slices it by
    time and mixes it to mono. Other formats are meant to come as further `IPcmDecoder`
    implementations (libvlc).
-3. **Nothing triggers updates**: no code calls `SpectrumGenerationService.UpdateSpectrumData()`.
-4. The FFT and the drawing side are in place: `SpectrumControlView` subscribes directly to
-   `SpectrumDataUpdated` and renders the bars as a polygon.
+3. **Analysis exists but nothing calls it**: `SpectrumAnalyzerService` (PCM slice → `Spectrum`
+   in dBFS) is tested with synthetic signals and the WAV test files. Calling it from the app
+   (render tick → current time → samples → analyze → draw) and shaping the result for display
+   belong to the render task (`plans/SpectrumRender.md`).
+4. The drawing side is placeholder: `SpectrumControlView` still has code that draws a float[] as a
+   polyline + polygon, but nothing feeds it, so it shows an empty black area.
 
 ### MVVM Implementation
 - ViewModels derive from `ViewModelBase` and use `[ObservableProperty]` from CommunityToolkit.Mvvm.

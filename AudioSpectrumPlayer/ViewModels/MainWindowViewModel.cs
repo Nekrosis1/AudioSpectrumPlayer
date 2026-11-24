@@ -1,5 +1,4 @@
 using AudioSpectrumPlayer.Interfaces;
-using AudioSpectrumPlayer.Services;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -14,7 +13,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 {
 	private readonly IAudioPlayerService _audioPlayerService;
 	private readonly IAudioFileService _audioFileService;
-	private readonly SpectrumVisualizationService _spectrumVisualizationService;
 	private bool _disposed;
 
 	/// <summary>
@@ -75,12 +73,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	public MainWindowViewModel(
 		IAudioPlayerService audioPlayerService,
 		IAudioFileService audioFileService,
-		SpectrumVisualizationService spectrumVisualizationService,
 		LogViewModel logViewModel)
 	{
 		_audioPlayerService = audioPlayerService;
 		_audioFileService = audioFileService;
-		_spectrumVisualizationService = spectrumVisualizationService;
 		LogPanel = logViewModel;
 
 		SubscribeToPlayerEvents();
@@ -181,7 +177,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	private void ResetPlaybackState()
 	{
 		_audioPlayerService.Stop();
-		_spectrumVisualizationService.StopVisualization();
 
 		Dispatcher.UIThread.Post(() =>
 		{
@@ -194,25 +189,19 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	private void OnMediaEnded(object? sender, EventArgs e)
 	{
 		Log.Information("Media playback ended");
-		Dispatcher.UIThread.Post(() =>
-		{
-			IsPlaying = false;
-			_spectrumVisualizationService.StopVisualization();
-		});
+		Dispatcher.UIThread.Post(() => IsPlaying = false);
 	}
 
 	public void Play()
 	{
 		Log.Information("Play");
 		_audioPlayerService.Play();
-		_spectrumVisualizationService.StartVisualization();
 	}
 
 	public void Pause()
 	{
 		Log.Information("Pause");
 		_audioPlayerService.Pause();
-		_spectrumVisualizationService.StopVisualization();
 	}
 
 	[RelayCommand]
@@ -220,7 +209,6 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 	{
 		Log.Information("Stop");
 		_audioPlayerService.Stop();
-		_spectrumVisualizationService.StopVisualization();
 	}
 
 	[RelayCommand]

@@ -1,4 +1,3 @@
-using AudioSpectrumPlayer.Services;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -17,14 +16,6 @@ public partial class SpectrumControlView : UserControl
 	public SpectrumControlView()
 	{
 		InitializeComponent();
-
-		SpectrumGenerationService spectrumGenerationService = App.GetRequiredService<SpectrumGenerationService>();
-		spectrumGenerationService.SpectrumDataUpdated += OnSpectrumDataUpdated;
-	}
-
-	private void OnSpectrumDataUpdated(object? sender, float[] spectrumData)
-	{
-		Dispatcher.UIThread.Post(() => UpdateSpectrumVisualization(spectrumData));
 	}
 
 	private void OnCanvasSizeChanged(object? sender, SizeChangedEventArgs e)

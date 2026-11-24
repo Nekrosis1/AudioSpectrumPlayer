@@ -1,4 +1,4 @@
-namespace AudioSpectrumPlayer.Tests
+namespace AudioSpectrumPlayer.Tests.Helpers
 {
 	internal static class TestFiles
 	{
