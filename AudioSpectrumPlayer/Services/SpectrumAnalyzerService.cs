@@ -14,8 +14,6 @@ namespace AudioSpectrumPlayer.Services
 
 		public const int FftSize = 8192;
 
-		// Block length Analyze expects, not the bin count. Must not exceed FftSize; FFT input past
-		// it is zero-padded.
 		public const int WindowSize = FftSize;
 
 		// Compile-time guard: fails to build (CS0031) if WindowSize > FftSize, since a negative
@@ -24,8 +22,7 @@ namespace AudioSpectrumPlayer.Services
 
 		public const WindowFunction Window = WindowFunction.Hann;
 
-		// The level a bin with no energy gets instead of −∞ (log10(0)). Far below the FFT's own
-		// rounding noise (≈ −168 dB), so it never hides real content.
+		// Floor is below the FFT's own rounding noise (≈ −168 dB), never hides real content.
 		public const double DbFloor = -200.0;
 
 		private static readonly double[] WindowValues = CreateWindow(Window, WindowSize);
