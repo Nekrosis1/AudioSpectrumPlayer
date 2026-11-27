@@ -4,11 +4,12 @@
 # prints nothing but errors and one result line per project, so build output
 # doesn't flood an agent's context. Run from anywhere:
 #
+#   ./scripts/agent-build.sh                         # all projects
 #   ./scripts/agent-build.sh AudioSpectrumPlayer     # by name
 #   ./scripts/agent-build.sh asp                     # by alias
 #   ./scripts/agent-build.sh asp other               # several, in order
 #
-# Exit code: 0 all builds succeeded, 1 a build failed, 2 usage error.
+# Exit code: 0 all builds succeeded, 1 a build failed, 2 unknown project.
 
 set -uo pipefail
 
@@ -21,7 +22,7 @@ PROJECTS=(
 )
 
 usage() {
-	echo "usage: $0 <project> [project...]"
+	echo "usage: $0 [project...]   (no project: build all)"
 	echo "projects (name, then aliases):"
 	for entry in "${PROJECTS[@]}"; do
 		echo "  ${entry%%|*}"
@@ -41,13 +42,15 @@ resolve() {
 	return 1
 }
 
+paths=()
+
 if [ $# -eq 0 ]; then
-	usage
-	exit 2
+	for entry in "${PROJECTS[@]}"; do
+		paths+=("${entry##*|}")
+	done
 fi
 
 # Resolve everything first, so a typo doesn't fail halfway through.
-paths=()
 for arg in "$@"; do
 	if ! path=$(resolve "$arg"); then
 		echo "unknown project: $arg"

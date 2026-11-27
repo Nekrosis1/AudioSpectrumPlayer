@@ -33,6 +33,11 @@ CommunityToolkit.Mvvm, and logging with Serilog.
 Agents build with `scripts/agent-build.sh` (see the `agent-build` skill), never with `dotnet`
 directly. Running the app and publishing stay with the user.
 
+```bash
+./scripts/agent-build.sh                         # build all projects
+./scripts/agent-build.sh AudioSpectrumPlayer     # Only build AudioSpectrumPlayer/AudioSpectrumPlayer.csproj
+```
+
 #### Testing
 
 Agents test with `scripts/agent-test.sh`, never with `dotnet test` directly. It builds the test
@@ -138,8 +143,10 @@ focused action, then report back, rather than completing many things in one auto
    in dBFS) is tested with synthetic signals and the WAV test files. Calling it from the app
    (render tick → current time → samples → analyze → draw) belongs to `plans/05-drawCurve.md`;
    smoothing the result for display to `plans/06-curveVFX.md`.
-4. The drawing side is placeholder: `SpectrumControlView` still has code that draws a float[] as a
-   polyline + polygon, but nothing feeds it, so it shows an empty black area.
+4. **The grid is drawn, the curve is not**: `SpectrumControlView` hosts `SpectrumGridControl`
+   (`Controls/`), which paints the dark background, the grid lines and labels (log frequency
+   10 Hz … 22 kHz, level 0 … −72 dB) via `SpectrumAxisMapping` (`Helpers/`). The curve, drawn
+   with the same mapping, belongs to `plans/05-drawCurve.md`.
 
 ### MVVM Implementation
 - ViewModels derive from `ViewModelBase` and use `[ObservableProperty]` from CommunityToolkit.Mvvm.
@@ -157,7 +164,8 @@ focused action, then report back, rather than completing many things in one auto
 - **MenuBarControlView**: application menu
 - **PlaybackProgressControlView**: seek bar and position display
 - **VolumeControlView**: volume
-- **SpectrumControlView**: spectrum display
+- **SpectrumControlView**: spectrum display; combines the spectrum parts, currently only
+  `SpectrumGridControl`
 - **LogDisplayView**: in-app log viewer
 - **ErrorDisplayView**: error overlay (e.g. bad/missing file)
 
@@ -167,6 +175,8 @@ focused action, then report back, rather than completing many things in one auto
 - `Models/`: plain data records (e.g. `PcmData`, `PcmBlock`)
 - `ViewModels/`: MVVM view models
 - `Views/`: Avalonia `.axaml` views, code-behind and converters
+- `Controls/`: custom-drawn controls (e.g. `SpectrumGridControl`, which overrides `Render`)
+- `Helpers/`: pure helpers without Avalonia dependency (e.g. `SpectrumAxisMapping`)
 - `Logging/`: custom Serilog sink
 - `Assets/`: icons and other Avalonia resources
 
