@@ -136,8 +136,8 @@ focused action, then report back, rather than completing many things in one auto
    implementations (libvlc).
 3. **Analysis exists but nothing calls it**: `SpectrumAnalyzerService` (PCM slice → `Spectrum`
    in dBFS) is tested with synthetic signals and the WAV test files. Calling it from the app
-   (render tick → current time → samples → analyze → draw) and shaping the result for display
-   belong to the render task (`plans/SpectrumRender.md`).
+   (render tick → current time → samples → analyze → draw) belongs to `plans/05-drawCurve.md`;
+   smoothing the result for display to `plans/06-curveVFX.md`.
 4. The drawing side is placeholder: `SpectrumControlView` still has code that draws a float[] as a
    polyline + polygon, but nothing feeds it, so it shows an empty black area.
 
